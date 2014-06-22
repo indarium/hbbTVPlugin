@@ -19,6 +19,7 @@ object Shows extends Controller {
     (JsPath \ "stationId").write[String] and
       (JsPath \ "channelId").write[String] and
       (JsPath \ "stationName").write[String]
+
     )(unlift(ShowApiCall.unapply))
 
   implicit val showApiCallReads: Reads[ShowApiCall] = (
@@ -33,7 +34,7 @@ object Shows extends Controller {
       (JsPath \ "stationName").write[String]
     )(unlift(Show.unapply))
 
-  implicit val placeReads: Reads[Show] = (
+  implicit val showReads: Reads[Show] = (
     (JsPath \ "stationId").read[String] and
       (JsPath \ "channelId").read[String] and
       (JsPath \ "stationName").read[String]
@@ -41,6 +42,7 @@ object Shows extends Controller {
 
   def current = Action(BodyParsers.parse.json) { request =>
     val showApiCall = request.body.validate[ShowApiCall]
+
     showApiCall.fold(
       errors => {
         BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors)))
@@ -48,11 +50,12 @@ object Shows extends Controller {
       showApiCall => {
         Ok(Json.obj(
           "status" -> "OK",
-          "apiKey" -> showApiCall.apiKey,
           "stationId" -> showApiCall.stationId,
-          "channelId" -> showApiCall.channelId,
-          "stationName" -> "KW-TV",
+          "stationName" -> "KW-tv",
           "stationLogoUrl" -> "http://www.wiwo-wildau.de/images/neue-mitte-2010/gewerbe-logos/kw-tv.jpg",
+          "stationMainColor" -> "#112244",
+          "channelId" -> showApiCall.channelId,
+          "channelName" -> "KW-tv SAT",
           "showTitle" -> "Lokal aktuell",
           "showSubtitle" -> "Ausgabe vom 23.05.2014",
           "showLogoUrl" -> "http://images.telvi.de/images/originals/1543d38645b86053c379d529.jpg",

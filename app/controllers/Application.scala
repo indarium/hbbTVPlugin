@@ -4,41 +4,24 @@ import play.api._
 import play.api.Play.current
 import play.api.mvc._
 import play.api.libs.ws.{WSResponse, WSRequestHolder, WSAuthScheme, WS}
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.Play.current
 import play.api.libs.json._
 import play.api.http.ContentTypeOf
 import play.api.libs.ws.ning.NingWSRequestHolder
-import helper.MongoDB
+import helper.{HMSApi, MongoDB}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
 
 object Application extends Controller {
 
-  def index = Action.async {
-    val url = "https://62.67.13.54/HMSCloud/api/login/"
-    var user = "merz"
-    val password = "merz"
+  def index = Action.async { request =>
 
-    //val holder = WS.url(url)
+    /*HMSApi.authenticate.map { resultData =>
+      Ok(resultData.toString)
+    }*/
 
-
-    val authData = Json.obj(
-      "UserName" -> JsString(user),
-      "Password" -> JsString(password)
-    )
-
-    Logger.info(authData.toString())
-
-    //holder
-    WS.url(url)
-      .withHeaders("x-api-version" -> "1.0")
-      .withRequestTimeout(2000)
-      .post(authData)
-      .map { response =>
-      response.status match {
-        case s if s < 300 =>
-          Ok(response.json \ "AccessToken")
-        case _ =>
-          Ok("Status: " + response.status + "/ Error: " + response.body)
-      }
+    HMSApi.getShows("OSF").map { resultData =>
+      Ok("hallo" + resultData.toString)
     }
   }
 
