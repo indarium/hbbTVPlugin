@@ -5,7 +5,7 @@ import org.specs2.matcher.JsonMatchers
 
 import play.api.libs.json.{JsString, Json}
 import play.api.libs.ws.WS
-import play.api.Logger
+import play.api.{Play, Logger}
 import play.api.test._
 
 /**
@@ -19,17 +19,17 @@ class HMSAPISpec extends Specification {
 
     "should deliver an API token" in new WithBrowser {
 
-      val url = "https://62.67.13.54/HMSCloud/api/login/"
-      var user = "merz"
-      val password = "merz"
+      var username = Play.configuration.getString("hms.username").get
+      val password = Play.configuration.getString("hms.password").get
+      val apiUrl = Play.configuration.getString("hms.apiURL").get + ("/login/")
 
       val authData = Json.obj(
-        "UserName" -> JsString(user),
+        "UserName" -> JsString(username),
         "Password" -> JsString(password)
       )
 
       Logger.info(authData.toString())
-      val respString = WS.url(url)
+      val respString = WS.url(apiUrl)
         .withHeaders("x-api-version" -> "1.0")
         .withRequestTimeout(2000)
         .post(authData).map { response =>

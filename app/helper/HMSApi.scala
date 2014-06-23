@@ -28,15 +28,15 @@ object HMSApi {
   def authenticate = {
     Logger.debug("HMSApi.authenticate")
 
-    var user = Play.configuration.getString("hms.username").get
+    var username = Play.configuration.getString("hms.username").get
     val password = Play.configuration.getString("hms.password").get
     val apiUrl = Play.configuration.getString("hms.apiURL").get + ("/login/")
 
     Logger.debug("apiURL: " + apiUrl)
-    Logger.debug("username: " + user)
+    Logger.debug("username: " + username)
 
     val authData = Json.obj(
-      "UserName" -> JsString(user),
+      "UserName" -> JsString(username),
       "Password" -> JsString(password)
     )
 
