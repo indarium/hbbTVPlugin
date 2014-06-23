@@ -14,7 +14,20 @@ import scala.concurrent.duration.Duration
 
 object Application extends Controller {
 
-  def index = Action.async { request =>
+  def index = Action {
+
+    Ok("HbbTV Plugin")
+
+    /*HMSApi.authenticate.map { resultData =>
+      Ok(resultData.toString)
+    }*/
+
+    /*HMSApi.getShows("OSF").map { resultData =>
+      Ok("hallo" + resultData.toString)
+    }*/
+  }
+
+  def testIt = Action.async { request =>
 
     /*HMSApi.authenticate.map { resultData =>
       Ok(resultData.toString)
