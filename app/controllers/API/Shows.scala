@@ -56,7 +56,7 @@ object Shows extends Controller {
           "stationLogoShow" -> "TRUE",
           "stationMainColor" -> "#112244",
           "channelId" -> showApiCall.channelId,
-          "channelName" -> showApiCall.channelId + " SAT",
+          "channelName" -> (showApiCall.channelId + " SAT"),
           "showTitle" -> "Lokal super aktuell",
           "showSubtitle" -> "Ausgabe vom 23.05.2014",
           "showLogoUrl" -> "http://images.telvi.de/images/originals/1543d38645b86053c379d529.jpg",
