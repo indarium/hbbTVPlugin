@@ -16,6 +16,7 @@ import play.libs.Akka
 import akka.actor.Props
 import akka.pattern.{ ask }
 import akka.util.Timeout
+import java.io.File
 
 object Application extends Controller {
 
@@ -26,7 +27,7 @@ object Application extends Controller {
     implicit val timeout = Timeout(5)
 
     val s3file = for {
-      x <- ask(s3Uploader, UploadJob("","","","")).mapTo[S3File]
+      x <- ask(s3Uploader, UploadJob("",File.createTempFile("s3.",".tmp"),"","")).mapTo[S3File]
     } yield(x)
 
     Ok("HbbTV Plugin")

@@ -12,5 +12,6 @@ libraryDependencies ++= Seq(
   cache
   ,ws
   ,"org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT"
-  //,"nl.rhinofly" %% "play-s3" % "5.0.0"
+  ,"com.amazonaws" % "aws-java-sdk" % "1.7.8.1"
+  ,"com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
 )

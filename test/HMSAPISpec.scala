@@ -41,7 +41,7 @@ class HMSAPISpec extends Specification {
         }
       }
 
-      Logger.info(respString.map {wups => wups})
+      Logger.info(respString.map {wups => wups} toString)
       failure("Puups")
     }
   }
