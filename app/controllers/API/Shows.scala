@@ -5,6 +5,20 @@ import play.api.Play.current
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import reactivemongo.api._
+import reactivemongo.api.collections.default.BSONCollection
+import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.Future
+
+// Reactive Mongo imports
+
+import reactivemongo.api._
+
+// Reactive Mongo plugin, including the JSON-specialized collection
+
+import play.modules.reactivemongo.MongoController
+import play.modules.reactivemongo.json.collection.JSONCollection
+
 
 /**
  * Created by dermicha on 17/06/14.
@@ -14,6 +28,13 @@ case class ShowApiCall(apiKey: String, stationId: String, channelId: String)
 case class Show(stationId: String, channelId: String, stationName: String)
 
 object Shows extends Controller {
+
+  val validAPIkey = "kajsdhashdjkadh3rjhkehrkjewrhkjwrehkwerhkwhjw323hrwekjhrwer"
+
+  val driver = new MongoDriver
+  val connection = driver.connection(List("localhost"))
+  val database = connection.db("hbbTVPlugin")
+  val showsCollection = database.collection[JSONCollection]("shows")
 
   implicit val showApiCallWrites: Writes[ShowApiCall] = (
     (JsPath \ "stationId").write[String] and
@@ -40,34 +61,35 @@ object Shows extends Controller {
       (JsPath \ "stationName").read[String]
     )(Show.apply _)
 
-  def current = Action(BodyParsers.parse.json) { request =>
+  def current = Action.async((BodyParsers.parse.json)) { request =>
     val showApiCall = request.body.validate[ShowApiCall]
 
-    showApiCall.fold(
-      errors => {
-        BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors)))
-      },
+    showApiCall.map {
       showApiCall => {
-        Ok(Json.obj(
-          "status" -> "OK",
-          "stationId" -> showApiCall.stationId,
-          "stationName" -> showApiCall.stationId,
-          "stationLogoUrl" -> "http://www.wiwo-wildau.de/images/neue-mitte-2010/gewerbe-logos/kw-tv.jpg",
-          "stationLogoShow" -> "TRUE",
-          "stationMainColor" -> "#112244",
-          "channelId" -> showApiCall.channelId,
-          "channelName" -> (showApiCall.channelId + " SAT"),
-          "showTitle" -> "Lokal super aktuell",
-          "showSubtitle" -> "Ausgabe vom 23.05.2014",
-          "showLogoUrl" -> "http://images.telvi.de/images/originals/1543d38645b86053c379d529.jpg",
-          "showVideoHDUrl" -> "http://cdn.mabb.indarium.de/testContent/big_buck_bunny_720p_h264.mov",
-          "showVideoSDUrl" -> "http://cdn.mabb.indarium.de/testContent/big_buck_bunny_480p_h264.mov",
-          "showEndInfo" -> "<h2>Sendetermine</h2><table><tr><td>Dienstag</td><td>18:00</td></tr><tr><td>Donnerstag</td><td>15:00</td></tr><tr><td>Sonntag</td><td>19:00</td></tr></table>",
-          "rootPortalURL" -> "http://hbbtv.daserste.de/"
-        )
-        )
+        // let's do our query
+        showApiCall.apiKey match {
+          case validAPIkey =>
+            showsCollection.
+              // find all people with name `name`
+              find(
+                Json.obj(
+                  "stationId" -> showApiCall.stationId,
+                  "channelId" -> showApiCall.channelId
+                ),
+                Json.obj("_id" -> 0)
+              ).
+              cursor[JsObject]
+              .collect[List](1).map {
+              show =>
+                show.headOption match {
+                  case Some(show) => Ok(Json.obj("status" -> "OK") ++ show)
+                  case _ => KO
+                }
+            }
+        }
       }
-    )
+    }.getOrElse(Future.successful(KO))
   }
 
+  def KO = {BadRequest(Json.obj("status" -> "KO"))}
 }

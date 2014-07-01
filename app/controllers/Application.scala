@@ -1,5 +1,6 @@
 package controllers
 
+import play.libs.Akka
 import play.api._
 import play.api.Play.current
 import play.api.mvc._
@@ -8,11 +9,11 @@ import play.api.Play.current
 import play.api.libs.json._
 import play.api.http.ContentTypeOf
 import play.api.libs.ws.ning.NingWSRequestHolder
+import play.api.libs.concurrent.Execution.Implicits._
+
 import helper.{HMSApi, MongoDB}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
+
 import actors.{S3File, UploadJob, AWS_S3_Upload}
-import play.libs.Akka
 import akka.actor.Props
 import akka.pattern.{ ask }
 import akka.util.Timeout
@@ -22,14 +23,14 @@ object Application extends Controller {
 
   def index = Action {
 
-    lazy val s3Uploader = Akka.system.actorOf(Props[AWS_S3_Upload])
+    /*lazy val s3Uploader = Akka.system.actorOf(Props[AWS_S3_Upload])
 
     implicit val timeout = Timeout(5)
 
     val s3file = for {
       x <- ask(s3Uploader, UploadJob("",File.createTempFile("s3.",".tmp"),"","")).mapTo[S3File]
     } yield(x)
-
+*/
     Ok("HbbTV Plugin")
 
     /*HMSApi.authenticate.map { resultData =>
