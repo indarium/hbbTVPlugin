@@ -61,35 +61,67 @@ object Shows extends Controller {
       (JsPath \ "stationName").read[String]
     )(Show.apply _)
 
-  def current = Action.async((BodyParsers.parse.json)) { request =>
-    val showApiCall = request.body.validate[ShowApiCall]
+  def current = WithCors("POST") {
 
-    showApiCall.map {
-      showApiCall => {
-        // let's do our query
-        showApiCall.apiKey match {
-          case validAPIkey =>
-            showsCollection.
-              // find all people with name `name`
-              find(
-                Json.obj(
-                  "stationId" -> showApiCall.stationId,
-                  "channelId" -> showApiCall.channelId
-                ),
-                Json.obj("_id" -> 0)
-              ).
-              cursor[JsObject]
-              .collect[List](1).map {
-              show =>
-                show.headOption match {
-                  case Some(show) => Ok(Json.obj("status" -> "OK") ++ show)
-                  case _ => KO
-                }
-            }
+    Action.async((BodyParsers.parse.json)) { request =>
+      val showApiCall = request.body.validate[ShowApiCall]
+
+      showApiCall.map {
+        showApiCall => {
+          // let's do our query
+          showApiCall.apiKey match {
+            case validAPIkey =>
+              showsCollection.
+                // find all people with name `name`
+                find(
+                  Json.obj(
+                    "stationId" -> showApiCall.stationId,
+                    "channelId" -> showApiCall.channelId
+                  ),
+                  Json.obj("_id" -> 0)
+                ).
+                cursor[JsObject]
+                .collect[List](1).map {
+                show =>
+                  show.headOption match {
+                    case Some(show) => Ok(Json.obj("status" -> true) ++ show)
+                    case _ => KO
+                  }
+              }
+          }
         }
-      }
-    }.getOrElse(Future.successful(KO))
+      }.getOrElse(Future.successful(KO))
+    }
   }
 
-  def KO = {BadRequest(Json.obj("status" -> "KO"))}
+  def KO = {
+    BadRequest(Json.obj("status" -> false))
+  }
+
+  case class WithCors(httpVerbs: String*)(action: EssentialAction) extends EssentialAction with Results {
+    def apply(request: RequestHeader) = {
+
+      val origin = request.headers.get(ORIGIN).getOrElse("*")
+      if (request.method == "OPTIONS") {
+        // preflight
+        val corsAction = Action {
+          request =>
+            Ok("").withHeaders(
+              ACCESS_CONTROL_ALLOW_ORIGIN -> origin,
+              ACCESS_CONTROL_ALLOW_METHODS -> (httpVerbs.toSet + "OPTIONS").mkString(", "),
+              ACCESS_CONTROL_MAX_AGE -> "3600",
+              ACCESS_CONTROL_ALLOW_HEADERS -> s"$ORIGIN, X-Requested-With, $CONTENT_TYPE, $ACCEPT, $AUTHORIZATION, X-Auth-Token",
+              ACCESS_CONTROL_ALLOW_CREDENTIALS -> "true")
+        }
+        corsAction(request)
+      } else {
+        // actual request
+        action(request).map(res => res.withHeaders(
+          ACCESS_CONTROL_ALLOW_ORIGIN -> origin,
+          ACCESS_CONTROL_ALLOW_CREDENTIALS -> "true"
+        ))
+      }
+    }
+  }
+
 }
