@@ -1,34 +1,31 @@
 package controllers
 
-import play.api._
-import play.api.Play.current
-import play.api.mvc._
-import play.api.libs.ws.{WSResponse, WSRequestHolder, WSAuthScheme, WS}
-import play.api.Play.current
-import play.api.libs.json._
-import play.api.http.ContentTypeOf
-import play.api.libs.ws.ning.NingWSRequestHolder
-import helper.{HMSApi, MongoDB}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import actors.{S3File, UploadJob, AWS_S3_Upload}
-import play.libs.Akka
-import akka.actor.Props
-import akka.pattern.{ ask }
-import akka.util.Timeout
 import java.io.File
+
+import actors.StorageBackendActor
+import akka.actor.Props
+import akka.pattern.ask
+import akka.util.Timeout
+import helper.HMSApi
+import play.api.Play.current
+import play.api.libs.ws.{WS, WSRequestHolder}
+import play.api.mvc._
+import play.libs.Akka
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 object Application extends Controller {
 
   def index = Action {
 
-    lazy val s3Uploader = Akka.system.actorOf(Props[AWS_S3_Upload])
+    lazy val s3Uploader = Akka.system.actorOf(Props[StorageBackendActor])
 
-    implicit val timeout = Timeout(5)
+    implicit val timeout = Timeout(5 seconds)
 
-    val s3file = for {
-      x <- ask(s3Uploader, UploadJob("",File.createTempFile("s3.",".tmp"),"","")).mapTo[S3File]
-    } yield(x)
+//    val s3file = for {
+//      x <- ask(s3Uploader, UploadJob("",File.createTempFile("s3.",".tmp"),"","")).mapTo[S3File]
+//    } yield(x)
 
     Ok("HbbTV Plugin")
 
