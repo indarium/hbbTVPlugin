@@ -17,7 +17,7 @@ import scala.io.Source
 
 
 /**
- * >>Describe Class<<
+ * Specification for the storage backend. Test that the backend can store, retrieve and delete a file.
  *
  * @author Matthias L. Jugel
  */

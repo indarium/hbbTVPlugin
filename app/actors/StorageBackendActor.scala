@@ -14,12 +14,11 @@ class StorageBackendActor(backend: StorageBackend) extends Actor {
 
   def receive = {
     case ("store", media: StorageMedia) =>
-      log.info("storing media: %s".format(media))
       try {
         sender() ! backend.store(media)
       } catch {
         case e: Exception =>
-          log.error("upload failed", e)
+          log.error(e, "upload failed")
           sender() ! akka.actor.Status.Failure(e)
       }
     case ("retrieve", media: StorageMedia) =>
