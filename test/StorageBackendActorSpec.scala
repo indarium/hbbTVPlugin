@@ -124,9 +124,7 @@ class StorageBackendActorSpec extends TestKit(ActorSystem("test")) with Specific
         } catch {
           case e: AmazonS3Exception => e.getStatusCode must be equalTo 404
         }
-
       }
     }
-
   }
 }
