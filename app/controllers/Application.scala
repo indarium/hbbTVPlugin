@@ -1,26 +1,19 @@
 package controllers
 
-import java.io.File
-
-import actors.StorageBackendActor
-import akka.actor.Props
-import akka.pattern.ask
 import akka.util.Timeout
 import helper.HMSApi
 import play.api.Play.current
 import play.api.libs.ws.{WS, WSRequestHolder}
 import play.api.mvc._
-import play.libs.Akka
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 object Application extends Controller {
 
+
+
   def index = Action {
-
-    lazy val s3Uploader = Akka.system.actorOf(Props[StorageBackendActor])
-
     implicit val timeout = Timeout(5 seconds)
 
 //    val s3file = for {

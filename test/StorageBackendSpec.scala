@@ -3,7 +3,7 @@ import java.io.{File, FileOutputStream}
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import helper.{S3Backend, StorageMedia}
+import helper.{DeleteException, StorageException, S3Backend}
 import org.junit.runner.RunWith
 import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable._
@@ -39,6 +39,8 @@ class StorageBackendSpec extends Specification with ThrownMessages {
   private val STATION = "SPACE"
   private val CHANNEL = "CHANNEL-5"
   private val MEDIA = "Ulala"
+
+  private val NAME = "%s/%s/%s".format(STATION, CHANNEL, MEDIA)
 
   "AWS S3" should {
     "have a bucket" in {
@@ -97,11 +99,10 @@ class StorageBackendSpec extends Specification with ThrownMessages {
         val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
         val backend = new S3Backend(credentials, BUCKET)
 
-        val media = StorageMedia(STATION, CHANNEL, MEDIA, Some(FILE))
-        backend.store(media)
+        backend.store(NAME, FILE)
 
         val s3 = new AmazonS3Client(credentials)
-        val result = s3.getObject(BUCKET, media.toString)
+        val result = s3.getObject(BUCKET, NAME)
         val content = Source.fromInputStream(result.getObjectContent).mkString
 
         content must be equalTo CONTENT
@@ -121,10 +122,9 @@ class StorageBackendSpec extends Specification with ThrownMessages {
         val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
         val backend = new S3Backend(credentials, BUCKET)
 
-        val media = StorageMedia(STATION, CHANNEL, MEDIA)
-        val result = backend.retrieve(media)
+        val result = backend.retrieve(NAME)
 
-        val content = Source.fromFile(result.file.get).mkString
+        val content = Source.fromFile(result).mkString
 
         content must be equalTo CONTENT
       }
@@ -143,13 +143,12 @@ class StorageBackendSpec extends Specification with ThrownMessages {
         val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
         val backend = new S3Backend(credentials, BUCKET)
 
-        val media = StorageMedia(STATION, CHANNEL, MEDIA)
-        backend.delete(media)
+        backend.delete(NAME)
 
         val s3 = new AmazonS3Client(credentials)
         try {
-          s3.getObjectMetadata(BUCKET, media.toString)
-          fail("object still exists: %s".format(media))
+          s3.getObjectMetadata(BUCKET, NAME)
+          fail("object still exists: %s".format(NAME))
         } catch {
           case e: AmazonS3Exception => e.getStatusCode must be equalTo 404
         }
@@ -169,13 +168,52 @@ class StorageBackendSpec extends Specification with ThrownMessages {
         val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
         val backend = new S3Backend(credentials, BUCKET)
 
-        for(n <- 1 to 10) {
-          backend.store(StorageMedia(STATION, CHANNEL, MEDIA + n, Some(FILE)))
+        for (n <- 1 to 10) {
+          backend.store(NAME + "-" + n, FILE)
         }
 
         val mediaFiles = backend.list()
 
         mediaFiles.length mustEqual 10
+
+        for (n <- 1 to 10) {
+          val content = Source.fromFile(backend.retrieve(NAME + "-" + n)).mkString
+          content must be equalTo CONTENT
+          backend.delete(NAME + "-" + n)
+        }
+
+        backend.list().length mustEqual 0
+      }
+    }
+
+    "accept maximal 1024 character long file names" in {
+      running(FakeApplication()) {
+        import play.api.Play.current
+
+        val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
+        val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+
+        awsAccessKeyId must not be "NO-ACCESS-KEY"
+        awsSecretKey must not be "NO-SECRET-KEY"
+
+        val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+        val backend = new S3Backend(credentials, BUCKET)
+
+        val longFileName = "X" * 1024
+        backend.store(longFileName, FILE)
+
+        val content = Source.fromFile(backend.retrieve(longFileName)).mkString
+        content must be equalTo CONTENT
+
+        val tooLongFileName = "X" * 1025
+        backend.store(tooLongFileName, FILE) should throwA[StorageException]()
+
+        backend.list().length mustEqual 1
+
+        backend.delete(longFileName)
+        backend.delete(tooLongFileName) should throwA[DeleteException]
+
+        backend.list().length mustEqual 0
       }
     }
   }
