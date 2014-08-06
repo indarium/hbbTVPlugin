@@ -35,7 +35,7 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
       // TODO consider checking the error to handle resubmission or just dropping
 
     case VideoUploadFailure(meta, e) =>
-      log.error(e, "video download failed: %s".format(meta.localVideoFile.getOrElse("???")))
+      log.error(e, "video upload failed: %s".format(meta.localVideoFile.getOrElse("???")))
       // TODO consider checking the error to handle resubmission or just dropping
   }
 }
