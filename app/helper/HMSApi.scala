@@ -28,7 +28,6 @@ object HMSApi {
 
   def wsRequest(apiUrl: String) = {
     WS.url(apiUrl)
-      .withRequestTimeout(30000)
       .withHeaders("x-api-version" -> "1.0")
   }
 
