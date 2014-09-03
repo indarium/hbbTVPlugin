@@ -19,6 +19,7 @@ class ShowMetaData(val stationId: String, val channelId: String) {
 
   var channelName: Option[String] = None
   var showTitle: Option[String] = None
+  var showId: Option[String] = None
   var showSubtitle: Option[String] = None
   var showLogoUrl: Option[URL] = None
   var showLength: Long = 0L
@@ -36,6 +37,3 @@ case class VideoDownloadSuccess(meta: ShowMetaData)
 
 case class VideoDownloadFailure(meta: ShowMetaData, e: Throwable)
 case class VideoUploadFailure(meta: ShowMetaData, e: Throwable)
-
-
-
