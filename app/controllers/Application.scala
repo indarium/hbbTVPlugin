@@ -4,7 +4,7 @@ import actors.ShowProcessingActor
 import akka.actor.Props
 import akka.util.Timeout
 import com.amazonaws.auth.BasicAWSCredentials
-import helper.{S3Backend, ShowMetaData, HMSApi}
+import helper._
 import play.api.Play
 import play.api.Play.current
 import play.api.libs.json.JsObject
@@ -53,28 +53,30 @@ object Application extends Controller {
 
   def testAuth = Action.async {
     HMSApi.authenticate.map {
-      token => Ok(token)
+      case Some(token) => Ok(token.Access_Token)
+      case None => Ok("Error")
     }
   }
 
   def testShows(channelId: String, stationId: String) = Action.async {
     HMSApi.getShows(stationId, channelId).map {
-      shows => Ok(Json.prettyPrint(shows))
+      case Some(shows) => Ok(Json.prettyPrint(shows))
+      case None => Ok(Json.obj("status" -> "error"))
     }
   }
 
   def testShow(channelId: String, stationId: String) = Action.async {
-
     val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
     val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
     val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
     val s3Backend: S3Backend = new S3Backend(credentials, BUCKET)
 
     val showProcessingActor = Akka.system.actorOf(Props(new ShowProcessingActor(s3Backend)))
-    showProcessingActor ! new ShowMetaData(stationId, channelId)
+//    showProcessingActor ! new ShowMetaData(stationId, channelId)
 
     HMSApi.getCurrentShow(stationId, channelId).map {
-      show => Ok(Json.prettyPrint(show))
+      case Some(show) => Ok(show.toString)
+      case None => Ok("Error")
     }
   }
 

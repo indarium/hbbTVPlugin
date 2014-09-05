@@ -18,6 +18,9 @@ class VideoDownloadActor extends Actor {
   def receive = {
     case meta: ShowMetaData => try {
       val target = File.createTempFile(meta.stationId, meta.channelId)
+
+      log.debug("target file: "+target.getPath+" "+target.getName)
+
       val source = meta.sourceVideoUrl match {
         case Some(u) => u
         case None => throw new FileNotFoundException("missing download URL")

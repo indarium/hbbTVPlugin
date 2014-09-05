@@ -25,14 +25,13 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
     case meta: ShowMetaData =>
       log.info("**************************************************")
       log.info("received meta data!")
-      HMSApi.getShows(meta.channelId, meta.stationId).map { shows =>
-        HMSApi.getCurrentShow(meta.channelId, meta.stationId).map {
-          show =>
-            meta.showId = Option((show \\ "ID").toString)
-            meta.sourceVideoUrl = Option(new URL((show \\ "DownloadURL").toString))
-            log.info("process %s/%s: %s".format(meta.channelId, meta.stationId, meta.publicVideoUrl))
-            // TODO add code to load all necessary data
-            videoDownloadActor ! meta
+      HMSApi.getCurrentShow(meta.channelId, meta.stationId).map { show =>
+        show.map { aShow =>
+          meta.showId = Some(aShow.ID.toString)
+          meta.showTitle = aShow.Name
+          meta.sourceVideoUrl = Some(new URL(aShow.DownloadURL.getOrElse("")))
+          log.info("process %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))
+          videoDownloadActor ! meta
         }
       }
 
