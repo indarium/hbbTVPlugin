@@ -1,5 +1,7 @@
 package controllers
 
+import java.net.URL
+
 import actors.ShowProcessingActor
 import akka.actor.Props
 import akka.util.Timeout
@@ -17,8 +19,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 object Application extends Controller {
-
-  private val BUCKET = "ac846539-6757-4284-a4d7-ce227d87a7ab"
 
   def index = Action {
     implicit val timeout = Timeout(5 seconds)
@@ -69,13 +69,20 @@ object Application extends Controller {
     val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
     val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
     val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
-    val s3Backend: S3Backend = new S3Backend(credentials, BUCKET)
+    val s3Backend: S3Backend = new S3Backend(credentials, Play.configuration.getString("aws.bucket").get)
 
     val showProcessingActor = Akka.system.actorOf(Props(new ShowProcessingActor(s3Backend)))
-//    showProcessingActor ! new ShowMetaData(stationId, channelId)
+
 
     HMSApi.getCurrentShow(stationId, channelId).map {
-      case Some(show) => Ok(show.toString)
+      case Some(show) =>
+        var meta = new ShowMetaData(stationId, channelId)
+
+        meta.showId = Some(show.ID.toString)
+        meta.showTitle = show.Name
+        meta.sourceVideoUrl = Some(new URL(show.DownloadURL.getOrElse("")))
+        showProcessingActor ! meta
+        Ok(show.toString)
       case None => Ok("Error")
     }
   }

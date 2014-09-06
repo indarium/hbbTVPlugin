@@ -27,6 +27,7 @@ class ShowMetaData(val stationId: String, val channelId: String) {
   var rootPortalUrl: Option[URL] = None
 
   var isHD = false
+  var sourceFilename: Option[String] = None
   var sourceVideoUrl: Option[URL] = None
   var localVideoFile: Option[File] = None
   var publicVideoUrl: Option[URL] = None

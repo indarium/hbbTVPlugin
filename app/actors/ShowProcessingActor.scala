@@ -4,10 +4,7 @@ import java.net.URL
 
 import akka.actor.{Props, Actor}
 import akka.event.Logging
-import controllers.Application._
 import helper._
-import play.api.libs.json.Json
-import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Process a show, fill in information, download video, upload it and update
@@ -23,17 +20,8 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
   def receive = {
     case meta: ShowMetaData =>
-      log.info("**************************************************")
-      log.info("received meta data!")
-      HMSApi.getCurrentShow(meta.channelId, meta.stationId).map { show =>
-        show.map { aShow =>
-          meta.showId = Some(aShow.ID.toString)
-          meta.showTitle = aShow.Name
-          meta.sourceVideoUrl = Some(new URL(aShow.DownloadURL.getOrElse("")))
-          log.info("process %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))
-          videoDownloadActor ! meta
-        }
-      }
+      log.info("process %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))
+      videoDownloadActor ! meta
 
     case VideoDownloadSuccess(meta) =>
       log.info("downloaded %s".format(meta.localVideoFile.getOrElse("???")))

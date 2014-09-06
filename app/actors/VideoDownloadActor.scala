@@ -1,6 +1,7 @@
 package actors
 
 import java.io._
+import javax.net.ssl.{X509TrustManager, TrustManager}
 
 import akka.actor.Actor
 import akka.actor.Status.Failure
@@ -27,13 +28,8 @@ class VideoDownloadActor extends Actor {
       }
 
       val os = new FileOutputStream(target)
-      val is = source.openStream()
-      try {
-        copy(is, os)
-      } finally {
-        if(is != null) is.close()
-        if(os != null) os.close()
-      }
+
+      Downloader.downloadFile(source, os)
 
       meta.localVideoFile = Some(target)
 
@@ -43,17 +39,5 @@ class VideoDownloadActor extends Actor {
         log.error("downloading '%s' failed: %s".format(meta.sourceVideoUrl, e.getMessage))
         sender() ! VideoDownloadFailure(meta, e)
     }
-  }
-
-  private val BUFFER_SIZE: Int = 16 * 1024
-  private def copy(is: InputStream, os: OutputStream) {
-    val buffer = new Array[Byte](BUFFER_SIZE)
-
-    var count = is.read(buffer, 0, BUFFER_SIZE)
-    while (count != -1) {
-      os.write(buffer, 0, count)
-      count = is.read(buffer, 0, BUFFER_SIZE)
-    }
-    os.flush()
   }
 }

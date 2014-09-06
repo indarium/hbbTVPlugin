@@ -18,7 +18,9 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
   def receive = {
     case meta: ShowMetaData => try {
       val title = meta.showTitle.getOrElse(UUID.randomUUID.toString).take(1024)
-      val fileName = "%s/%s/%s".format(meta.stationId, meta.channelId, title)
+      val fileName = "%s/%s/%s_%s.%s".format(meta.stationId, meta.channelId, meta.showTitle.getOrElse(meta.stationId), UUID.randomUUID.toString.take(32), "mp4")
+
+      log.info("uploading file: " + fileName)
 
       val file = meta.localVideoFile match {
         case Some(f) if f.exists() => f

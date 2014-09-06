@@ -86,7 +86,7 @@ object HMSApi {
     Logger.debug("HMSApi.getShows: " + stationId)
 
     val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
-    val apiUrl = Play.configuration.getString("hms.apiBroadcastURL").get + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=5"
+    val apiUrl = Play.configuration.getString("hms.apiBroadcastURL").get + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=25"
 
     Logger.debug("encApiUrl: " + apiUrl)
     wsAuthRequest(apiUrl).flatMap {
@@ -94,7 +94,6 @@ object HMSApi {
         reqHolder.get().map { response =>
           response.status match {
             case s if s < 400 =>
-              Logger.debug("HMSApi.getShows: result received" + response.json)
               Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
             case _ => Some(Json.obj("Error" -> "message"))
           }
@@ -106,7 +105,6 @@ object HMSApi {
   def getCurrentShow(stationId: String, channelId: String): Future[Option[HMSShow]] = {
     HMSApi.getShows(stationId, channelId).map {
       case Some(shows) =>
-        Logger.debug("shows: " + shows.toString())
         (shows \ "shows").as[Seq[HMSShow]](Reads.seq(HMSShow.format)).find {
           aShow =>
             Logger.debug(aShow.toString)
