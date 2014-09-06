@@ -9,44 +9,30 @@ import play.api.libs.functional.syntax._
 /**
  * Created by dermicha on 17/06/14.
  */
+
 case class ShowApiCall(apiKey: String, stationId: String, channelId: String)
+
+object ShowApiCall {
+  implicit val format = Json.format[ShowApiCall]
+}
 
 case class Show(stationId: String, channelId: String, stationName: String)
 
+object Show {
+  implicit val format = Json.format[Show]
+}
+
 object Shows extends Controller {
 
-  implicit val showApiCallWrites: Writes[ShowApiCall] = (
-    (JsPath \ "stationId").write[String] and
-      (JsPath \ "channelId").write[String] and
-      (JsPath \ "stationName").write[String]
-
-    )(unlift(ShowApiCall.unapply))
-
-  implicit val showApiCallReads: Reads[ShowApiCall] = (
-    (JsPath \ "apiKey").read[String] and
-      (JsPath \ "stationId").read[String] and
-      (JsPath \ "channelId").read[String]
-    )(ShowApiCall.apply _)
-
-  implicit val showWrites: Writes[Show] = (
-    (JsPath \ "stationId").write[String] and
-      (JsPath \ "channelId").write[String] and
-      (JsPath \ "stationName").write[String]
-    )(unlift(Show.unapply))
-
-  implicit val showReads: Reads[Show] = (
-    (JsPath \ "stationId").read[String] and
-      (JsPath \ "channelId").read[String] and
-      (JsPath \ "stationName").read[String]
-    )(Show.apply _)
-
   def current = Action(BodyParsers.parse.json) { request =>
+
     val showApiCall = request.body.validate[ShowApiCall]
 
     showApiCall.fold(
       errors => {
         BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toFlatJson(errors)))
       },
+
       showApiCall => {
         Ok(Json.obj(
           "status" -> "OK",
@@ -69,5 +55,4 @@ object Shows extends Controller {
       }
     )
   }
-
 }

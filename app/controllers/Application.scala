@@ -66,13 +66,13 @@ object Application extends Controller {
   }
 
   def testShow(channelId: String, stationId: String) = Action.async {
+
     val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
     val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
     val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
     val s3Backend: S3Backend = new S3Backend(credentials, Play.configuration.getString("aws.bucket").get)
 
     val showProcessingActor = Akka.system.actorOf(Props(new ShowProcessingActor(s3Backend)))
-
 
     HMSApi.getCurrentShow(stationId, channelId).map {
       case Some(show) =>
