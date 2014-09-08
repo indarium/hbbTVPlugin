@@ -3,12 +3,15 @@
 # ~~~~
 
 # Home page
-GET            /                           controllers.Application.index
-GET            /testJson                   controllers.Application.testJson
+GET         /                                       controllers.Application.index
+GET         /testJson                               controllers.Application.testJson
+GET         /testAuth                               controllers.Application.testAuth
+GET         /testShows/:channelId/:stationId        controllers.Application.testShows(channelId: String, stationId: String)
+
+GET         /startPorcess                           controllers.Application.startPorcess
 
 # Map static resources from the /public folder to the /assets URL path
-GET            /assets/*file               controllers.Assets.at(path="/public", file)
+GET         /assets/*file                           controllers.Assets.at(path="/public", file)
 
 # API Calls
-OPTIONS        /api/v1/show/current        controllers.API.Shows.current
-POST           /api/v1/show/current        controllers.API.Shows.current
+POST        /api/v1/show/current                    controllers.API.CurrentShowsController.current

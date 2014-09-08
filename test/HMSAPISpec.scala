@@ -15,9 +15,9 @@ import play.api.test._
 @RunWith(classOf[JUnitRunner])
 class HMSAPISpec extends Specification {
 
-  "HMS API" should {
+  /*"HMS API" should {
 
-    "should deliver an API token" in new WithBrowser {
+    "deliver an API token" in new WithBrowser {
 
       var username = Play.configuration.getString("hms.username").get
       val password = Play.configuration.getString("hms.password").get
@@ -44,5 +44,5 @@ class HMSAPISpec extends Specification {
       Logger.info(respString.map {wups => wups} toString)
       failure("Puups")
     }
-  }
+  }*/
 }
