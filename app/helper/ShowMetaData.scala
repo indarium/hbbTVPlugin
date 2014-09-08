@@ -20,7 +20,7 @@ class ShowMetaData(val stationId: String, val channelId: String) {
 
   var channelName: Option[String] = None
   var showTitle: Option[String] = None
-  var showId: Option[Int] = None
+  var showId: Option[Long] = None
   var showSubtitle: Option[String] = None
   var showLogoUrl: Option[URL] = None
   var showLength: Long = 0L

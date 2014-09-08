@@ -74,13 +74,13 @@ public class Downloader {
         byte[] buffer = new byte[BUFFER_SIZE];
         int count = is.read(buffer, 0, BUFFER_SIZE);
         int counter = 0;
-        //
-        while (count != -1 && counter < 500) {
+        //&& counter < 500
+        while (count != -1) {
             os.write(buffer, 0, count);
             count = is.read(buffer, 0, BUFFER_SIZE);
             counter++;
-            if (counter % 200 == 0)
-                System.out.print("*");
+            //if (counter % 200 == 0)
+            //    System.out.print("*");
         }
         os.flush();
     }
