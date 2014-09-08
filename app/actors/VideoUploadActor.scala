@@ -1,11 +1,14 @@
 package actors
 
 import java.io.FileNotFoundException
+import java.net.URL
 import java.util.UUID
 
 import akka.actor.Actor
 import akka.event.Logging
 import helper._
+import play.api.Play
+import play.api.Play.current
 
 /**
  * Upload video to storage backend
@@ -18,8 +21,13 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
   def receive = {
     case meta: ShowMetaData => try {
       val title = meta.showTitle.getOrElse(UUID.randomUUID.toString).take(1024)
-      val fileName = "%s/%s/%s_%s.%s".format(meta.stationId, meta.channelId, meta.showTitle.getOrElse(meta.stationId), UUID.randomUUID.toString.take(32), "mp4")
-
+      val fileName =
+        "%s/%s/%s_%s.%s".format(
+          meta.stationId,
+          meta.channelId,
+          meta.showTitle.getOrElse(meta.stationId),
+          UUID.randomUUID.toString.take(32), "mp4")
+          .replaceAllLiterally(" ", "-")
       log.info("uploading file: " + fileName)
 
       val file = meta.localVideoFile match {
@@ -31,7 +39,7 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
       file.delete()
 
       meta.localVideoFile = None
-      meta.publicVideoUrl = Some(url)
+      meta.publicVideoUrl = Some(new URL(Play.configuration.getString("cdn.baseUrl").get + fileName))
 
       sender() ! VideoUploadSuccess(meta)
     } catch {

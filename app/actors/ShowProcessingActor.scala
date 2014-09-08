@@ -1,10 +1,15 @@
 package actors
 
-import java.net.URL
+import java.util.concurrent.TimeUnit
 
-import akka.actor.{Props, Actor}
+import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
+import models.Show
+import play.api.Play
+import play.api.Play.current
+
+import scala.concurrent.duration.Duration;
 
 /**
  * Process a show, fill in information, download video, upload it and update
@@ -12,11 +17,18 @@ import helper._
  *
  * @author Matthias L. Jugel
  */
+
+
 class ShowProcessingActor(backend: StorageBackend) extends Actor {
+
+  import context._
+
   val log = Logging(context.system, this)
 
   val videoDownloadActor = context.actorOf(Props[VideoDownloadActor])
   val videoUploadActor = context.actorOf(Props(new VideoUploadActor(backend)))
+
+  val crawlerPeriod = Play.configuration.getInt("hms.crawler.period").get
 
   def receive = {
     case meta: ShowMetaData =>
@@ -29,7 +41,12 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
     case VideoUploadSuccess(meta) =>
       log.info("uploaded %s".format(meta.publicVideoUrl.getOrElse("???")))
-    // TODO add code to update metadata in the database
+      Show.createShowByMeta(meta)
+      log.info("schedule next processing for %s / %s".format(meta.stationId, meta.channelId))
+      context.system.scheduler.scheduleOnce(
+        Duration.create(crawlerPeriod, TimeUnit.MINUTES),
+        context.parent,
+        new ProcessStation(meta.hmsStationId.get, meta.stationId, meta.channelId))
 
     case VideoDownloadFailure(meta, e) =>
       log.error(e, "video download failed: %s".format(meta.sourceVideoUrl.getOrElse("???")))
@@ -39,5 +56,4 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
       log.error(e, "video upload failed: %s".format(meta.localVideoFile.getOrElse("???")))
     // TODO consider checking the error to handle resubmission or just dropping
   }
-
 }

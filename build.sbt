@@ -8,6 +8,8 @@ scalaVersion := "2.11.1"
 
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
+javaOptions ++= Seq("-Xmx512M", "-Xmx2048M", "-XX:MaxPermSize=2048M")
+
 libraryDependencies ++= Seq(
   cache
   ,ws

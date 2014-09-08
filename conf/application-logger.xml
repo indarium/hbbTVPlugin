@@ -17,6 +17,7 @@
 
     <logger name="play" level="DEBUG"/>
     <logger name="application" level="DEBUG"/>
+    <logger name="application-akka" level="DEBUG"/>
 
     <logger name="com.ning.http.client" level="INFO"/>
     <logger name="play.api.libs.ws" level="INFO"/>

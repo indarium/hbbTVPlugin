@@ -12,6 +12,7 @@ import akka.actor.Status.{Status, Failure}
  * @author Matthias L. Jugel
  */
 class ShowMetaData(val stationId: String, val channelId: String) {
+  var hmsStationId: Option[String] = None
   var stationName: Option[String] = None
   var stationLogoUrl: Option[URL] = None
   var stationLogoShow: Boolean = true
@@ -19,7 +20,7 @@ class ShowMetaData(val stationId: String, val channelId: String) {
 
   var channelName: Option[String] = None
   var showTitle: Option[String] = None
-  var showId: Option[String] = None
+  var showId: Option[Int] = None
   var showSubtitle: Option[String] = None
   var showLogoUrl: Option[URL] = None
   var showLength: Long = 0L

@@ -2,11 +2,13 @@ package controllers
 
 import java.net.URL
 
-import actors.ShowProcessingActor
+import actors.{StartProcess, ShowCrawler, ShowProcessingActor}
 import akka.actor.Props
 import akka.util.Timeout
 import com.amazonaws.auth.BasicAWSCredentials
 import helper._
+import models.Station
+import play.Logger
 import play.api.Play
 import play.api.Play.current
 import play.api.libs.json.JsObject
@@ -16,9 +18,12 @@ import play.api.libs.json.Json
 import play.libs.Akka
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object Application extends Controller {
+
+  val showCrawler = Akka.system.actorOf(Props(new ShowCrawler()))
 
   def index = Action {
     implicit val timeout = Timeout(5 seconds)
@@ -65,26 +70,15 @@ object Application extends Controller {
     }
   }
 
-  def testShow(channelId: String, stationId: String) = Action.async {
+  def startPorcess = Action.async {
 
-    val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-    val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
-    val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
-    val s3Backend: S3Backend = new S3Backend(credentials, Play.configuration.getString("aws.bucket").get)
+    showCrawler ! new StartProcess
 
-    val showProcessingActor = Akka.system.actorOf(Props(new ShowProcessingActor(s3Backend)))
-
-    HMSApi.getCurrentShow(stationId, channelId).map {
-      case Some(show) =>
-        var meta = new ShowMetaData(stationId, channelId)
-
-        meta.showId = Some(show.ID.toString)
-        meta.showTitle = show.Name
-        meta.sourceVideoUrl = Some(new URL(show.DownloadURL.getOrElse("")))
-        showProcessingActor ! meta
-        Ok(show.toString)
-      case None => Ok("Error")
-    }
+    Future(Ok(Json.prettyPrint(Json.obj("status" -> "process started"))))
   }
 
 }
+
+//
+//stations.foreach[Station] { station =>
+//
