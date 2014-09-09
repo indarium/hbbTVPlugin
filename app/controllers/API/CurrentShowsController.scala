@@ -27,7 +27,7 @@ object CurrentShowsController extends Controller {
       ApiKey.checkApiKey(showApiCall.apiKey).flatMap {
         case Some(currentApiKey) =>
           Show.findCurrentShow(showApiCall.stationId, showApiCall.channelId).map { currentShowMeta =>
-            val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("success" -> "true")
+            val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("success" -> true)
             Ok(Json.prettyPrint(showResult))
           }
         case None => Future(KO)
