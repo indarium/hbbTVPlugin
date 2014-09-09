@@ -21,6 +21,6 @@ object Global extends GlobalSettings {
 
     //inital start show crawler
     val showCrawler = Akka.system.actorOf(Props(new ShowCrawler()))
-    showCrawler ! StartProcess
+    showCrawler ! new StartProcess
   }
 }

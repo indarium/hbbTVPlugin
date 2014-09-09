@@ -55,6 +55,7 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
       self ! ScheduleNextStep(meta)
 
     case ScheduleNextStep(meta) =>
+      log.info("schedule next processing in %i Min.".format(crawlerPeriod))
       context.system.scheduler.scheduleOnce(
         Duration.create(crawlerPeriod, TimeUnit.MINUTES),
         context.parent,

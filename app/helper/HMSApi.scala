@@ -131,7 +131,7 @@ object HMSApi {
   }
 
   def getCurrentShow(stationId: String, channelId: String): Future[Option[HMSShow]] = {
-    Logger.debug("HMSApi.getCurrentShow")
+    Logger.debug("HMSApi.getCurrentShow for %s / %s".format(stationId, channelId))
     HMSApi.getShows(stationId, channelId).map {
       case Some(shows) =>
         Logger.debug("HMSApi.getCurrentShow: shows found")

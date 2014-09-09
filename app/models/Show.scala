@@ -40,14 +40,14 @@ object Show {
 
   def findCurrentShow(stationId: String, channelId: String) = {
     showsCollection.
-      // find all people with name `name`
-      find(
-        Json.obj(
-          "stationId" -> stationId,
-          "channelId" -> channelId
-        ),
-        Json.obj("_id" -> 0)
-      ).
+      Logger.info("find current show for: %s / %s".format(stationId, channelId))
+    find(
+      Json.obj(
+        "stationId" -> stationId,
+        "channelId" -> channelId
+      ),
+      Json.obj("_id" -> 0)
+    ).
       cursor[JsObject].collect[List](1).map {
       show =>
         show.headOption.map { currentShowMeta => currentShowMeta.as[Show]
