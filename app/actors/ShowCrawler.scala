@@ -37,6 +37,8 @@ class ShowCrawler extends Actor {
 
   val showProcessingActor = context.actorOf(Props(new ShowProcessingActor(s3Backend)))
 
+  //@TODO add control which stations
+
   def receive = {
     case processShow: ProcessShow =>
       log.info("starting show processing for: " + processShow.show.toString)

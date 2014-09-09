@@ -47,8 +47,9 @@ object Show {
           "channelId" -> channelId
         ),
         Json.obj("_id" -> 0)
-      ).
-      cursor[JsObject].collect[List](1).map {
+      )
+      .sort(Json.obj("showId" -> -1))
+      .cursor[JsObject].collect[List](1).map {
       show =>
         show.headOption.map { currentShowMeta => currentShowMeta.as[Show]
         }
@@ -86,7 +87,7 @@ object Show {
           meta.channelId,
           meta.channelName.getOrElse(station.defaultChannelName),
           meta.showId.get,
-          meta.showTitle.getOrElse(station.defaultShowTitle),
+          station.defaultShowTitle,
           meta.showSubtitle.getOrElse(station.defaultShowSubtitle),
           station.defaultShowLogoUrl,
           None,
