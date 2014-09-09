@@ -1,15 +1,12 @@
 package controllers.API
 
-import play.GlobalSettings
-import play.api._
-import play.api.mvc._
-import play.api.libs.json._
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
-
 import models.{ApiKey, Show}
+import play.api._
+import play.api.libs.json._
+import play.api.mvc._
 
-import scala.tools.nsc.Global
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * Created by dermicha on 17/06/14.
@@ -26,13 +23,12 @@ object CurrentShowsController extends Controller {
   def current = WithCors("POST") {
     Action.async((BodyParsers.parse.json)) { request =>
       val showApiCall = request.body.as[ShowApiCall]
-
       Logger.debug("ShowApiCall: " + showApiCall.toString)
-
       ApiKey.checkApiKey(showApiCall.apiKey).flatMap {
         case Some(currentApiKey) =>
           Show.findCurrentShow(showApiCall.stationId, showApiCall.channelId).map { currentShowMeta =>
-            Ok(Json.prettyPrint(Json.toJson(currentShowMeta)))
+            val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("success" -> "true")
+            Ok(Json.prettyPrint(showResult))
           }
         case None => Future(KO)
       }

@@ -18,6 +18,7 @@ import scala.concurrent.duration.Duration;
  * @author Matthias L. Jugel
  */
 
+case class ScheduleNextStep(meta: ShowMetaData)
 
 class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
@@ -43,17 +44,20 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
       log.info("uploaded %s".format(meta.publicVideoUrl.getOrElse("???")))
       Show.createShowByMeta(meta)
       log.info("schedule next processing for %s / %s".format(meta.stationId, meta.channelId))
-      context.system.scheduler.scheduleOnce(
-        Duration.create(crawlerPeriod, TimeUnit.MINUTES),
-        context.parent,
-        new ProcessStation(meta.hmsStationId.get, meta.stationId, meta.channelId))
+      self ! ScheduleNextStep(meta)
 
     case VideoDownloadFailure(meta, e) =>
       log.error(e, "video download failed: %s".format(meta.sourceVideoUrl.getOrElse("???")))
-    // TODO consider checking the error to handle resubmission or just dropping
+      self ! ScheduleNextStep(meta)
 
     case VideoUploadFailure(meta, e) =>
       log.error(e, "video upload failed: %s".format(meta.localVideoFile.getOrElse("???")))
-    // TODO consider checking the error to handle resubmission or just dropping
+      self ! ScheduleNextStep(meta)
+
+    case ScheduleNextStep(meta) =>
+      context.system.scheduler.scheduleOnce(
+        Duration.create(crawlerPeriod, TimeUnit.MINUTES),
+        context.parent,
+        ProcessStation(meta.hmsStationId.get, meta.stationId, meta.channelId))
   }
 }

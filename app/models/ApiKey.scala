@@ -27,7 +27,7 @@ object ApiKey {
         Json.obj(
           "apiKey" -> apiKey
         ),
-        Json.obj("_id" -> 0)
+        Json.obj()
       ).
       cursor[JsObject].collect[List](1).map { apiKey =>
       apiKey.headOption.map { currentApiKey =>
