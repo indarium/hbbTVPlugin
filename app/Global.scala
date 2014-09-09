@@ -13,11 +13,14 @@ import play.libs.Akka
 object Global extends GlobalSettings {
   import play.api.Play.current
 
-  //val showCrawler = Akka.system.actorOf(Props(new ShowCrawler()))
+  //
 
   override def onStart(app: Application): Unit = {
+    // dummy call to cache the
     val temp = HMSApi.authenticate
 
-    //showCrawler ! new StartProcess
+    //inital start show crawler
+    val showCrawler = Akka.system.actorOf(Props(new ShowCrawler()))
+    showCrawler ! StartProcess
   }
 }
