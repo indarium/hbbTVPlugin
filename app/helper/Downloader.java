@@ -17,6 +17,7 @@ import java.security.cert.X509Certificate;
  */
 public class Downloader {
     private static int BUFFER_SIZE = 16 * 1024;
+    private static boolean testMode = play.api.Play.isDev(play.api.Play.current());
 
     public static void downloadFile(URL source, FileOutputStream os) {
         try {
@@ -74,13 +75,19 @@ public class Downloader {
         byte[] buffer = new byte[BUFFER_SIZE];
         int count = is.read(buffer, 0, BUFFER_SIZE);
         int counter = 0;
-        //&& counter < 500
+        if (testMode)
+            Logger.debug("download in test mode");
+
         while (count != -1) {
             os.write(buffer, 0, count);
             count = is.read(buffer, 0, BUFFER_SIZE);
             counter++;
-            //if (counter % 200 == 0)
-            //    System.out.print("*");
+            if (testMode) {
+                if (counter % 200 == 0)
+                    System.out.print("*");
+                if (counter > 2000)
+                    break;
+            }
         }
         os.flush();
     }
