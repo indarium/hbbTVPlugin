@@ -46,7 +46,9 @@ object Show {
           "stationId" -> stationId,
           "channelId" -> channelId
         ),
-        Json.obj("_id" -> 0)
+        Json.obj("_id" -> 0
+          //, "showId" -> 0
+        )
       )
       .sort(Json.obj("showId" -> -1))
       .cursor[JsObject].collect[List](1).map {
