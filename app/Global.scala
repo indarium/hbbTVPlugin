@@ -11,7 +11,6 @@ import play.api._
 import play.libs.Akka
 
 object Global extends GlobalSettings {
-  import play.api.Play.current
 
   //
 

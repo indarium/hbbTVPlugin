@@ -26,9 +26,11 @@ object CurrentShowsController extends Controller {
       Logger.debug("ShowApiCall: " + showApiCall.toString)
       ApiKey.checkApiKey(showApiCall.apiKey).flatMap {
         case Some(currentApiKey) =>
-          Show.findCurrentShow(showApiCall.stationId, showApiCall.channelId).map { currentShowMeta =>
-            val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("status" -> true)
-            Ok(Json.prettyPrint(showResult))
+          Show.findCurrentShow(showApiCall.stationId, showApiCall.channelId).map {
+            case Some(currentShowMeta) =>
+              val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("status" -> true)
+              Ok(Json.prettyPrint(showResult))
+            case None => KO
           }
         case None => Future(KO)
       }

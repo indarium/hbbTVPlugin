@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./sbt "run -Dconfig.file=../hbbTVPluginSecrets/application_test.conf"
+./sbt "run -Dconfig.file=../hbbTVPluginSecrets/application_prod.conf"
