@@ -32,8 +32,8 @@ object AccessToken {
 
 object HMSApi {
 
-  var accessToken: Option[AccessToken] = None
-  var timestamp: Long = 0
+  //var accessToken: Option[AccessToken] = None
+  //var timestamp: Long = 0
 
   def wsRequest(apiUrl: String) = {
     WS.synchronized {
@@ -74,28 +74,30 @@ object HMSApi {
       "Password" -> JsString(password)
     )
 
-    timestamp = System.currentTimeMillis - timestamp match {
-      case diff if diff > 601000L =>
-        Logger.debug("*** auth timeout ***")
-        accessToken = None
-        System.currentTimeMillis
-      case _ => timestamp
-    }
+//    timestamp = System.currentTimeMillis - timestamp match {
+//      case diff if diff > 601000L =>
+//        Logger.debug("*** auth timeout ***")
+//        accessToken = None
+//        System.currentTimeMillis
+//      case _ => timestamp
+//    }
 
-    accessToken match {
-      case Some(aToken) =>
-        Logger.debug("cached Access-Token: " + accessToken)
-        Future(Some(aToken))
-      case None =>
+//    accessToken match {
+//      case Some(aToken) =>
+//        Logger.debug("cached Access-Token: " + accessToken)
+//        Future(Some(aToken))
+//      case None =>
         wsRequest(apiUrl).post(authData).map {
           response =>
             response.status match {
               case s if (s < 400) && (response.body.length > 0) =>
                 try {
-                  accessToken = response.json.asOpt[AccessToken]
+                  val accessToken = response.json.asOpt[AccessToken]
                   Logger.debug("fresh Access-Token: " + accessToken)
-                  timestamp = System.currentTimeMillis
+                  //accessToken = response.json.asOpt[AccessToken]
+                  //timestamp = System.currentTimeMillis
                   accessToken
+
                 } catch {
                   case e: JsonMappingException =>
                     Logger.error("no valid access token" + response.body, e)
@@ -107,7 +109,7 @@ object HMSApi {
 
             }
         }
-    }
+    //}
   }
 
   def getShows(stationId: String, channelId: String): Future[Option[JsObject]] = {
@@ -126,7 +128,9 @@ object HMSApi {
             case _ => Some(Json.obj("Error" -> "message"))
           }
         }
-      case None => Future(None)
+      case None =>
+        Logger.debug("HMSApi.getCurrentShows: None")
+        Future(None)
     }
   }
 
