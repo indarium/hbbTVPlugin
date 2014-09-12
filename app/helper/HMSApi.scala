@@ -74,41 +74,41 @@ object HMSApi {
       "Password" -> JsString(password)
     )
 
-//    timestamp = System.currentTimeMillis - timestamp match {
-//      case diff if diff > 601000L =>
-//        Logger.debug("*** auth timeout ***")
-//        accessToken = None
-//        System.currentTimeMillis
-//      case _ => timestamp
-//    }
+    //    timestamp = System.currentTimeMillis - timestamp match {
+    //      case diff if diff > 601000L =>
+    //        Logger.debug("*** auth timeout ***")
+    //        accessToken = None
+    //        System.currentTimeMillis
+    //      case _ => timestamp
+    //    }
 
-//    accessToken match {
-//      case Some(aToken) =>
-//        Logger.debug("cached Access-Token: " + accessToken)
-//        Future(Some(aToken))
-//      case None =>
-        wsRequest(apiUrl).post(authData).map {
-          response =>
-            response.status match {
-              case s if (s < 400) && (response.body.length > 0) =>
-                try {
-                  val accessToken = response.json.asOpt[AccessToken]
-                  Logger.debug("fresh Access-Token: " + accessToken)
-                  //accessToken = response.json.asOpt[AccessToken]
-                  //timestamp = System.currentTimeMillis
-                  accessToken
+    //    accessToken match {
+    //      case Some(aToken) =>
+    //        Logger.debug("cached Access-Token: " + accessToken)
+    //        Future(Some(aToken))
+    //      case None =>
+    wsRequest(apiUrl).post(authData).map {
+      response =>
+        response.status match {
+          case s if (s < 400) && (response.body.length > 0) =>
+            try {
+              val accessToken = response.json.asOpt[AccessToken]
+              Logger.debug("fresh Access-Token: " + accessToken)
+              //accessToken = response.json.asOpt[AccessToken]
+              //timestamp = System.currentTimeMillis
+              accessToken
 
-                } catch {
-                  case e: JsonMappingException =>
-                    Logger.error("no valid access token" + response.body, e)
-                    None
-                }
-              case _ =>
-                Logger.error("no valid access token!")
+            } catch {
+              case e: JsonMappingException =>
+                Logger.error("no valid access token" + response.body, e)
                 None
-
             }
+          case _ =>
+            Logger.error("no valid access token!")
+            None
+
         }
+    }
     //}
   }
 
@@ -135,17 +135,17 @@ object HMSApi {
   }
 
   def getCurrentShow(stationId: String, channelId: String): Future[Option[HMSShow]] = {
-    Logger.debug("HMSApi.getCurrentShow for %s / %s".format(stationId, channelId))
+    Logger.debug("HMSApi.getCurrentShow tried for %s / %s".format(stationId, channelId))
     HMSApi.getShows(stationId, channelId).map {
       case Some(shows) =>
-        Logger.debug("HMSApi.getCurrentShow: shows found")
+        Logger.debug("HMSApi.getCurrentShow: shows found for %s / %s".format(stationId, channelId))
         (shows \ "shows").as[Seq[HMSShow]](Reads.seq(HMSShow.format)).find {
           aShow =>
-            Logger.debug("show" + aShow.toString)
+            Logger.debug("found a show with download URL: %d / %s".format(aShow.ID, aShow.Name))
             aShow.DownloadURL.isDefined
         }
       case _ =>
-        Logger.debug("HMSApi.getCurrentShow: None")
+        Logger.debug("HMSApi.getCurrentShow got None as result!")
         None
     }
   }
