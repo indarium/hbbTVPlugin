@@ -29,7 +29,7 @@ object CurrentShowsController extends Controller {
           Show.findCurrentShow(showApiCall.stationId, showApiCall.channelId).map {
             case Some(currentShowMeta) =>
               val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("status" -> true)
-              Ok(Json.prettyPrint(showResult)).withHeaders(CONTENT_TYPE -> "application/json")
+              Ok(Json.prettyPrint(showResult)).withHeaders(CONTENT_TYPE -> "application/json; charset=utf-8")
             case None => KO
           }
         case None => Future(KO)
