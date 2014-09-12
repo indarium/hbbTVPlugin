@@ -1,7 +1,6 @@
 package helper
 
 
-import com.fasterxml.jackson.databind.JsonMappingException
 import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.ws.{WS, WSRequestHolder}
@@ -87,27 +86,26 @@ object HMSApi {
     //        Logger.debug("cached Access-Token: " + accessToken)
     //        Future(Some(aToken))
     //      case None =>
-    wsRequest(apiUrl).post(authData).map {
-      response =>
-        response.status match {
-          case s if (s < 400) && (response.body.length > 0) =>
-            try {
+    try {
+      wsRequest(apiUrl).post(authData).map {
+        response =>
+          response.status match {
+            case s if (s < 400) && (response.body.length > 0) =>
               val accessToken = response.json.asOpt[AccessToken]
               Logger.debug("fresh Access-Token: " + accessToken)
               //accessToken = response.json.asOpt[AccessToken]
               //timestamp = System.currentTimeMillis
               accessToken
+            case _ =>
+              Logger.error("no valid access token!")
+              None
 
-            } catch {
-              case e: JsonMappingException =>
-                Logger.error("no valid access token" + response.body, e)
-                None
-            }
-          case _ =>
-            Logger.error("no valid access token!")
-            None
-
-        }
+          }
+      }
+    } catch {
+      case e: Exception =>
+        Logger.error("Error while try to authenticate", e)
+        Future(None)
     }
     //}
   }
@@ -119,17 +117,23 @@ object HMSApi {
     val apiUrl = Play.configuration.getString("hms.apiBroadcastURL").get + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=25"
 
     Logger.debug("encApiUrl: " + apiUrl)
-    wsAuthRequest(apiUrl).flatMap {
-      case Some(reqHolder) =>
-        reqHolder.get().map { response =>
-          response.status match {
-            case s if s < 400 =>
-              Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
-            case _ => Some(Json.obj("Error" -> "message"))
+    try {
+      wsAuthRequest(apiUrl).flatMap {
+        case Some(reqHolder) =>
+          reqHolder.get().map { response =>
+            response.status match {
+              case s if s < 400 =>
+                Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
+              case _ => Some(Json.obj("Error" -> "message"))
+            }
           }
-        }
-      case None =>
-        Logger.debug("HMSApi.getCurrentShows: None")
+        case None =>
+          Logger.debug("HMSApi.getCurrentShows: None")
+          Future(None)
+      }
+    } catch {
+      case e: Exception =>
+        Logger.error("Error while fetching data", e)
         Future(None)
     }
   }

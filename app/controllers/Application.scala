@@ -4,6 +4,7 @@ import actors.{ShowCrawler, StartProcess}
 import akka.actor.Props
 import akka.util.Timeout
 import helper._
+import play.Logger
 import play.api.Play.current
 import play.api.libs.json.Json
 import play.api.libs.ws.{WS, WSRequestHolder}
@@ -71,16 +72,19 @@ object Application extends Controller {
   }
 
   def checkApp = Action.async {
+    Logger.info("**** checkApp called  ****")
+
     HMSApi.authenticate.flatMap {
       case Some(token) =>
         HMSApi.getCurrentShow("ODF", "SAT").map {
           case Some(show) =>
-            Ok(Json.obj("status" -> "OK"))
+            Logger.info("**** checkApp successull  ****")
+            Ok(Json.obj("status" -> "OK")).withHeaders(CONTENT_TYPE -> "application/json")
           case None =>
-            BadRequest(Json.obj("status" -> "KO", "message" -> "HMS ccBroadcast API Down"))
+            BadRequest(Json.obj("status" -> "KO", "message" -> "HMS ccBroadcast API Down")).withHeaders(CONTENT_TYPE -> "application/json")
         }
       case None =>
-        Future(BadRequest(Json.obj("status" -> "KO", "message" -> "HMS Auth API down")))
+        Future(BadRequest(Json.obj("status" -> "KO", "message" -> "HMS Auth API down")).withHeaders(CONTENT_TYPE -> "application/json"))
     }
   }
 }

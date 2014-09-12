@@ -29,7 +29,7 @@ object CurrentShowsController extends Controller {
           Show.findCurrentShow(showApiCall.stationId, showApiCall.channelId).map {
             case Some(currentShowMeta) =>
               val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("status" -> true)
-              Ok(Json.prettyPrint(showResult))
+              Ok(Json.prettyPrint(showResult)).withHeaders(CONTENT_TYPE -> "application/json")
             case None => KO
           }
         case None => Future(KO)
@@ -38,15 +38,13 @@ object CurrentShowsController extends Controller {
   }
 
   def KO = {
-    BadRequest(Json.obj("status" -> false))
+    BadRequest(Json.obj("status" -> false)).withHeaders(CONTENT_TYPE -> "application/json")
   }
 
   case class WithCors(httpVerbs: String*)(action: EssentialAction) extends EssentialAction with Results {
     def apply(request: RequestHeader) = {
-
       val origin = request.headers.get(ORIGIN).getOrElse("*")
       if (request.method == "OPTIONS") {
-        // preflight
         val corsAction = Action {
           request =>
             Ok("").withHeaders(
