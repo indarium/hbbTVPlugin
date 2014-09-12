@@ -47,7 +47,7 @@ class ShowCrawler extends Actor {
       meta.showId = Some(processShow.show.ID)
       meta.showTitle = processShow.show.Name
       meta.sourceVideoUrl = Some(new URL(processShow.show.DownloadURL.getOrElse("").replaceAllLiterally(" ", "%20")))
-      Logger.info("collected meta: " + meta.showSubtitle + " / " + meta.sourceVideoUrl)
+      Logger.info("collected meta: " + meta.showTitle + " / " + meta.sourceVideoUrl)
       showProcessingActor ! meta
 
     case processStation: ProcessStation =>
