@@ -1,20 +1,13 @@
 package controllers
 
-import java.net.URL
-
-import actors.{StartProcess, ShowCrawler, ShowProcessingActor}
+import actors.{ShowCrawler, StartProcess}
 import akka.actor.Props
 import akka.util.Timeout
-import com.amazonaws.auth.BasicAWSCredentials
 import helper._
-import models.Station
-import play.Logger
-import play.api.Play
 import play.api.Play.current
-import play.api.libs.json.JsObject
+import play.api.libs.json.Json
 import play.api.libs.ws.{WS, WSRequestHolder}
 import play.api.mvc._
-import play.api.libs.json.Json
 import play.libs.Akka
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -77,8 +70,17 @@ object Application extends Controller {
     Future(Ok(Json.prettyPrint(Json.obj("status" -> "process started"))))
   }
 
+  def checkApp = Action.async {
+    HMSApi.authenticate.flatMap {
+      case Some(token) =>
+        HMSApi.getCurrentShow("ODF", "SAT").map {
+          case Some(show) =>
+            Ok(Json.obj("status" -> "OK"))
+          case None =>
+            BadRequest(Json.obj("status" -> "KO", "message" -> "HMS ccBroadcast API Down"))
+        }
+      case None =>
+        Future(BadRequest(Json.obj("status" -> "KO", "message" -> "HMS Auth API down")))
+    }
+  }
 }
-
-//
-//stations.foreach[Station] { station =>
-//
