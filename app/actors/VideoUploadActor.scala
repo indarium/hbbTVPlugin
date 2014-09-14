@@ -27,7 +27,7 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
           meta.channelId,
           meta.showTitle.getOrElse(meta.stationId),
           UUID.randomUUID.toString.take(32), "mp4")
-          .replaceAllLiterally(" ", "-")
+          //.replaceAllLiterally(" ", "-")
       log.info("uploading file: " + fileName)
 
       val file = meta.localVideoFile match {
