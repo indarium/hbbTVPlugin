@@ -13,7 +13,7 @@ import scala.concurrent.Future
  * Created by dermicha on 21/06/14.
  */
 
-case class HMSShow(ID: Int, Name: Option[String], DownloadURL: Option[String])
+case class HMSShow(ID: Long, Name: Option[String], DownloadURL: Option[String], ChannelID:Long, ParentID:Long)
 
 object HMSShow {
   implicit val format = Json.format[HMSShow]
@@ -114,7 +114,6 @@ object HMSApi {
     val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
     val apiUrl = Play.configuration.getString("hms.apiBroadcastURL").get + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=25"
 
-    Logger.debug("encApiUrl: " + apiUrl)
     try {
       wsAuthRequest(apiUrl).flatMap {
         case Some(reqHolder) =>
@@ -151,9 +150,13 @@ object HMSApi {
         Logger.info("HMSApi.getCurrentShow: shows found for %s / %s".format(stationId, channelId))
         (shows \ "shows").as[Seq[HMSShow]](Reads.seq(HMSShow.format)).find {
           aShow =>
-            Logger.debug("found a show with download URL: %d / %s".format(aShow.ID, aShow.Name))
             aShow.DownloadURL.isDefined
-
+        }
+        match {
+          case Some(hmsShow) =>
+            Logger.debug("found a show with download URL: %d / %s, URL: %s".format(hmsShow.ID, hmsShow.Name, hmsShow.DownloadURL))
+            Some(hmsShow)
+          case None => None
         }
       case _ =>
         Logger.error("HMSApi.getCurrentShow got None as result!")

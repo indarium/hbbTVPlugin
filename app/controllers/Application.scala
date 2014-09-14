@@ -76,7 +76,7 @@ object Application extends Controller {
     try {
       HMSApi.authenticate.flatMap {
         case Some(token) =>
-          HMSApi.getCurrentShow("KWU", "SAT").map {
+          HMSApi.getCurrentShow("KWTV", "SAT").map {
             case Some(show) =>
               Logger.info("**** checkApp successull  ****")
               Ok(Json.obj("status" -> "OK")).withHeaders(CONTENT_TYPE -> "application/json")

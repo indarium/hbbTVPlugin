@@ -56,7 +56,7 @@ class ShowCrawler extends Actor {
         case Some(show) =>
           Show.findShowById(show.ID).map {
             case Some(existingShow) =>
-              log.info("nothing to do for: " + show.toString)
+              log.info("nothing to do for: %s / %s ".format(show.ID, show.Name))
               context.system.scheduler.scheduleOnce(
                 Duration.create(crawlerPeriod, TimeUnit.MINUTES),
                 self,

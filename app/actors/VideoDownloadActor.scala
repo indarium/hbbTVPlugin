@@ -1,10 +1,8 @@
 package actors
 
 import java.io._
-import javax.net.ssl.{X509TrustManager, TrustManager}
 
 import akka.actor.Actor
-import akka.actor.Status.Failure
 import akka.event.Logging
 import helper._
 
@@ -20,7 +18,7 @@ class VideoDownloadActor extends Actor {
     case meta: ShowMetaData => try {
       val target = File.createTempFile(meta.stationId, meta.channelId)
 
-      log.debug("target file: "+target.getPath+" "+target.getName)
+      log.debug("target file: " + target.getPath + " " + target.getName)
 
       val source = meta.sourceVideoUrl match {
         case Some(u) => u
