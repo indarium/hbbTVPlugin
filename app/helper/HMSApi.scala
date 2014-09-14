@@ -122,11 +122,11 @@ object HMSApi {
             response.status match {
               case s if s < 400 =>
                 response.json \ "sources" match {
-                  case result: JsValue =>
-                    Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
-                  case _ =>
+                  case errorResult: JsUndefined =>
                     Logger.error("empty result for stationId %s / channelId %s".format(stationId, channelId))
                     None
+                  case result: JsValue =>
+                    Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
                 }
               case _ =>
                 Logger.error("HMSApi result code: %d".format(response.status))
