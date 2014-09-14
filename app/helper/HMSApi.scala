@@ -101,7 +101,7 @@ object HMSApi {
       case e: Exception =>
         Logger.error("Error while try to authenticate", e)
         Future(None)
-      case _ =>
+      case _: Throwable =>
         Logger.error("unknown error while try to authenticate")
         Future(None)
     }
@@ -121,7 +121,13 @@ object HMSApi {
           reqHolder.get().map { response =>
             response.status match {
               case s if s < 400 =>
-                Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
+                response.json \ "sources" match {
+                  case result: JsValue =>
+                    Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
+                  case _ =>
+                    Logger.error("empty result for stationId %s / channelId %s".format(stationId, channelId))
+                    None
+                }
               case _ =>
                 Logger.error("HMSApi result code: %d".format(response.status))
                 None
