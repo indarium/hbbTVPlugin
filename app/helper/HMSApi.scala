@@ -35,10 +35,10 @@ object HMSApi {
   //var timestamp: Long = 0
 
   def wsRequest(apiUrl: String) = {
-    WS.synchronized {
-      WS.url(apiUrl)
-        .withHeaders("x-api-version" -> "1.0")
-    }
+    //WS.synchronized {
+    WS.url(apiUrl)
+      .withHeaders("x-api-version" -> "1.0")
+    //}
   }
 
   def wsAuthRequest(apiUrl: String): Future[Option[WSRequestHolder]] = {
@@ -48,14 +48,9 @@ object HMSApi {
         Option(wsRequest(apiUrl)
           .withHeaders("Access-Token" -> accessToken.Access_Token))
       case None =>
-        Logger.debug("NO current Access-Token: ")
+        Logger.error("Could not get AccessToken!")
         None
     }
-  }
-
-  def _authenticate: Future[Option[AccessToken]] = {
-    Logger.debug("HMSApi.authenticate")
-    Future(Some(AccessToken("5W6X0Mw+TSdkO0p+iGemA6VC/NDKc7oHuA96X0b3KocM5LKhNQAcQbargnzo0DNGIEjAjTVkaPs83ktPhCZicG6JZ2lf5R1UJ5qYpLRAUXHiJtG1IdS6tV0WslhL8Z2EgnGyS9woLqSwxU3mM/Qqx3eE5yhkU9Jw9nhbJNx/Nvovh2L3tQ8+ra5bbIv6Z7N39FrRJ06yHIOA4oSgTzTa0GIDOdEK/Ia/BasPooiDOuhfxeXgPHRhrFLpTVdwCwV4p0tDF4FtJv6i+iJTDaz6gA+2TeT4wvbN5AsoyPkepeVXikY3tXUK4pGrLgGwuLS49IU+KTodMzBEJIZ9L9lHYK9ify6+a2HlHNAodUp6VWw=")))
   }
 
   def authenticate: Future[Option[AccessToken]] = {
@@ -106,6 +101,9 @@ object HMSApi {
       case e: Exception =>
         Logger.error("Error while try to authenticate", e)
         Future(None)
+      case _ =>
+        Logger.error("unknown error while try to authenticate")
+        Future(None)
     }
     //}
   }
@@ -124,11 +122,13 @@ object HMSApi {
             response.status match {
               case s if s < 400 =>
                 Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
-              case _ => Some(Json.obj("Error" -> "message"))
+              case _ =>
+                Logger.error("HMSApi result code: %d".format(response.status))
+                None
             }
           }
         case None =>
-          Logger.debug("HMSApi.getCurrentShows: None")
+          Logger.error("HMSApi.getCurrentShows: None")
           Future(None)
       }
     } catch {
@@ -142,14 +142,15 @@ object HMSApi {
     Logger.debug("HMSApi.getCurrentShow tried for %s / %s".format(stationId, channelId))
     HMSApi.getShows(stationId, channelId).map {
       case Some(shows) =>
-        Logger.debug("HMSApi.getCurrentShow: shows found for %s / %s".format(stationId, channelId))
+        Logger.info("HMSApi.getCurrentShow: shows found for %s / %s".format(stationId, channelId))
         (shows \ "shows").as[Seq[HMSShow]](Reads.seq(HMSShow.format)).find {
           aShow =>
             Logger.debug("found a show with download URL: %d / %s".format(aShow.ID, aShow.Name))
             aShow.DownloadURL.isDefined
+
         }
       case _ =>
-        Logger.debug("HMSApi.getCurrentShow got None as result!")
+        Logger.error("HMSApi.getCurrentShow got None as result!")
         None
     }
   }

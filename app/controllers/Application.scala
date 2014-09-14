@@ -73,18 +73,23 @@ object Application extends Controller {
 
   def checkApp = Action.async {
     Logger.info("**** checkApp called  ****")
-
-    HMSApi.authenticate.flatMap {
-      case Some(token) =>
-        HMSApi.getCurrentShow("ODF", "SAT").map {
-          case Some(show) =>
-            Logger.info("**** checkApp successull  ****")
-            Ok(Json.obj("status" -> "OK")).withHeaders(CONTENT_TYPE -> "application/json")
-          case None =>
-            BadRequest(Json.obj("status" -> "KO", "message" -> "HMS ccBroadcast API Down")).withHeaders(CONTENT_TYPE -> "application/json")
-        }
-      case None =>
-        Future(BadRequest(Json.obj("status" -> "KO", "message" -> "HMS Auth API down")).withHeaders(CONTENT_TYPE -> "application/json"))
+    try {
+      HMSApi.authenticate.flatMap {
+        case Some(token) =>
+          HMSApi.getCurrentShow("KWU", "SAT").map {
+            case Some(show) =>
+              Logger.info("**** checkApp successull  ****")
+              Ok(Json.obj("status" -> "OK")).withHeaders(CONTENT_TYPE -> "application/json")
+            case None =>
+              BadRequest(Json.obj("status" -> "KO", "message" -> "HMS ccBroadcast API Down")).withHeaders(CONTENT_TYPE -> "application/json")
+          }
+        case None =>
+          Future(BadRequest(Json.obj("status" -> "KO", "message" -> "HMS Auth API down")).withHeaders(CONTENT_TYPE -> "application/json"))
+      }
+    }
+    catch {
+      case e: Exception  =>
+        Future (BadRequest(Json.obj("status" -> "KO", "message" -> "could not test")).withHeaders(CONTENT_TYPE -> "application/json"))
     }
   }
 }
