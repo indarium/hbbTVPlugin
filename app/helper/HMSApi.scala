@@ -3,7 +3,7 @@ package helper
 
 import play.api.Play.current
 import play.api.libs.json._
-import play.api.libs.ws.{WS, WSRequestHolder}
+import play.api.libs.ws.{WS, WSRequestHolder, WSResponse}
 import play.api.{Logger, Play}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -13,7 +13,7 @@ import scala.concurrent.Future
  * Created by dermicha on 21/06/14.
  */
 
-case class HMSShow(ID: Long, Name: Option[String], DownloadURL: Option[String], ChannelID:Long, ParentID:Long)
+case class HMSShow(ID: Int, Name: Option[String], DownloadURL: Option[String], ChannelID: Long, ParentID: Long)
 
 object HMSShow {
   implicit val format = Json.format[HMSShow]
@@ -67,52 +67,45 @@ object HMSApi {
       "UserName" -> JsString(username),
       "Password" -> JsString(password)
     )
-
-    //    timestamp = System.currentTimeMillis - timestamp match {
-    //      case diff if diff > 601000L =>
-    //        Logger.debug("*** auth timeout ***")
-    //        accessToken = None
-    //        System.currentTimeMillis
-    //      case _ => timestamp
-    //    }
-
-    //    accessToken match {
-    //      case Some(aToken) =>
-    //        Logger.debug("cached Access-Token: " + accessToken)
-    //        Future(Some(aToken))
-    //      case None =>
+    Logger.debug("*********** 1 *********** ")
     try {
+      Logger.debug("*********** 11 *********** ")
       wsRequest(apiUrl).post(authData).map {
-        response =>
+        case response: WSResponse =>
+          Logger.debug("*********** 2 *********** ")
           response.status match {
             case s if (s < 400) && (response.body.length > 0) =>
+              Logger.debug("*********** 3 *********** ")
               val accessToken = response.json.asOpt[AccessToken]
               Logger.debug("fresh Access-Token: " + accessToken)
-              //accessToken = response.json.asOpt[AccessToken]
-              //timestamp = System.currentTimeMillis
               accessToken
             case _ =>
+              Logger.debug("*********** 4 *********** ")
               Logger.error("no valid access token!")
               None
-
           }
+        case _ =>
+          Logger.error("post request failed")
+          None
       }
     } catch {
       case e: Exception =>
+        Logger.debug("*********** 5 *********** ")
         Logger.error("Error while try to authenticate", e)
         Future(None)
       case _: Throwable =>
+        Logger.debug("*********** 6 *********** ")
         Logger.error("unknown error while try to authenticate")
         Future(None)
     }
-    //}
   }
 
   def getShows(stationId: String, channelId: String): Future[Option[JsObject]] = {
-    Logger.debug("HMSApi.getShows: " + stationId)
+    Logger.info("HMSApi.getShows: " + stationId)
 
     val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
     val apiUrl = Play.configuration.getString("hms.apiBroadcastURL").get + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=25"
+    Logger.debug("HMSApi.getShows apiURL: %s".format(apiUrl))
 
     try {
       wsAuthRequest(apiUrl).flatMap {
@@ -156,7 +149,9 @@ object HMSApi {
           case Some(hmsShow) =>
             Logger.debug("found a show with download URL: %d / %s, URL: %s".format(hmsShow.ID, hmsShow.Name, hmsShow.DownloadURL))
             Some(hmsShow)
-          case None => None
+          case None =>
+            Logger.error("HMSApi.getCurrentShow not successfull for %s / %s".format(stationId, channelId))
+            None
         }
       case _ =>
         Logger.error("HMSApi.getCurrentShow got None as result!")

@@ -8,6 +8,8 @@ scalaVersion := "2.11.1"
 
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
+javaOptions := Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005")
+
 libraryDependencies ++= Seq(
   cache
   ,ws

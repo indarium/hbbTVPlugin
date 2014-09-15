@@ -8,7 +8,6 @@ import akka.event.Logging
 import com.amazonaws.auth.BasicAWSCredentials
 import helper.{HMSApi, HMSShow, S3Backend, ShowMetaData}
 import models.{Show, Station}
-import play.Logger
 import play.api.Play
 import play.api.Play.current
 
@@ -41,18 +40,18 @@ class ShowCrawler extends Actor {
 
   def receive = {
     case processShow: ProcessShow =>
-      log.info("starting show processing for: " + processShow.show.toString)
+      log.info("starting show processing for: %d / %s".format(processShow.show.ID, processShow.show.Name))
       val meta = new ShowMetaData(processShow.stationId, processShow.channelId)
       meta.hmsStationId = Some(processShow.hmsStationId)
       meta.showId = Some(processShow.show.ID)
       meta.showTitle = processShow.show.Name
       //meta.sourceVideoUrl = Some(new URL(processShow.show.DownloadURL.getOrElse("").replaceAllLiterally(" ", "%20")))
       meta.sourceVideoUrl = Some(new URL(processShow.show.DownloadURL.get))
-      Logger.info("collected meta: " + meta.showTitle + " / " + meta.sourceVideoUrl)
+      log.info("collected meta: " + meta.showTitle + " / " + meta.sourceVideoUrl)
       showProcessingActor ! meta
 
     case processStation: ProcessStation =>
-      log.info("starting show processing for: " + processStation.toString)
+      log.info("try to start station processing for: %s (%s)".format(processStation.stationId, processStation.hmsStationId))
       HMSApi.getCurrentShow(processStation.hmsStationId, processStation.channelId).map {
         case Some(show) =>
           Show.findShowById(show.ID).map {
@@ -63,20 +62,25 @@ class ShowCrawler extends Actor {
                 self,
                 new ProcessStation(processStation.hmsStationId, processStation.stationId, processStation.channelId))
             case None =>
-              self ! new ProcessShow(show, processStation.hmsStationId, processStation.stationId, processStation.channelId)
+              log.info("starting station processing for: %s (%s)".format(processStation.stationId, processStation.hmsStationId))
+              self ! ProcessShow(show, processStation.hmsStationId, processStation.stationId, processStation.channelId)
           }
         case None =>
-          Logger.info("could not start process")
+          log.error("could not start process")
+          context.system.scheduler.scheduleOnce(
+            Duration.create(crawlerPeriod, TimeUnit.MINUTES),
+            self,
+            new ProcessStation(processStation.hmsStationId, processStation.stationId, processStation.channelId))
           None
       }
 
     case startProcess: StartProcess =>
       log.info("starting show crawler")
       Station.allStations.map { stations =>
-        Logger.debug("found stations: " + stations.iterator.length)
+        log.debug("found stations: " + stations.iterator.length)
         stations.foreach { station =>
-          Logger.debug("currently process station: " + station.stationId)
-          self ! new ProcessStation(station.hmsStationId, station.stationId, station.channelId)
+          log.debug("currently process station: " + station.stationId)
+          self ! ProcessStation(station.hmsStationId, station.stationId, station.channelId)
         }
       }
   }
