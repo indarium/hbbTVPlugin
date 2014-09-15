@@ -20,22 +20,22 @@ object ShowApiCall {
 
 object CurrentShowsController extends Controller {
 
-  def current = WithCors("POST") {
-    Action.async((BodyParsers.parse.json)) { request =>
-      val showApiCall = request.body.as[ShowApiCall]
-      Logger.debug("ShowApiCall: " + showApiCall.toString)
-      ApiKey.checkApiKey(showApiCall.apiKey).flatMap {
-        case Some(currentApiKey) =>
-          Show.findCurrentShow(showApiCall.stationId, showApiCall.channelId).map {
-            case Some(currentShowMeta) =>
-              val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("status" -> true)
-              Ok(Json.prettyPrint(showResult)).withHeaders(CONTENT_TYPE -> "application/json; charset=utf-8")
-            case None => KO
-          }
-        case None => Future(KO)
-      }
+  //def current = WithCors("POST") {
+  def current = Action.async((BodyParsers.parse.json)) { request =>
+    val showApiCall = request.body.as[ShowApiCall]
+    Logger.debug("ShowApiCall: " + showApiCall.toString)
+    ApiKey.checkApiKey(showApiCall.apiKey).flatMap {
+      case Some(currentApiKey) =>
+        Show.findCurrentShow(showApiCall.stationId, showApiCall.channelId).map {
+          case Some(currentShowMeta) =>
+            val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("status" -> true)
+            Ok(Json.prettyPrint(showResult)).withHeaders(CONTENT_TYPE -> "application/json; charset=utf-8")
+          case None => KO
+        }
+      case None => Future(KO)
     }
   }
+
 
   def KO = {
     BadRequest(Json.obj("status" -> false)).withHeaders(CONTENT_TYPE -> "application/json")
