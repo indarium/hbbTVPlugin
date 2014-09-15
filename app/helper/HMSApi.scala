@@ -3,7 +3,7 @@ package helper
 
 import play.api.Play.current
 import play.api.libs.json._
-import play.api.libs.ws.{WS, WSRequestHolder, WSResponse}
+import play.api.libs.ws.{WS, WSRequestHolder}
 import play.api.{Logger, Play}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -47,8 +47,7 @@ object HMSApi {
         Logger.debug("current Access-Token: " + accessToken.Access_Token)
         Option(wsRequest(apiUrl)
           .withHeaders("Access-Token" -> accessToken.Access_Token))
-      case None =>
-        Logger.error("Could not get AccessToken!")
+      case None => Logger.error("Could not get AccessToken!")
         None
     }
   }
@@ -67,35 +66,24 @@ object HMSApi {
       "UserName" -> JsString(username),
       "Password" -> JsString(password)
     )
-    Logger.debug("*********** 1 *********** ")
     try {
-      Logger.debug("*********** 11 *********** ")
-      wsRequest(apiUrl).post(authData).map {
-        case response: WSResponse =>
-          Logger.debug("*********** 2 *********** ")
-          response.status match {
-            case s if (s < 400) && (response.body.length > 0) =>
-              Logger.debug("*********** 3 *********** ")
-              val accessToken = response.json.asOpt[AccessToken]
-              Logger.debug("fresh Access-Token: " + accessToken)
-              accessToken
-            case _ =>
-              Logger.debug("*********** 4 *********** ")
-              Logger.error("no valid access token!")
-              None
-          }
-        case _ =>
-          Logger.error("post request failed")
-          None
+      val f = wsRequest(apiUrl).post(authData)
+      f.onFailure {
+        case e => Logger.error("could not authenticate!", e)
+          Future(None)
+      }
+      f.map { response =>
+        response.status match {
+          case s if (s < 400) && (response.body.length > 0) =>
+            response.json.asOpt[AccessToken]
+          case _ =>
+            Logger.error("no valid access token!")
+            None
+        }
       }
     } catch {
       case e: Exception =>
-        Logger.debug("*********** 5 *********** ")
-        Logger.error("Error while try to authenticate", e)
-        Future(None)
-      case _: Throwable =>
-        Logger.debug("*********** 6 *********** ")
-        Logger.error("unknown error while try to authenticate")
+        Logger.error("Error while authentication", e)
         Future(None)
     }
   }
@@ -106,11 +94,15 @@ object HMSApi {
     val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
     val apiUrl = Play.configuration.getString("hms.apiBroadcastURL").get + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=25"
     Logger.debug("HMSApi.getShows apiURL: %s".format(apiUrl))
-
     try {
       wsAuthRequest(apiUrl).flatMap {
         case Some(reqHolder) =>
-          reqHolder.get().map { response =>
+          val f = reqHolder.get()
+          f.onFailure {
+            case e => Logger.error("could not fetch shows!", e)
+              None
+          }
+          f.map { response =>
             response.status match {
               case s if s < 400 =>
                 response.json \ "sources" match {

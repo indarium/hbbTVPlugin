@@ -16,7 +16,7 @@ object Global extends GlobalSettings {
 
   override def onStart(app: Application): Unit = {
     // dummy call to cache the
-    val temp = HMSApi.authenticate
+    //val temp = HMSApi.authenticate
 
     //inital start show crawler
     val showCrawler = Akka.system.actorOf(Props(new ShowCrawler()))
