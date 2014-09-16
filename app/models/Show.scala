@@ -47,13 +47,13 @@ object Show {
           "channelId" -> channelId
         ),
         Json.obj("_id" -> 0
-          //, "showId" -> 0
+          , "showId" -> 0
         )
       )
       .sort(Json.obj("showId" -> -1))
       .cursor[JsObject].collect[List](1).map {
       show =>
-        show.headOption.map { currentShowMeta => currentShowMeta.as[Show]
+        show.headOption.map { currentShowMeta => currentShowMeta.as[JsObject]
         }
     }
   }
