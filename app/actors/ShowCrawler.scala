@@ -89,7 +89,7 @@ class ShowCrawler extends Actor {
         var count:Int = 0
         stations.foreach { station =>
           count += 10
-          log.debug("will launch processing of station: %s in %d seconds ".format(station.stationId, count))
+          log.info("will launch processing of station: %s in %d seconds ".format(station.stationId, count))
           context.system.scheduler.scheduleOnce(
             Duration.create(count, TimeUnit.SECONDS),
             self,

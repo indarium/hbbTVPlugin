@@ -83,9 +83,9 @@ public class Downloader {
             count = is.read(buffer, 0, BUFFER_SIZE);
             counter++;
             if (testMode) {
-                if (counter % 200 == 0)
+                if (counter % 50 == 0)
                     System.out.print("*");
-                if (counter > 2000)
+                if (counter > 1000)
                     break;
             }
         }
