@@ -27,7 +27,7 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
           meta.channelId,
           meta.showTitle.getOrElse(meta.stationId),
           UUID.randomUUID.toString.take(32), "mp4")
-          //.replaceAllLiterally(" ", "-")
+      //.replaceAllLiterally(" ", "-")
       log.info("uploading file: " + fileName)
 
       val file = meta.localVideoFile match {
@@ -35,13 +35,22 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
         case Some(f) => throw new FileNotFoundException("%s does not exist".format(f.toString))
         case None => throw new FileNotFoundException("no file")
       }
-      val url = backend.store(fileName, meta.localVideoFile.get)
-      file.delete()
+
+      try {
+        val url = backend.store(fileName, meta.localVideoFile.get)
+      } catch {
+        case e: Exception =>
+          throw e
+      }
+      finally {
+        file.delete()
+      }
 
       meta.localVideoFile = None
       meta.publicVideoUrl = Some(new URL(Play.configuration.getString("cdn.baseUrl").get + fileName))
 
       sender() ! VideoUploadSuccess(meta)
+
     } catch {
       case e: Exception =>
         log.error("upload of '%s' failed: %s".format(meta.localVideoFile.getOrElse("???"), e.getMessage))
