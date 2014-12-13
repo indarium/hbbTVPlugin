@@ -22,6 +22,7 @@ class ShowMetaData(val stationId: String, val channelId: String) {
   var showTitle: Option[String] = None
   var showId: Option[Long] = None
   var showSubtitle: Option[String] = None
+  var showSourceTitle: Option[String] = None
   var showLogoUrl: Option[URL] = None
   var showLength: Long = 0L
   var showEndInfo: Option[String] = None

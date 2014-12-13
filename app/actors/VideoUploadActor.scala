@@ -22,11 +22,10 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
     case meta: ShowMetaData => try {
       val title = meta.showTitle.getOrElse(UUID.randomUUID.toString).take(1024)
       val fileName =
-        "%s/%s/%s_%s.%s".format(
+        "%s/%s/%s.%s".format(
           meta.stationId,
           meta.channelId,
-          meta.showTitle.getOrElse(meta.stationId),
-          UUID.randomUUID.toString.take(32), "mp4")
+          UUID.randomUUID.toString.take(64), "mp4")
       //.replaceAllLiterally(" ", "-")
       log.info("uploading file: " + fileName)
 
@@ -47,6 +46,7 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
       }
 
       meta.localVideoFile = None
+      meta.showSourceTitle = meta.showTitle
       meta.publicVideoUrl = Some(new URL(Play.configuration.getString("cdn.baseUrl").get + fileName))
 
       sender() ! VideoUploadSuccess(meta)
