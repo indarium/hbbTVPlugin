@@ -9,12 +9,12 @@ import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
 import play.api.Play
+import play.api.Play.current
 import play.api.test.FakeApplication
 import play.api.test.Helpers._
 
 import scala.collection.JavaConverters._
 import scala.io.Source
-
 
 /**
  * Specification for the storage backend. Test that the backend can store, retrieve and delete a file.
@@ -25,7 +25,8 @@ import scala.io.Source
 class StorageBackendSpec extends Specification with ThrownMessages {
   sequential
 
-  private val BUCKET = "ac846539-6757-4284-a4d7-ce227d87a7ab"
+  //private val BUCKET = "ac846539-6757-4284-a4d7-ce227d87a7ab"
+  private val BUCKET = Play.configuration.getString("aws.bucket").getOrElse("NO-AWS-BUCKET")
 
   private val CONTENT = "THIS IS AN EXAMPLE FILE"
   private val FILE = File.createTempFile("upload.", ".tmp")
@@ -45,14 +46,14 @@ class StorageBackendSpec extends Specification with ThrownMessages {
   "AWS S3" should {
     "have a bucket" in {
       running(FakeApplication()) {
-        import play.api.Play.current
+
+        BUCKET must not be "NO-AWS-BUCKET"
 
         val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
         val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
 
         awsAccessKeyId must not be "NO-ACCESS-KEY"
         awsSecretKey must not be "NO-SECRET-KEY"
-
 
         val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
         val s3 = new AmazonS3Client(credentials)
