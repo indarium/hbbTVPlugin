@@ -57,6 +57,7 @@ class VideoFileNotFindException(m: String) extends Exception(m)
 class StorageException(m: String, t: Throwable) extends Exception(m, t)
 class RetrieveException(m: String, t: Throwable) extends Exception(m, t)
 class DeleteException(m: String, t: Throwable) extends Exception(m, t)
+class VimeoRequestException(m: String) extends Exception(m)
 
 /**
  * A S3 storage backend that stores the media files on S3 using the path returned by StorageMedia.toString
@@ -69,17 +70,16 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
   private val s3 = new AmazonS3Client(credentials)
 
   override def store(meta: ShowMetaData) = try {
-    if (meta.localVideoFile.isEmpty || !meta.localVideoFile.get.isFile) {
-      throw new VideoFileNotFindException("Video file does not exist: " + meta.localVideoFile)
+    meta.localVideoFile match {
+      case None                       => throw new VideoFileNotFindException("No video file defined.")
+      case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
+      case Some(file) =>
+        val fileName = "%s/%s/%s.%s".format(meta.stationId, meta.channelId, UUID.randomUUID.toString.take(64), "mp4")
+        s3.putObject(bucket, fileName, file)
+        val s3Url = s3.getUrl(bucket, fileName)
+        // create cdn url
+        new URL(Play.configuration.getString("cdn.baseUrl").get + s3Url.getPath)
     }
-    val fileName = "%s/%s/%s.%s".format(meta.stationId, meta.channelId, UUID.randomUUID.toString.take(64), "mp4")
-
-    s3.putObject(bucket, fileName, meta.localVideoFile.get)
-    val s3Url = s3.getUrl(bucket, fileName)
-
-    // create cdn url
-    new URL(Play.configuration.getString("cdn.baseUrl").get + s3Url.getPath)
-
   } catch {
     case e: Exception => throw new StorageException("can't store %s".format(meta.showTitle), e)
   }
@@ -120,50 +120,71 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   val vimeoApiUrl = "https://api.vimeo.com"
   val vimeoUrl = "http://vimeo.com"
 
-  override def store(name: String, file: File, metaData: Option[ShowMetaData]): URL = {
-    try {
-      val res = for {
-        // request upload ticket
-        ticketResponse <- vimeoRequest("POST", "/me/videos", Json.obj("type" -> "streaming"))
-        if ticketResponse.status == 201
+  override def store(meta: ShowMetaData): URL = {
 
-        // get the data we need from the ticketResponse
-        uploadLinkSecure = (ticketResponse.json \ "upload_link_secure").as[String]
-        completeUri = (ticketResponse.json \ "complete_uri").as[String]
+    meta.localVideoFile match {
+      case None                       => throw new VideoFileNotFindException("No video file defined.")
+      case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
+      case Some(file) =>
+        try {
+          val res = for {
+            // request upload ticket
+            ticketResponse <- vimeoRequest("POST", "/me/videos", Json.obj("type" -> "streaming"))
+            if ticketResponse.status == 201
 
-        // upload file
-        uploadResponse <- vimeoUploadFile(uploadLinkSecure, file)
-        if uploadResponse.status == 200
+            // get the data we need from the ticketResponse
+            uploadLinkSecure = (ticketResponse.json \ "upload_link_secure").as[String]
+            completeUri = (ticketResponse.json \ "complete_uri").as[String]
 
-        // verify upload
-        verifyResponse <- vimeoVerifyUpload(uploadLinkSecure, file)
-        if verifyResponse.status == 308
+            // upload file
+            uploadResponse <- vimeoUploadFile(uploadLinkSecure, file)
+            if uploadResponse.status == 200
 
-        // get the number of bytes that vimeo received and check if they correspond to the file size
-        uploadedBytes = verifyResponse.header("Range").flatMap(_.split("-").lastOption)
-        if uploadedBytes.exists(_.equals(file.length.toString))
+            // verify upload
+            verifyResponse <- vimeoVerifyUpload(uploadLinkSecure, file)
+            if verifyResponse.status == 308
 
-        // close upload ticket to mark upload complete
-        finishResponse <- vimeoRequest("DELETE", completeUri)
-        if finishResponse.status == 201
+            // get the number of bytes that vimeo received and check if they correspond to the file size
+            uploadedBytes = verifyResponse.header("Range").flatMap(_.split("-").lastOption)
+            if uploadedBytes.exists(_.equals(file.length.toString))
 
-        // get video id from response
-        videoId = finishResponse.header("Location").flatMap(_.split("/").lastOption)
-        if videoId.isDefined
+            // close upload ticket and mark upload complete
+            finishResponse <- vimeoRequest("DELETE", completeUri)
+            if finishResponse.status == 201
 
-      } yield {
-        // construct video url from its id
-        new URL(vimeoUrl + "/" + videoId.get)
-      }
-      Await.result(res, 1.minute)
-    } catch {
-      case e: Exception => throw new StorageException("Could not upload to Vimeo", e)
+            // get video id from response
+            videoId = finishResponse.header("Location").flatMap(_.split("/").lastOption)
+            if videoId.isDefined
+
+            // update metadata
+            metadataResponse <- editMetaData(videoId.get, meta)
+            if metadataResponse.status == 200
+
+            // add video to channel
+            addChannelResponse <- addToChannel(videoId.get, meta)
+            if addChannelResponse.status == 204
+
+          } yield {
+            // construct  url from videoId and return result
+            new URL(vimeoUrl + "/" + videoId.get)
+          }
+          Await.result(res, 1.minute)
+        } catch {
+          case e: Exception => throw new StorageException("Could not upload to Vimeo", e)
+        }
     }
   }
 
-  override def delete(name: String): Unit = ???
+  override def delete(name: String): Unit = {
+    try {
+      val url = vimeoApiUrl + "/videos/" + name
+      vimeoRequest("DELETE", url)
+    } catch {
+      case e: Exception => throw new DeleteException("can't delete %s".format(name), e)
+    }
+  }
 
-  override def retrieve(name: String, file: Option[File]): File = ???
+  override def retrieve(name: String, file: Option[File]): File = ??? // not needed
 
   override def list(): List[String] = ???
 
@@ -172,9 +193,53 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     Await.result(res, 1.minute)
   }
 
+  def editMetaData(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
+
+    val name = meta.showTitle.getOrElse("no title")
+    val description = meta.showSubtitle.getOrElse("no description")
+
+    val body = Json.obj(
+      "name" -> name,
+      "description" -> description,
+      "privacy.view" -> "anybody",
+      "privacy.embed" -> "public",
+      "review_link" -> "false"
+    )
+    val path = "/videos/" + videoId
+
+    vimeoRequest("PATCH", path, body)
+  }
+
+  def addToChannel(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
+
+    val channelName = meta.channelName.getOrElse("default_channel")
+
+    for {
+      // check if channel exists
+      getChannelsResult <- vimeoRequest("GET", "/me/channels?per_page=50&filter=moderated")
+      if getChannelsResult.status == 200
+
+      // get channel uri or create channel
+      channelUri <- {
+        val channels = (getChannelsResult.json \ "data").as[Seq[JsObject]]
+        channels.find(c => (c \ "name").as[String].equals(channelName)) match {
+          case Some(channel) => Future((channel \ "uri").as[String])
+          case None => vimeoRequest("POST", "/channels", Json.obj("name" -> channelName)).map{
+            response => (response.json \ "uri").as[String]
+          }
+        }
+      }
+
+      // add video to channel
+      addChannelResponse <- vimeoRequest("PUT", channelUri + "/videos/" + videoId)
+
+    } yield {
+      addChannelResponse
+    }
+  }
+
   def vimeoRequest(method: String, endpoint: String, body: JsObject = Json.obj()): Future[WSResponse] = {
     val url = vimeoApiUrl + endpoint
-
     WS.url(url)
       .withHeaders(("Authorization", "bearer " + accessToken))
       .withHeaders(("Content-Type", "application/json"))
