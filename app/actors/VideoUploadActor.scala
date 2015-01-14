@@ -20,34 +20,17 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
 
   def receive = {
     case meta: ShowMetaData => try {
-      val title = meta.showTitle.getOrElse(UUID.randomUUID.toString).take(1024)
-      val fileName =
-        "%s/%s/%s.%s".format(
-          meta.stationId,
-          meta.channelId,
-          UUID.randomUUID.toString.take(64), "mp4")
-      //.replaceAllLiterally(" ", "-")
-      log.info("uploading file: " + fileName)
 
-      val file = meta.localVideoFile match {
-        case Some(f) if f.exists() => f
-        case Some(f) => throw new FileNotFoundException("%s does not exist".format(f.toString))
-        case None => throw new FileNotFoundException("no file")
-      }
+      log.info("uploading file: " + meta.showTitle)
 
-      try {
-        val url = backend.store(fileName, meta.localVideoFile.get)
-      } catch {
-        case e: Exception =>
-          throw e
-      }
-      finally {
-        file.delete()
-      }
+      val url = backend.store(meta)
+
+      // delete local video file, if it exists
+      meta.localVideoFile.map(_.delete)
 
       meta.localVideoFile = None
       meta.showSourceTitle = meta.showTitle
-      meta.publicVideoUrl = Some(new URL(Play.configuration.getString("cdn.baseUrl").get + fileName))
+      meta.publicVideoUrl = Some(url)
 
       sender() ! VideoUploadSuccess(meta)
 
