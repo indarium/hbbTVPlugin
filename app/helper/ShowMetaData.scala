@@ -5,6 +5,7 @@ import java.net.URL
 
 import akka.actor.Status
 import akka.actor.Status.{Status, Failure}
+import play.api.libs.json.Json
 
 /**
  * Data object for handing over data.
@@ -33,6 +34,9 @@ class ShowMetaData(val stationId: String, val channelId: String) {
   var sourceVideoUrl: Option[URL] = None
   var localVideoFile: Option[File] = None
   var publicVideoUrl: Option[URL] = None
+
+  override def toString = "showTitle: " + showTitle.getOrElse("none") + " channelName: " + channelName.getOrElse("none")
+
 }
 
 case class VideoUploadSuccess(meta: ShowMetaData)

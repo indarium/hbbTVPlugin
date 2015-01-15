@@ -1,9 +1,9 @@
 package models
 
 import play.api.libs.json.{JsObject, Json}
+import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
-import reactivemongo.api.MongoDriver
-
+import play.api.Play.current
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -13,10 +13,7 @@ case class ApiKey(apiKey: String)
 
 object ApiKey {
 
-  val driver = new MongoDriver
-  val connection = driver.connection(List("localhost"))
-  val database = connection.db("hbbTVPlugin")
-  val showsCollection = database.collection[JSONCollection]("apikeys")
+  val showsCollection = ReactiveMongoPlugin.db.collection[JSONCollection]("apikeys")
 
   implicit val format = Json.format[ApiKey]
 

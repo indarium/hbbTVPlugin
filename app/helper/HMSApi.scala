@@ -55,7 +55,7 @@ object HMSApi {
   def authenticate: Future[Option[AccessToken]] = {
     Logger.debug("HMSApi.authenticate")
 
-    var username = Play.configuration.getString("hms.username").get
+    val username = Play.configuration.getString("hms.username").get
     val password = Play.configuration.getString("hms.password").get
     val apiUrl = Play.configuration.getString("hms.apiBroadcastURL").get + ("/login/")
 
@@ -76,8 +76,8 @@ object HMSApi {
         response.status match {
           case s if (s < 400) && (response.body.length > 0) =>
             response.json.asOpt[AccessToken]
-          case _ =>
-            Logger.error("no valid access token!")
+          case s =>
+            Logger.error("no valid access token! Status: " + s)
             None
         }
       }

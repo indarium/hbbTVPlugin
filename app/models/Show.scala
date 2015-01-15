@@ -3,9 +3,9 @@ package models
 import helper.ShowMetaData
 import play.Logger
 import play.api.libs.json.{JsObject, Json}
+import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
-import reactivemongo.api.MongoDriver
-
+import play.api.Play.current
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -32,10 +32,7 @@ case class Show(stationId: String,
 
 object Show {
 
-  val driver = new MongoDriver
-  val connection = driver.connection(List("localhost"))
-  val database = connection.db("hbbTVPlugin")
-  val showsCollection = database.collection[JSONCollection]("shows")
+  val showsCollection = ReactiveMongoPlugin.db.collection[JSONCollection]("shows")
 
   implicit val format = Json.format[Show]
 

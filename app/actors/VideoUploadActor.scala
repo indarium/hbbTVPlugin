@@ -25,10 +25,10 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
 
       val url = backend.store(meta)
 
-      // delete local video file, if it exists
+      // delete local video file
       meta.localVideoFile.map(_.delete)
-
       meta.localVideoFile = None
+
       meta.showSourceTitle = meta.showTitle
       meta.publicVideoUrl = Some(url)
 

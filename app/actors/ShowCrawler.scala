@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{Actor, Props}
 import akka.event.Logging
 import com.amazonaws.auth.BasicAWSCredentials
-import helper.{HMSApi, HMSShow, S3Backend, ShowMetaData}
+import helper._
 import models.{Show, Station}
 import play.api.Play
 import play.api.Play.current
@@ -41,6 +41,9 @@ class ShowCrawler extends Actor {
   val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
   val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
   val s3Backend: S3Backend = new S3Backend(credentials, Play.configuration.getString("aws.bucket").get)
+
+  val vimeoAccessToken: String = Play.configuration.getString("vimeo.accessToken").getOrElse("NO-ACCESS-TOKEN")
+  val vimeoBackend: VimeoBackend = new VimeoBackend(vimeoAccessToken)
 
   val showProcessingActor = context.actorOf(Props(new ShowProcessingActor(s3Backend)))
 

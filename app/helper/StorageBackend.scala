@@ -75,6 +75,7 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
       case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
       case Some(file) =>
         val fileName = "%s/%s/%s.%s".format(meta.stationId, meta.channelId, UUID.randomUUID.toString.take(64), "mp4")
+        Logger.debug("Uploading to S3: " + fileName)
         s3.putObject(bucket, fileName, file)
         val s3Url = s3.getUrl(bucket, fileName)
         // create cdn url
@@ -127,6 +128,8 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
       case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
       case Some(file) =>
         try {
+          Logger.debug("Uploading video to vimeo. Meta: " + meta)
+
           val res = for {
             // request upload ticket
             ticketResponse <- vimeoRequest("POST", "/me/videos", Json.obj("type" -> "streaming"))
@@ -168,6 +171,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             // construct  url from videoId and return result
             new URL(vimeoUrl + "/" + videoId.get)
           }
+
           Await.result(res, 1.minute)
         } catch {
           case e: Exception => throw new StorageException("Could not upload to Vimeo", e)
@@ -195,6 +199,8 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
   def editMetaData(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
 
+//    Logger.debug("Vimeo: adding metadata to video. name: " + meta.showTitle + " description: " + meta.showSubtitle)
+
     val name = meta.showTitle.getOrElse("no title")
     val description = meta.showSubtitle.getOrElse("no description")
 
@@ -212,7 +218,9 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
   def addToChannel(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
 
-    val channelName = meta.channelName.getOrElse("default_channel")
+//    Logger.debug("Vimeo: adding video to channel: " + meta.channelName )
+
+    val channelName = meta.channelName.getOrElse(meta.channelId)
 
     for {
       // check if channel exists

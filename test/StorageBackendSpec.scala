@@ -43,112 +43,118 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
   private val CHANNEL = "CHANNEL-5"
   private val MEDIA = "Ulala"
 
-  private val NAME = "%s/%s/%s".format(STATION, CHANNEL, MEDIA)
+  val meta = new ShowMetaData(STATION, CHANNEL)
+  meta.localVideoFile = Some(FILE)
 
   // TODO: Fix these
-//    "AWS S3" should {
-//      "have a bucket" in {
-//          import play.api.Play.current
-//
-//          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-//          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
-//
-//          awsAccessKeyId must not be "NO-ACCESS-KEY"
-//          awsSecretKey must not be "NO-SECRET-KEY"
-//
-//
-//          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
-//          val s3 = new AmazonS3Client(credentials)
-//
-//          s3.doesBucketExist(BUCKET) must beTrue
-//      }
-//
-//      "have an empty bucket" in {
-//          import play.api.Play.current
-//
-//          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-//          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
-//
-//          awsAccessKeyId must not be "NO-ACCESS-KEY"
-//          awsSecretKey must not be "NO-SECRET-KEY"
-//
-//          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
-//          val s3 = new AmazonS3Client(credentials)
-//
-//          val objects = s3.listObjects(BUCKET)
-//
-//          objects.isTruncated must beFalse
-//
-//          objects.getObjectSummaries.asScala foreach (o => s3.deleteObject(BUCKET, o.getKey))
-//
-//          s3.listObjects(BUCKET).getObjectSummaries.isEmpty must beTrue
-//        }
-//    }
-//
-//    "S3 Backend" should {
-//      "store a media file" in {
-//          import play.api.Play.current
-//
-//          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-//          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
-//
-//          awsAccessKeyId must not be "NO-ACCESS-KEY"
-//          awsSecretKey must not be "NO-SECRET-KEY"
-//
-//          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
-//          val backend = new S3Backend(credentials, BUCKET)
-//
-//          backend.store(NAME, FILE)
-//
-//          val s3 = new AmazonS3Client(credentials)
-//          val result = s3.getObject(BUCKET, NAME)
-//          val content = Source.fromInputStream(result.getObjectContent).mkString
-//
-//          content must be equalTo CONTENT
-//        }
-//
-//      "retrieve a media file" in {
-//          import play.api.Play.current
-//
-//          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-//          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
-//
-//          awsAccessKeyId must not be "NO-ACCESS-KEY"
-//          awsSecretKey must not be "NO-SECRET-KEY"
-//
-//          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
-//          val backend = new S3Backend(credentials, BUCKET)
-//
-//          val result = backend.retrieve(NAME)
-//
-//          val content = Source.fromFile(result).mkString
-//
-//          content must be equalTo CONTENT
-//      }
-//
-//      "delete a media file" in {
-//          import play.api.Play.current
-//
-//          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-//          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
-//
-//          awsAccessKeyId must not be "NO-ACCESS-KEY"
-//          awsSecretKey must not be "NO-SECRET-KEY"
-//
-//          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
-//          val backend = new S3Backend(credentials, BUCKET)
-//
-//          backend.delete(NAME)
-//
-//          val s3 = new AmazonS3Client(credentials)
-//          try {
-//            s3.getObjectMetadata(BUCKET, NAME)
-//            fail("object still exists: %s".format(NAME))
-//          } catch {
-//            case e: AmazonS3Exception => e.getStatusCode must be equalTo 404
-//          }
-//        }
-//
+    "AWS S3" should {
+      "have a bucket" in {
+          import play.api.Play.current
+
+          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
+          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+
+          awsAccessKeyId must not be "NO-ACCESS-KEY"
+          awsSecretKey must not be "NO-SECRET-KEY"
+
+
+          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+          val s3 = new AmazonS3Client(credentials)
+
+          s3.doesBucketExist(BUCKET) must beTrue
+      }
+
+      "have an empty bucket" in {
+          import play.api.Play.current
+
+          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
+          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+
+          awsAccessKeyId must not be "NO-ACCESS-KEY"
+          awsSecretKey must not be "NO-SECRET-KEY"
+
+          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+          val s3 = new AmazonS3Client(credentials)
+
+          val objects = s3.listObjects(BUCKET)
+
+          Logger.debug("Objects in bucket: " + objects.getObjectSummaries.size)
+
+          objects.isTruncated must beFalse
+
+          objects.getObjectSummaries.asScala foreach (o => s3.deleteObject(BUCKET, o.getKey))
+
+          s3.listObjects(BUCKET).getObjectSummaries.isEmpty must beTrue
+        }
+    }
+
+    var s3FileName = ""
+    "S3 Backend" should {
+      "store a media file" in {
+          import play.api.Play.current
+
+          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
+          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+
+          awsAccessKeyId must not be "NO-ACCESS-KEY"
+          awsSecretKey must not be "NO-SECRET-KEY"
+
+          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+          val backend = new S3Backend(credentials, BUCKET)
+
+          val url = backend.store(meta)
+          s3FileName = url.getPath.substring(1)
+
+          val s3 = new AmazonS3Client(credentials)
+
+          val result = s3.getObject(BUCKET,s3FileName)
+          val content = Source.fromInputStream(result.getObjectContent).mkString
+
+          content must be equalTo CONTENT
+        }
+
+      "retrieve a media file" in {
+          import play.api.Play.current
+
+          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
+          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+
+          awsAccessKeyId must not be "NO-ACCESS-KEY"
+          awsSecretKey must not be "NO-SECRET-KEY"
+
+          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+          val backend = new S3Backend(credentials, BUCKET)
+
+          val result = backend.retrieve(s3FileName)
+
+          val content = Source.fromFile(result).mkString
+
+          content must be equalTo CONTENT
+      }
+
+      "delete a media file" in {
+          import play.api.Play.current
+
+          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
+          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+
+          awsAccessKeyId must not be "NO-ACCESS-KEY"
+          awsSecretKey must not be "NO-SECRET-KEY"
+
+          val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
+          val backend = new S3Backend(credentials, BUCKET)
+
+          backend.delete(s3FileName)
+
+          val s3 = new AmazonS3Client(credentials)
+          try {
+            s3.getObjectMetadata(BUCKET, s3FileName)
+            fail("object still exists: %s".format(s3FileName))
+          } catch {
+            case e: AmazonS3Exception => e.getStatusCode must be equalTo 404
+          }
+        }
+
 //      "list media files" in {
 //          import play.api.Play.current
 //
@@ -206,7 +212,7 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
 //
 //          backend.list().length mustEqual 0
 //      }
-//    }
+    }
 
   "Vimeo backend should" should {
 
@@ -225,7 +231,7 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
       backend.ping must beTrue
     }
 
-    "Upload test video " in {
+    "Upload test video with metadata" in {
       videoUrl = backend.store(meta)
       Logger.debug("VideoURL: " + videoUrl)
       videoUrl.getPath must beMatching("^/\\d+")
