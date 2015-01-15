@@ -52,6 +52,8 @@ class ShowProcessingActorSpec extends TestKit(ActorSystem("test")) with Specific
 
         s3Backend.delete("%s/%s/%s".format(STATION, CHANNEL, TITLE))
 
+        s3Backend.list().length mustEqual 0
+
         val meta = new ShowMetaData(STATION, CHANNEL)
         meta.showTitle = Some(TITLE)
         meta.sourceVideoUrl = Some(FILE.toURI.toURL)

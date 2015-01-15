@@ -18,10 +18,10 @@ class ShowMetaData(val stationId: String, val channelId: String) {
   var stationLogoShow: Boolean = true
   var stationMainColor: Option[String] = None
 
-  var channelName: Option[String] = None
-  var showTitle: Option[String] = None
+  var channelName: Option[String] = None          // vimeo: channel
+  var showTitle: Option[String] = None            // vimeo: title
   var showId: Option[Long] = None
-  var showSubtitle: Option[String] = None
+  var showSubtitle: Option[String] = None         // vimeo: description
   var showSourceTitle: Option[String] = None
   var showLogoUrl: Option[URL] = None
   var showLength: Long = 0L
