@@ -1,34 +1,34 @@
 [
-	{
-    "stationId" : "LTV",
-    "hmsStationId" : "Lausitz TV",
-    "channelId" : "SAT",
-    "active" : true,
-    "defaultStationName" : "Lausitz TV",
-    "defaultStationLogoUrl" : "http://www.lausitz-tv.de/wicket/resource/de.lausitztv.web.frontend.ressourcen.grafiken.GrafikReferenz/logo_187x75.png",
-    "defaultStationLogoDisplay" : true,
-    "defaultStationMainColor" : "#262c9e",
-    "defaultChannelName" : "bb-mv",
-    "defaultShowTitle" : "LTV - AKTUELL",
-    "defaultShowSubtitle" : "Lokale Informationen aus Cottbus und Umgebung.",
-    "defaultShowLogoUrl" : "http://www.lausitz-tv.de/wicket/resource/de.lausitztv.web.frontend.ressourcen.grafiken.GrafikReferenz/logo_187x75.png",
-    "defaultChannelBroadcastInfo" : "<h2>Sendetermine</h2><table><tr><td>Montag bis Freitag</td><td>18:00 Uhr</td></tr><tr><td>Samstag</td><td>21:00</td></table>",
-    "defaultRootPortalURL" : "http://application.ses-ps.com/Senderportal-BB-MV/index.html"
-	},
-	{
-    "stationId" : "ODF",
-    "hmsStationId" : "ODF",
-    "channelId" : "SAT",
-    "active" : true,
-    "defaultStationName" : "ODF – Fernsehen für Ostbrandenburg",
-    "defaultStationLogoUrl" : "http://admin.telvi.de/UserFiles/Image/odftv/logos/Logo_ODF_174x90.png",
-    "defaultStationLogoDisplay" : true,
-    "defaultStationMainColor" : "#B0C4DE",
-    "defaultChannelName" : "bb-mv",
-    "defaultShowTitle" : "Ostbrandenburg aktuell",
-    "defaultShowSubtitle" : "Lokale Informationen aus Barnim, Märkisch-Oderland und Oder-Spree",
-    "defaultShowLogoUrl" : "http://admin.telvi.de/UserFiles/Image/odftv/logos/Logo_ODF_174x90.png",
-    "defaultChannelBroadcastInfo" : "<h2>Sendetermine</h2><table><tr><td>Montag bis Freitag</td><td>19:00 Uhr</td></tr><tr><td>Samstag und Sonntag</td><td>22:00 Uhr</td></tr></table>",
-    "defaultRootPortalURL" : "http://application.ses-ps.com/Senderportal-BB-MV/index.html"
-	}
+  {
+    "stationId": "LTV",
+    "hmsStationId": "Lausitz TV",
+    "channelId": "SAT",
+    "active": true,
+    "defaultStationName": "Lausitz TV",
+    "defaultStationLogoUrl": "http://www.lausitz-tv.de/wicket/resource/de.lausitztv.web.frontend.ressourcen.grafiken.GrafikReferenz/logo_187x75.png",
+    "defaultStationLogoDisplay": true,
+    "defaultStationMainColor": "#262c9e",
+    "defaultChannelName": "bb-mv",
+    "defaultShowTitle": "LTV - AKTUELL",
+    "defaultShowSubtitle": "Lokale Informationen aus Cottbus und Umgebung.",
+    "defaultShowLogoUrl": "http://www.lausitz-tv.de/wicket/resource/de.lausitztv.web.frontend.ressourcen.grafiken.GrafikReferenz/logo_187x75.png",
+    "defaultChannelBroadcastInfo": "<h2>Sendetermine</h2><table><tr><td>Montag bis Freitag</td><td>18:00 Uhr</td></tr><tr><td>Samstag</td><td>21:00</td></table>",
+    "defaultRootPortalURL": "http://application.ses-ps.com/Senderportal-BB-MV/index.html"
+  },
+  {
+    "stationId": "ODF",
+    "hmsStationId": "ODF",
+    "channelId": "SAT",
+    "active": true,
+    "defaultStationName": "ODF – Fernsehen für Ostbrandenburg",
+    "defaultStationLogoUrl": "http://admin.telvi.de/UserFiles/Image/odftv/logos/Logo_ODF_174x90.png",
+    "defaultStationLogoDisplay": true,
+    "defaultStationMainColor": "#B0C4DE",
+    "defaultChannelName": "bb-mv",
+    "defaultShowTitle": "Ostbrandenburg aktuell",
+    "defaultShowSubtitle": "Lokale Informationen aus Barnim, Märkisch-Oderland und Oder-Spree",
+    "defaultShowLogoUrl": "http://admin.telvi.de/UserFiles/Image/odftv/logos/Logo_ODF_174x90.png",
+    "defaultChannelBroadcastInfo": "<h2>Sendetermine</h2><table><tr><td>Montag bis Freitag</td><td>19:00 Uhr</td></tr><tr><td>Samstag und Sonntag</td><td>22:00 Uhr</td></tr></table>",
+    "defaultRootPortalURL": "http://application.ses-ps.com/Senderportal-BB-MV/index.html"
+  }
 ]

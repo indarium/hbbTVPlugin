@@ -19,3 +19,7 @@ server.pid
 /.idea_modules/
 /atlassian-ide-plugin.xml
 /projectFilesBackup/
+test-2.11
+test-2.10
+app-2.11
+app-2.10

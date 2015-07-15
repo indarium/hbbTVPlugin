@@ -24,6 +24,7 @@ object Global extends GlobalSettings {
     // load initial data, if not present
     if(Play.configuration.getBoolean("startup.initialData.load").getOrElse(false)) {
       // get all files in fixtures
+
       new File(Play.application.path.getAbsolutePath + "/fixtures/").listFiles.toSeq.map {
         file =>
           if (file.getName.endsWith(".json")) {
