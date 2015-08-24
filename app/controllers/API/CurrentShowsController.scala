@@ -36,8 +36,14 @@ object CurrentShowsController extends Controller {
     }
   }
 
+  def callBack = Action(BodyParsers.parse.tolerantJson) {
+    request =>
+      Logger.debug("body:")
+      Logger.debug(Json.prettyPrint(request.body))
+      Ok(Json.obj("status" -> "OK"))
+  }
 
-  def KO = {
+  private def KO = {
     BadRequest(Json.obj("status" -> false)).withHeaders(CONTENT_TYPE -> "application/json")
   }
 

@@ -35,6 +35,8 @@ class ShowMetaData(val stationId: String, val channelId: String) {
   var localVideoFile: Option[File] = None
   var publicVideoUrl: Option[URL] = None
 
+  var currentAccessToken: Option[String] = None
+
   override def toString = "showTitle: " + showTitle.getOrElse("none") + " channelName: " + channelName.getOrElse("none")
 
 }

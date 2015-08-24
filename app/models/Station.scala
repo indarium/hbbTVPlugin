@@ -51,5 +51,3 @@ object Station {
   def allStations = stationCollection.find(Json.obj("active" -> true), Json.obj()).
     cursor[Station].collect[List]()
 }
-
-

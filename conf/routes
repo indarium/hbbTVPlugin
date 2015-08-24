@@ -18,3 +18,5 @@ GET         /assets/*file                           controllers.Assets.at(path="
 # API Calls
 GET         /api/v1/checkApp                        controllers.Application.checkApp
 POST        /api/v1/show/current                    controllers.API.CurrentShowsController.current
+
+POST        /api/v1/hmsCallBack        controllers.API.CurrentShowsController.callBack

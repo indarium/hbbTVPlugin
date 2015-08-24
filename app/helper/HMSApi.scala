@@ -46,6 +46,7 @@ object HMSApi {
       case Some(accessToken) =>
         Logger.debug("current Access-Token: " + accessToken.Access_Token)
         Option(wsRequest(apiUrl)
+          .withHeaders("Content-Type" -> "application/json")
           .withHeaders("Access-Token" -> accessToken.Access_Token))
       case None => Logger.error("Could not get AccessToken!")
         None
