@@ -24,27 +24,23 @@ object AuthDownloader {
     HMSApi.wsAuthRequest(source).flatMap {
       case Some(requestHolder: WSRequestHolder) =>
         val futureResponse: Future[(WSResponseHeaders, Enumerator[Array[Byte]])] = requestHolder.withRequestTimeout(900000).getStream()
-        Logger.debug(s"$source -- 1 --- ************************")
         futureResponse.flatMap {
           case (headers, body) =>
-            Logger.debug(s"$source -- 2 --- ************************")
             val outputStream = new FileOutputStream(outputFile)
-
             // The iteratee that writes to the output stream
             val iteratee = Iteratee.foreach[Array[Byte]] { bytes =>
               outputStream.write(bytes)
             }
-
-            Logger.debug(s"$source -- 3 --- ************************")
             // Feed the body into the iteratee
+            Logger.info(s"Starting download for: $source")
             (body |>>> iteratee).andThen {
               case result =>
-                Logger.debug(s"$source -- 4 --- ************************")
+
                 // Close the output stream whether there was an error or not
                 outputStream.close()
                 // Get the result or rethrow the error
                 result.get
-
+                Logger.info(s"Download successfull: $source")
             }.map(_ => Some(outputFile))
           case _ =>
             Future(None)

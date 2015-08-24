@@ -22,7 +22,9 @@ class VideoDownloadActor extends Actor {
   val minFileSize = Play.configuration.getLong("hms.minFileSize").get
 
   def receive = {
+    
     case meta: ShowMetaData =>
+      val currentSender = context.sender()
       try {
         val target = File.createTempFile(meta.stationId, meta.channelId)
 
@@ -40,18 +42,23 @@ class VideoDownloadActor extends Actor {
           case Some(downloadedFile: File) =>
             if (downloadedFile.length > minFileSize) {
               meta.localVideoFile = Some(target)
-              sender() ! VideoDownloadSuccess(meta)
+              currentSender ! VideoDownloadSuccess(meta)
             }
             else {
               log.error(s"downloaded file size limit: ${minFileSize}")
               log.error(s"downloaded file to small: ${downloadedFile.length}")
-              sender() ! VideoDownloadFailure(meta, new Exception("downloaded file to small: %d".format(target.length)))
+              currentSender ! VideoDownloadFailure(meta, new Exception("downloaded file to small: %d".format(target.length)))
             }
+        }
+        f.onFailure {
+          case t =>
+            log.error(s"download failed for: ${source.toString}")
+            currentSender ! VideoDownloadFailure(meta, t)
         }
       } catch {
         case t: Throwable =>
           log.error("downloading '%s' failed: %s".format(meta.sourceVideoUrl, t.getMessage))
-          sender() ! VideoDownloadFailure(meta, t)
+          currentSender ! VideoDownloadFailure(meta, t)
       }
   }
 }
