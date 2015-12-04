@@ -13,6 +13,7 @@ case class Station(stationId: String,
                    hmsStationId: String,
                    channelId: String,
                    active: Boolean,
+                   okMvv: Option[Boolean] = Some(false),
                    defaultStationName: String,
                    defaultStationLogoUrl: String,
                    defaultStationLogoDisplay: Boolean,
@@ -23,7 +24,7 @@ case class Station(stationId: String,
                    defaultShowLogoUrl: String,
                    defaultChannelBroadcastInfo: String,
                    defaultRootPortalURL: String
-                   )
+                  )
 
 object Station {
 
@@ -49,5 +50,8 @@ object Station {
   }
 
   def allStations = stationCollection.find(Json.obj("active" -> true), Json.obj()).
+    cursor[Station].collect[List]().map(st => st.filter(st => st.okMvv.getOrElse(false).equals(false)))
+
+  def allOkMmvStations = stationCollection.find(Json.obj("active" -> true, "okMvv" -> true), Json.obj()).
     cursor[Station].collect[List]()
 }
