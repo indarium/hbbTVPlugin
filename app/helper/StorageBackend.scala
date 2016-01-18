@@ -174,10 +174,15 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           } yield {
             // construct  url from videoId and return result
+
+            val url = s"http://mmv-mediathek.de/import/vimeo.php?auth=408ff63c-cf4e-4032-9213-bf71ff93d113&hms_id=${meta.showId}&vimeo_id=${videoId.get}"
+            WS.url(url).get()
+
             new URL(vimeoUrl + "/" + videoId.get)
           }
 
           Await.result(res, 10 minute)
+
         } catch {
           case e: Exception => throw new StorageException("Could not upload to Vimeo", e)
         }
