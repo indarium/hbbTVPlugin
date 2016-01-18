@@ -7,6 +7,7 @@ import java.util.UUID
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
+import org.slf4j.LoggerFactory
 import play.api.{Play, Logger}
 import play.api.Play.current
 import play.api.libs.json.{JsObject, Json}
@@ -123,6 +124,8 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
   */
 class VimeoBackend(accessToken: String) extends StorageBackend {
 
+  val log = LoggerFactory.getLogger(this.getClass)
+
   val vimeoApiUrl = "https://api.vimeo.com"
   val vimeoUrl = "http://vimeo.com"
 
@@ -176,9 +179,9 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             // construct  url from videoId and return result
 
             //TODO ugly shit!!
-            val url = s"http://mmv-mediathek.de/import/vimeo.php?auth=408ff63c-cf4e-4032-9213-bf71ff93d113&hms_id=${meta.showId}&vimeo_id=${videoId.get}"
+            val url = s"http://mmv-mediathek.de/import/vimeo.php?auth=408ff63c-cf4e-4032-9213-bf71ff93d113&hms_id=${meta.showId.get}&vimeo_id=${videoId.get}"
             WS.url(url).get()
-
+            log.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
             new URL(vimeoUrl + "/" + videoId.get)
           }
 
