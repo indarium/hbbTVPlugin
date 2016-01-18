@@ -37,6 +37,9 @@ class ShowMetaData(val stationId: String, val channelId: String) {
 
   var currentAccessToken: Option[String] = None
 
+  var vimeo: Option[Boolean] = None
+  var vimeoDone: Option[Boolean] = None
+
   override def toString = "showTitle: " + showTitle.getOrElse("none") + " channelName: " + channelName.getOrElse("none")
 
 }

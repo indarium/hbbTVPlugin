@@ -32,6 +32,11 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
       meta.showSourceTitle = meta.showTitle
       meta.publicVideoUrl = Some(url)
 
+      if (meta.vimeo.isDefined && meta.vimeo.get && !meta.vimeoDone.isDefined) {
+        meta.vimeoDone = Some(true)
+        sender() ! VideoDownloadSuccess(meta)
+      }
+
       sender() ! VideoUploadSuccess(meta)
 
     } catch {

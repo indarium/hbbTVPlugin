@@ -23,7 +23,7 @@ object AuthDownloader {
 
     HMSApi.wsAuthRequest(source).flatMap {
       case Some(requestHolder: WSRequestHolder) =>
-        val futureResponse: Future[(WSResponseHeaders, Enumerator[Array[Byte]])] = requestHolder.withRequestTimeout(900000).getStream()
+        val futureResponse: Future[(WSResponseHeaders, Enumerator[Array[Byte]])] = requestHolder.withRequestTimeout(9000000).getStream()
         futureResponse.flatMap {
           case (headers, body) =>
             val outputStream = new FileOutputStream(outputFile)

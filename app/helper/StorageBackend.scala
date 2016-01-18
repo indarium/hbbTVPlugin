@@ -7,71 +7,76 @@ import java.util.UUID
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
-import play.api.{ Play, Logger }
+import play.api.{Play, Logger}
 import play.api.Play.current
-import play.api.libs.json.{ JsObject, Json }
-import play.api.libs.ws.{ WS, WSResponse }
+import play.api.libs.json.{JsObject, Json}
+import play.api.libs.ws.{WS, WSResponse}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 
 /**
- * Generic storage backend trait defining the functionality for a backend.
- */
+  * Generic storage backend trait defining the functionality for a backend.
+  */
 trait StorageBackend {
   /**
-   * Stora a media file in the backend.
-   * @param meta the show meta data. Must contain the video file
-   * @return the url to the stored file, if successful
-   */
+    * Stora a media file in the backend.
+    *
+    * @param meta the show meta data. Must contain the video file
+    * @return the url to the stored file, if successful
+    */
   def store(meta: ShowMetaData): URL
 
   /**
-   * Retrieve a media file from the backend.
-   *
-   * @param name the file name on the backend
-   * @return the media file as a local file
-   */
+    * Retrieve a media file from the backend.
+    *
+    * @param name the file name on the backend
+    * @return the media file as a local file
+    */
   def retrieve(name: String, file: Option[File] = None): File
 
   /**
-   * Delete a media from the backend.
-   *
-   * @param name the name of the file on the backend
-   * @return true for successful deletion
-   */
+    * Delete a media from the backend.
+    *
+    * @param name the name of the file on the backend
+    * @return true for successful deletion
+    */
   def delete(name: String)
 
   /**
-   * List backend storage contents.
-   *
-   * @return a list of media file names on the backend
-   */
+    * List backend storage contents.
+    *
+    * @return a list of media file names on the backend
+    */
   def list(): List[String]
 }
 
 // Storage exceptions (wrap original exception)
 class VideoFileNotFindException(m: String) extends Exception(m)
+
 class StorageException(m: String, t: Throwable) extends Exception(m, t)
+
 class RetrieveException(m: String, t: Throwable) extends Exception(m, t)
+
 class DeleteException(m: String, t: Throwable) extends Exception(m, t)
+
 class VimeoRequestException(m: String) extends Exception(m)
 
 /**
- * A S3 storage backend that stores the media files on S3 using the path returned by StorageMedia.toString
- * as the key. This backend requires credentials and a bucket name to work.
- *
- * @param credentials the S3 credentials to use
- * @param bucket the bucket name
- */
+  * A S3 storage backend that stores the media files on S3 using the path returned by StorageMedia.toString
+  * as the key. This backend requires credentials and a bucket name to work.
+  *
+  * @param credentials the S3 credentials to use
+  * @param bucket      the bucket name
+  */
 class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBackend {
   private val s3 = new AmazonS3Client(credentials)
 
   override def store(meta: ShowMetaData) = try {
     meta.localVideoFile match {
-      case None                       => throw new VideoFileNotFindException("No video file defined.")
+      case None => throw new VideoFileNotFindException("No video file defined.")
       case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
       case Some(file) =>
         val fileName = "%s/%s/%s.%s".format(meta.stationId, meta.channelId, UUID.randomUUID.toString.take(64), "mp4")
@@ -88,7 +93,7 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
   override def retrieve(name: String, file: Option[File] = None): File = try {
     val localFile = file match {
       case Some(file: File) if file.exists && file.canWrite => file
-      case None                                             => File.createTempFile(UUID.randomUUID().toString, ".tmp")
+      case None => File.createTempFile(UUID.randomUUID().toString, ".tmp")
     }
     val getObjectRequest = new GetObjectRequest(bucket, name)
     s3.getObject(getObjectRequest, localFile)
@@ -111,11 +116,11 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
 }
 
 /**
- * Vimeo storage backend. It uploads and manages videos on vimeo. The key (name) is the videoId which is assigned by vimeo.
- * An accessToken with write permissions is required
- *
- * @param accessToken the vimeo API key to be used
- */
+  * Vimeo storage backend. It uploads and manages videos on vimeo. The key (name) is the videoId which is assigned by vimeo.
+  * An accessToken with write permissions is required
+  *
+  * @param accessToken the vimeo API key to be used
+  */
 class VimeoBackend(accessToken: String) extends StorageBackend {
 
   val vimeoApiUrl = "https://api.vimeo.com"
@@ -124,14 +129,14 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   override def store(meta: ShowMetaData): URL = {
 
     meta.localVideoFile match {
-      case None                       => throw new VideoFileNotFindException("No video file defined.")
+      case None => throw new VideoFileNotFindException("No video file defined.")
       case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
       case Some(file) =>
         try {
           Logger.debug("Uploading video to vimeo. Meta: " + meta)
 
           val res = for {
-            // request upload ticket
+          // request upload ticket
             ticketResponse <- vimeoRequest("POST", "/me/videos", Json.obj("type" -> "streaming"))
             if ticketResponse.status == 201
 
@@ -172,7 +177,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             new URL(vimeoUrl + "/" + videoId.get)
           }
 
-          Await.result(res, 1.minute)
+          Await.result(res, 10 minute)
         } catch {
           case e: Exception => throw new StorageException("Could not upload to Vimeo", e)
         }
@@ -199,7 +204,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
   def editMetaData(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
 
-//    Logger.debug("Vimeo: adding metadata to video. name: " + meta.showTitle + " description: " + meta.showSubtitle)
+    //    Logger.debug("Vimeo: adding metadata to video. name: " + meta.showTitle + " description: " + meta.showSubtitle)
 
     val name = meta.showTitle.getOrElse("no title")
     val description = meta.showSubtitle.getOrElse("no description")
@@ -218,12 +223,12 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
   def addToChannel(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
 
-//    Logger.debug("Vimeo: adding video to channel: " + meta.channelName )
+    //    Logger.debug("Vimeo: adding video to channel: " + meta.channelName )
 
     val channelName = meta.channelName.getOrElse(meta.channelId)
 
     for {
-      // check if channel exists
+    // check if channel exists
       getChannelsResult <- vimeoRequest("GET", "/me/channels?per_page=50&filter=moderated")
       if getChannelsResult.status == 200
 
@@ -232,7 +237,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
         val channels = (getChannelsResult.json \ "data").as[Seq[JsObject]]
         channels.find(c => (c \ "name").as[String].equals(channelName)) match {
           case Some(channel) => Future((channel \ "uri").as[String])
-          case None => vimeoRequest("POST", "/channels", Json.obj("name" -> channelName)).map{
+          case None => vimeoRequest("POST", "/channels", Json.obj("name" -> channelName)).map {
             response => (response.json \ "uri").as[String]
           }
         }
@@ -259,6 +264,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     WS.url(uploadLink)
       .withHeaders(("Content-Length", file.length.toString))
       .withHeaders(("Content-Type", "video/mp4"))
+      .withRequestTimeout(600000)
       .put(file)
   }
 

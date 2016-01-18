@@ -16,8 +16,8 @@ import scala.concurrent.duration.Duration
 import scala.util.Random
 
 /**
- * Created by dermicha on 07/09/14.
- */
+  * Created by dermicha on 07/09/14.
+  */
 
 
 case class ProcessStationData(hmsStationId: String, stationId: String, channelId: String)
@@ -45,6 +45,8 @@ class ShowCrawler extends Actor {
   val vimeoAccessToken: String = Play.configuration.getString("vimeo.accessToken").getOrElse("NO-ACCESS-TOKEN")
   val vimeoBackend: VimeoBackend = new VimeoBackend(vimeoAccessToken)
 
+  val mmv = List("MV1", "WIS")
+
   val showProcessingActor = context.actorOf(Props(new ShowProcessingActor(s3Backend)))
 
   //@TODO add control which stations
@@ -58,6 +60,10 @@ class ShowCrawler extends Actor {
       meta.showTitle = processShow.processShowData.show.Name
       //meta.sourceVideoUrl = Some(new URL(processShow.show.DownloadURL.getOrElse("").replaceAllLiterally(" ", "%20")))
       meta.sourceVideoUrl = Some(new URL(processShow.processShowData.show.DownloadURL.get))
+
+      if (mmv.contains(meta.hmsStationId))
+        meta.vimeo = Some(true)
+
       log.info("collected meta: " + meta.showTitle + " / " + meta.sourceVideoUrl)
       showProcessingActor ! meta
 
@@ -89,7 +95,7 @@ class ShowCrawler extends Actor {
       log.info("starting show crawler")
       Station.allStations.map { stations =>
         log.debug("found stations: " + stations.iterator.length)
-        var count:Int = 0
+        var count: Int = 0
         stations.foreach { station =>
           count += 10
           log.info("will launch processing of station: %s in %d seconds ".format(station.stationId, count))

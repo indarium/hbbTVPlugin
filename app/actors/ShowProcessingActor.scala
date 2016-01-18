@@ -12,11 +12,11 @@ import play.api.Play.current
 import scala.concurrent.duration.Duration;
 
 /**
- * Process a show, fill in information, download video, upload it and update
- * database.
- *
- * @author Matthias L. Jugel
- */
+  * Process a show, fill in information, download video, upload it and update
+  * database.
+  *
+  * @author Matthias L. Jugel
+  */
 
 case class ScheduleNextStep(meta: ShowMetaData)
 
@@ -24,10 +24,14 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
   import context._
 
+  val accessToken = Play.configuration.getString("vimeo.accessToken").get
+  val vimeoBackend = new VimeoBackend(accessToken)
+
   val log = Logging(context.system, this)
 
   val videoDownloadActor = context.actorOf(Props[VideoDownloadActor])
   val videoUploadActor = context.actorOf(Props(new VideoUploadActor(backend)))
+  val videoVimeoUploadActor = context.actorOf(Props(new VideoUploadActor(vimeoBackend)))
 
   val crawlerPeriod = Play.configuration.getInt("hms.crawler.period").get
 
@@ -38,7 +42,10 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
     case VideoDownloadSuccess(meta) =>
       log.info("downloaded %s".format(meta.localVideoFile.getOrElse("???")))
-      videoUploadActor ! meta
+      if (meta.vimeo.isDefined && meta.vimeo.get && !meta.vimeoDone.isDefined)
+        videoVimeoUploadActor ! meta
+      else
+        videoUploadActor ! meta
 
     case VideoUploadSuccess(meta) =>
       log.info("uploaded %s".format(meta.publicVideoUrl.getOrElse("???")))
