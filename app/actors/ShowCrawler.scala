@@ -61,8 +61,10 @@ class ShowCrawler extends Actor {
       //meta.sourceVideoUrl = Some(new URL(processShow.show.DownloadURL.getOrElse("").replaceAllLiterally(" ", "%20")))
       meta.sourceVideoUrl = Some(new URL(processShow.processShowData.show.DownloadURL.get))
 
-      if (mmv.contains(meta.hmsStationId))
+      if (mmv.contains(meta.stationId)) {
+        log.info(s"found mvv tv station ${meta.hmsStationId}")
         meta.vimeo = Some(true)
+      }
 
       log.info("collected meta: " + meta.showTitle + " / " + meta.sourceVideoUrl)
       showProcessingActor ! meta
