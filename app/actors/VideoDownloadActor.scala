@@ -1,9 +1,11 @@
 package actors
 
 import java.io._
+import java.net.URL
 
 import akka.actor.Actor
 import akka.event.Logging
+import play.Mode
 
 import play.api.Play
 import play.api.Play.current
@@ -11,6 +13,8 @@ import play.api.Play.current
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import helper._
+
+import scala.concurrent.Future
 
 /**
  * Download the video and store it in a local file.
@@ -35,9 +39,7 @@ class VideoDownloadActor extends Actor {
           case None => throw new FileNotFoundException("missing download URL")
         }
 
-        //val os = new FileOutputStream(target)
-        //Downloader.downloadFile(source, os)
-        val f = AuthDownloader.downloadFile(source.toString, target)
+        val f = downloadVideo(source, target)
         f.onSuccess {
           case Some(downloadedFile: File) =>
             if (downloadedFile.length > minFileSize) {
@@ -61,4 +63,14 @@ class VideoDownloadActor extends Actor {
           currentSender ! VideoDownloadFailure(meta, t)
       }
   }
+
+  def downloadVideo(source: URL, target: File): Future[Option[File]] = {
+
+    Play.current.mode match {
+      case play.api.Mode.Prod => AuthDownloader.downloadFile(source.toString, target)
+      case _ => AuthDownloader.downloadFile("http://localhost:8080/nothing-to-hide-360p.mp4", target)
+    }
+
+  }
+
 }
