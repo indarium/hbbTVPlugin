@@ -3,9 +3,7 @@ package helper
 import java.io.File
 import java.net.URL
 
-import akka.actor.Status
-import akka.actor.Status.{Status, Failure}
-import play.api.libs.json.Json
+import constants.VimeoEncodingStatus
 
 /**
  * Data object for handing over data.
@@ -39,6 +37,8 @@ class ShowMetaData(val stationId: String, val channelId: String) {
 
   var vimeo: Option[Boolean] = None
   var vimeoDone: Option[Boolean] = None
+  var vimeoId: Option[Long] = None
+  var vimeoEncodeStatus: Option[VimeoEncodingStatus] = None
 
   override def toString = "showTitle: " + showTitle.getOrElse("none") + " channelName: " + channelName.getOrElse("none")
 

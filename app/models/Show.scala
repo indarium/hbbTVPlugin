@@ -1,12 +1,16 @@
 package models
 
+import constants.VimeoEncodingStatus
 import helper.ShowMetaData
 import play.Logger
+import play.api.Play
+import play.api.Play.current
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
-import play.api.Play.current
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * Created by dermicha on 06/09/14.
@@ -27,7 +31,9 @@ case class Show(stationId: String,
                 showVideoHDUrl: Option[String],
                 showVideoSDUrl: String,
                 channelBroadcastInfo: String,
-                rootPortalURL: String
+                rootPortalURL: String,
+                vimeoId: Long,
+                vimeoEncodeStatus: VimeoEncodingStatus
                  )
 
 object Show {
@@ -72,6 +78,18 @@ object Show {
     }
   }
 
+  def findShowVimeoEncodingInProgress: Future[List[JsObject]] = {
+
+    val query = Json.obj("vimeoEncodeStatus" -> VimeoEncodingStatus.IN_PROGRESS.toString)
+    val limit = Play.configuration.getInt("vimeo.encoding.batch.size").getOrElse(10)
+
+    showsCollection.
+      find(query).
+      cursor[JsObject].
+      collect[List](limit)
+
+  }
+
   def createShowByMeta(meta: ShowMetaData) = {
     Logger.info("store show: %s / %s".format(meta.showId, meta.showTitle))
 
@@ -94,7 +112,9 @@ object Show {
           None,
           meta.publicVideoUrl.get.toString,
           station.defaultChannelBroadcastInfo,
-          station.defaultRootPortalURL
+          station.defaultRootPortalURL,
+          meta.vimeoId.get,
+          meta.vimeoEncodeStatus.get
         )
         Logger.debug("new show doc: " + Json.prettyPrint(Json.toJson(show)))
         showsCollection.insert(Json.toJson(show))

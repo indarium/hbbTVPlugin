@@ -7,11 +7,12 @@ import java.util.UUID
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
+import constants.VimeoEncodingStatus
 import org.slf4j.LoggerFactory
-import play.api.{Play, Logger}
 import play.api.Play.current
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.{WS, WSResponse}
+import play.api.{Logger, Play}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -167,6 +168,10 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             videoId = finishResponse.header("Location").flatMap(_.split("/").lastOption)
             if videoId.isDefined
 
+            // remember vimeoId and encoding status
+            meta.vimeoId = videoId.asInstanceOf[Long]
+            meta.vimeoEncodeStatus <- VimeoEncodingStatus.IN_PROGRESS
+
             // update metadata
             metadataResponse <- editMetaData(videoId.get, meta)
             if metadataResponse.status == 200
@@ -177,11 +182,12 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           } yield {
             // construct  url from videoId and return result
-
+            // TODO refactor code into scheduled action: query https://api.vimeo.com/videos/${VIDEO-ID}
             //TODO ugly shit!!
             val url = s"http://mmv-mediathek.de/import/vimeo.php?auth=408ff63c-cf4e-4032-9213-bf71ff93d113&hms_id=${meta.showId.get}&vimeo_id=${videoId.get}"
             WS.url(url).get()
             log.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
+            // TODO use url from /videos/${VIDEO-ID} request ...set HD url, too
             new URL(vimeoUrl + "/" + videoId.get)
           }
 
@@ -260,13 +266,24 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     }
   }
 
-  def vimeoRequest(method: String, endpoint: String, body: JsObject = Json.obj()): Future[WSResponse] = {
+  def videoStatus(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
+    vimeoRequest("GET", s"/videos/${videoId}")
+  }
+
+  def vimeoRequest(method: String, endpoint: String, body: Option[JsObject] = Json.obj()): Future[WSResponse] = {
+
     val url = vimeoApiUrl + endpoint
-    WS.url(url)
+
+    val wsRequestHolder = WS.url(url)
       .withHeaders(("Authorization", "bearer " + accessToken))
-      .withHeaders(("Content-Type", "application/json"))
+
+    if (body.isDefined) {
+      wsRequestHolder.withHeaders(("Content-Type", "application/json"))
       .withBody(body)
-      .execute(method)
+    }
+
+    wsRequestHolder.execute(method)
+
   }
 
   def vimeoUploadFile(uploadLink: String, file: File): Future[WSResponse] = {
