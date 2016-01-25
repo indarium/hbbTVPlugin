@@ -5,15 +5,11 @@ import java.net.URL
 
 import akka.actor.Actor
 import akka.event.Logging
-import play.Mode
-
+import helper._
 import play.api.Play
 import play.api.Play.current
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
-import helper._
-
 import scala.concurrent.Future
 
 /**
@@ -68,7 +64,9 @@ class VideoDownloadActor extends Actor {
 
     Play.current.mode match {
       case play.api.Mode.Prod => AuthDownloader.downloadFile(source.toString, target)
-      case _ => AuthDownloader.downloadFile("http://localhost:8080/nothing-to-hide-360p.mp4", target)
+      case _ =>
+        val localPath = Play.configuration.getString("hms.localDownload").getOrElse("")
+        AuthDownloader.downloadFile(localPath, target)
     }
 
   }
