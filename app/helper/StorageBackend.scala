@@ -7,7 +7,7 @@ import java.util.UUID
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
-import constants.VimeoEncodingStatus
+import constants.IN_PROGRESS
 import org.slf4j.LoggerFactory
 import play.api.Play.current
 import play.api.libs.json.{JsObject, Json}
@@ -141,7 +141,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           val res = for {
           // request upload ticket
-            ticketResponse <- vimeoRequest("POST", "/me/videos", Json.obj("type" -> "streaming"))
+            ticketResponse <- vimeoRequest("POST", "/me/videos", Some(Json.obj("type" -> "streaming")))
             if ticketResponse.status == 201
 
             // get the data we need from the ticketResponse
@@ -161,7 +161,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             if uploadedBytes.exists(_.equals(file.length.toString))
 
             // close upload ticket and mark upload complete
-            finishResponse <- vimeoRequest("DELETE", completeUri)
+            finishResponse <- vimeoRequest("DELETE", completeUri, None)
             if finishResponse.status == 201
 
             // get video id from response
@@ -169,8 +169,9 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             if videoId.isDefined
 
             // remember vimeoId and encoding status
-            meta.vimeoId = videoId.asInstanceOf[Long]
-            meta.vimeoEncodeStatus <- VimeoEncodingStatus.IN_PROGRESS
+            someLong: Some[Long] = Some(videoId.get.asInstanceOf[Long])
+            meta.vimeoId = someLong
+            meta.vimeoEncodeStatus <- IN_PROGRESS
 
             // update metadata
             metadataResponse <- editMetaData(videoId.get, meta)
@@ -182,7 +183,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           } yield {
             // construct  url from videoId and return result
-            // TODO refactor code into scheduled action: query https://api.vimeo.com/videos/${VIDEO-ID}
+            // TODO refactor code into scheduled actor: query https://api.vimeo.com/videos/${VIDEO-ID}
             //TODO ugly shit!!
             val url = s"http://mmv-mediathek.de/import/vimeo.php?auth=408ff63c-cf4e-4032-9213-bf71ff93d113&hms_id=${meta.showId.get}&vimeo_id=${videoId.get}"
             WS.url(url).get()
@@ -202,7 +203,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   override def delete(name: String): Unit = {
     try {
       val url = vimeoApiUrl + "/videos/" + name
-      vimeoRequest("DELETE", url)
+      vimeoRequest("DELETE", url, None)
     } catch {
       case e: Exception => throw new DeleteException("can't delete %s".format(name), e)
     }
@@ -213,7 +214,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   override def list(): List[String] = ???
 
   def ping: Boolean = {
-    val res = vimeoRequest("GET", "/").map(_.status == 200)
+    val res = vimeoRequest("GET", "/", None).map(_.status == 200)
     Await.result(res, 1.minute)
   }
 
@@ -233,7 +234,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     )
     val path = "/videos/" + videoId
 
-    vimeoRequest("PATCH", path, body)
+    vimeoRequest("PATCH", path, Some(body))
   }
 
   def addToChannel(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
@@ -244,7 +245,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
     for {
     // check if channel exists
-      getChannelsResult <- vimeoRequest("GET", "/me/channels?per_page=50&filter=moderated")
+      getChannelsResult <- vimeoRequest("GET", "/me/channels?per_page=50&filter=moderated", None)
       if getChannelsResult.status == 200
 
       // get channel uri or create channel
@@ -252,14 +253,14 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
         val channels = (getChannelsResult.json \ "data").as[Seq[JsObject]]
         channels.find(c => (c \ "name").as[String].equals(channelName)) match {
           case Some(channel) => Future((channel \ "uri").as[String])
-          case None => vimeoRequest("POST", "/channels", Json.obj("name" -> channelName)).map {
+          case None => vimeoRequest("POST", "/channels", Some(Json.obj("name" -> channelName))).map {
             response => (response.json \ "uri").as[String]
           }
         }
       }
 
       // add video to channel
-      addChannelResponse <- vimeoRequest("PUT", channelUri + "/videos/" + videoId)
+      addChannelResponse <- vimeoRequest("PUT", channelUri + "/videos/" + videoId, None)
 
     } yield {
       addChannelResponse
@@ -267,22 +268,26 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   }
 
   def videoStatus(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
-    vimeoRequest("GET", s"/videos/${videoId}")
+    vimeoRequest("GET", s"/videos/$videoId", None)
   }
 
-  def vimeoRequest(method: String, endpoint: String, body: Option[JsObject] = Json.obj()): Future[WSResponse] = {
+  def vimeoRequest(method: String, endpoint: String, body: Option[JsObject]): Future[WSResponse] = {
 
     val url = vimeoApiUrl + endpoint
 
     val wsRequestHolder = WS.url(url)
       .withHeaders(("Authorization", "bearer " + accessToken))
 
-    if (body.isDefined) {
-      wsRequestHolder.withHeaders(("Content-Type", "application/json"))
-      .withBody(body)
+    body match {
+      case Some(aBody) =>
+        wsRequestHolder
+          .withHeaders(("Content-Type", "application/json"))
+          .withBody(aBody)
+          .execute(method)
+      case None =>
+        wsRequestHolder
+          .execute(method)
     }
-
-    wsRequestHolder.execute(method)
 
   }
 
