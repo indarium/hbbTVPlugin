@@ -7,14 +7,13 @@ import java.util.UUID
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
-import constants.{VimeoEncodingStatus, IN_PROGRESS}
+import constants.VimeoEncodingStatusSystem._
 import org.slf4j.LoggerFactory
 import play.api.Play.current
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.{WS, WSResponse}
 import play.api.{Logger, Play}
 
-import scala.annotation.meta
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -149,6 +148,8 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
         try {
           Logger.debug("Uploading video to vimeo. Meta: " + meta)
 
+          import collection.JavaConversions._
+
           val res = for {
           // request upload ticket
             ticketResponse <- vimeoRequest("POST", "/me/videos", Some(Json.obj("type" -> "streaming")))
@@ -176,8 +177,8 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
             // get video id from response
             videoId = finishResponse.header("Location").flatMap(_.split("/").lastOption)
-            vimeoId <- videoId.get.asInstanceOf[Long]
-            if videoId.isDefined
+            /*vimeoId <- videoId.get.asInstanceOf[Long]
+            if videoId.isDefined*/ //TODO: this is giving an error, saying filter is not a member of Long
 
             // update metadata
             metadataResponse <- {
@@ -191,7 +192,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           } yield {
 
-            meta.vimeoId = Some(vimeoId)
+            meta.vimeoId = Some(videoId.get.asInstanceOf[Long])
             meta.vimeoEncodeStatus = Some(IN_PROGRESS)
 
             // construct  url from videoId and return result

@@ -1,6 +1,6 @@
 package models
 
-import constants.VimeoEncodingStatus
+import constants.VimeoEncodingStatusSystem._
 import helper.ShowMetaData
 import play.Logger
 import play.api.Play
@@ -39,19 +39,6 @@ case class Show(stationId: String,
 object Show {
 
   val showsCollection = ReactiveMongoPlugin.db.collection[JSONCollection]("shows")
-
-  val vimeoEncodingStatusReads: Reads[VimeoEncodingStatus] = (
-    (JsPath \ "vimeo-encoding-status").read[String]
-  )(VimeoEncodingStatus.apply _)
-
-//  val vimeoEncodingStatusWrites: Writes[VimeoEncodingStatus] = (
-//    (JsPath \ "vimeo-encoding-status").write[String]
-//  )(unlift(VimeoEncodingStatus.unapply))
-//  implicit val vimeoEncodingStatusFormat: Format[VimeoEncodingStatus] = Format(vimeoEncodingStatusReads, vimeoEncodingStatusWrites)
-
-//  implicit val vimeoEncodingStatusFormat: Format[VimeoEncodingStatus] = (
-//    (JsPath \ "vimeo-encoding-status").format[String]
-//  )(VimeoEncodingStatus.apply, unlift(VimeoEncodingStatus.unapply))
 
   implicit val format = Json.format[Show]
 
@@ -93,7 +80,7 @@ object Show {
 
   def findShowVimeoEncodingInProgress: Future[List[JsObject]] = {
 
-    val query = Json.obj("vimeoEncodeStatus" -> VimeoEncodingStatus.IN_PROGRESS)
+    val query = Json.obj("vimeoEncodeStatus" -> IN_PROGRESS.name)
     val limit = Play.configuration.getInt("vimeo.encoding.batch.size").getOrElse(10)
 
     showsCollection.
