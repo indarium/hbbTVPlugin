@@ -130,15 +130,6 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   val vimeoApiUrl = "https://api.vimeo.com"
   val vimeoUrl = "http://vimeo.com"
 
-  def rememberVimeoSpecific(videoId: Option[String], meta: ShowMetaData): (Option[Long], Option[VimeoEncodingStatus]) = {
-
-    meta.vimeoId = Some(videoId.get.asInstanceOf[Long])
-    meta.vimeoEncodeStatus = Some(IN_PROGRESS)
-
-    (meta.vimeoId, meta.vimeoEncodeStatus)
-
-  }
-
   override def store(meta: ShowMetaData): URL = {
 
     meta.localVideoFile match {
@@ -193,7 +184,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
           } yield {
 
             meta.vimeoId = Some(videoId.get.asInstanceOf[Long])
-            meta.vimeoEncodeStatus = Some(IN_PROGRESS)
+            meta.vimeoEncodingStatus = Some(IN_PROGRESS)
 
             // construct  url from videoId and return result
             // TODO refactor code into scheduled actor: query https://api.vimeo.com/videos/${VIDEO-ID}

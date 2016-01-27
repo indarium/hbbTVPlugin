@@ -33,7 +33,7 @@ case class Show(stationId: String,
                 channelBroadcastInfo: String,
                 rootPortalURL: String,
                 vimeoId: Option[Long],
-                vimeoEncodeStatus: Option[VimeoEncodingStatus]
+                vimeoEncodingStatus: Option[VimeoEncodingStatus]
                  )
 
 object Show {
@@ -80,7 +80,7 @@ object Show {
 
   def findShowVimeoEncodingInProgress: Future[List[JsObject]] = {
 
-    val query = Json.obj("vimeoEncodeStatus" -> IN_PROGRESS.name)
+    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS.name)
     val limit = Play.configuration.getInt("vimeo.encoding.batch.size").getOrElse(10)
 
     showsCollection.
@@ -114,7 +114,7 @@ object Show {
           station.defaultChannelBroadcastInfo,
           station.defaultRootPortalURL,
           meta.vimeoId,
-          meta.vimeoEncodeStatus
+          meta.vimeoEncodingStatus
         )
         Logger.debug("new show doc: " + Json.prettyPrint(Json.toJson(show)))
         showsCollection.insert(Json.toJson(show))

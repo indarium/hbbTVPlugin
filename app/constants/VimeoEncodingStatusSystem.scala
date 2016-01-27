@@ -4,8 +4,8 @@ import julienrf.variants.Variants
 import play.api.libs.json._
 
 /**
-  * author: cvandrei
-  * since: 2016-01-26
+  * author: pereira
+  * since: 2016-01-27
   */
 object VimeoEncodingStatusSystem {
 
