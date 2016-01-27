@@ -3,7 +3,7 @@ package helper
 import java.io.File
 import java.net.URL
 
-import constants.VimeoEncodingStatus
+import constants.VimeoEncodingStatusSystem.VimeoEncodingStatus
 
 /**
  * Data object for handing over data.

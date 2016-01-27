@@ -16,4 +16,5 @@ libraryDependencies ++= Seq(
   , "com.amazonaws" % "aws-java-sdk" % "1.7.8.1"
   , "org.scalatestplus" %% "play" % "1.1.0" % "test"
   , "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
+  , "org.julienrf" %% "play-json-variants" % "2.0"
 )
