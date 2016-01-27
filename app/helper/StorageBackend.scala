@@ -7,13 +7,14 @@ import java.util.UUID
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
-import constants.IN_PROGRESS
+import constants.{VimeoEncodingStatus, IN_PROGRESS}
 import org.slf4j.LoggerFactory
 import play.api.Play.current
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.{WS, WSResponse}
 import play.api.{Logger, Play}
 
+import scala.annotation.meta
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -130,6 +131,15 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   val vimeoApiUrl = "https://api.vimeo.com"
   val vimeoUrl = "http://vimeo.com"
 
+  def rememberVimeoSpecific(videoId: Option[String], meta: ShowMetaData): (Option[Long], Option[VimeoEncodingStatus]) = {
+
+    meta.vimeoId = Some(videoId.get.asInstanceOf[Long])
+    meta.vimeoEncodeStatus = Some(IN_PROGRESS)
+
+    (meta.vimeoId, meta.vimeoEncodeStatus)
+
+  }
+
   override def store(meta: ShowMetaData): URL = {
 
     meta.localVideoFile match {
@@ -166,15 +176,13 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
             // get video id from response
             videoId = finishResponse.header("Location").flatMap(_.split("/").lastOption)
+            vimeoId <- videoId.get.asInstanceOf[Long]
             if videoId.isDefined
 
-            // remember vimeoId and encoding status
-            someLong: Some[Long] = Some(videoId.get.asInstanceOf[Long])
-            meta.vimeoId = someLong
-            meta.vimeoEncodeStatus <- IN_PROGRESS
-
             // update metadata
-            metadataResponse <- editMetaData(videoId.get, meta)
+            metadataResponse <- {
+              editMetaData(videoId.get, meta)
+            }
             if metadataResponse.status == 200
 
             // add video to channel
@@ -182,6 +190,10 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             if addChannelResponse.status == 204
 
           } yield {
+
+            meta.vimeoId = Some(vimeoId)
+            meta.vimeoEncodeStatus = Some(IN_PROGRESS)
+
             // construct  url from videoId and return result
             // TODO refactor code into scheduled actor: query https://api.vimeo.com/videos/${VIDEO-ID}
             //TODO ugly shit!!
