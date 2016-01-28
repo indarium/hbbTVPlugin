@@ -1,59 +1,77 @@
-import constants.VimeoEncodingStatusSystem.{DONE, VimeoEncodingStatus, IN_PROGRESS}
+import constants.VimeoEncodingStatusSystem._
 import models.Show
 import org.specs2.mutable.Specification
-import play.api.libs.json.Json
+import play.api.libs.json._
+import play.api.test.{FakeApplication, PlayRunners}
 
 /**
   * Created by thiago on 1/27/16.
   */
-class VimeoEncodingStatusSpec extends Specification {
+class VimeoEncodingStatusSpec extends Specification with PlayRunners {
 
   "The Json library" should {
 
-    "parse CASE OBJECT into a JSON" in {
-      val obj = Json.toJson(IN_PROGRESS)
-//      (obj \ "vimeo-encoding-status") mustEqual "IN_PROGRESS" // no key "vimeo-encoding-status" exists in resulting json
-      obj.as[VimeoEncodingStatus].vimeoEncodingStatus mustEqual "IN_PROGRESS"
+    "parse Show Scala into a Show JSON" in {
+      running(FakeApplication()) {
+        val show = Show(
+          "stationId",
+          "stationName",
+          "stationLogoUrl",
+          stationLogoDisplay = false,
+          "stationMainColor",
+          "channelId",
+          "channelName",
+          showId = -1L,
+          "showTitle",
+          "showSourceTitle",
+          "showSubtitle",
+          "showLogoUrl",
+          Some("showVideoHDUrl"),
+          "showVideoSDUrl",
+          "channelBroadcastInfo",
+          "rootPortalUrl",
+          vimeoId = Some(-1L),
+          vimeoEncodingStatus = Some(DONE)
+        )
+
+        val json = Json.toJson(show)
+        val jsonString = json.toString()
+
+        println(json)
+
+        val vimeo = (json \ "vimeoEncodingStatus").as[String]
+        vimeo mustEqual "DONE"
+      }
     }
 
-    "parse JSON into a CASE OBJECT" in {
+    "parse a Show JSON into a Show Scala" in {
+      running(FakeApplication()) {
+        val json: JsValue = JsObject(Seq(
+          "stationId" -> JsString("stationId"),
+          "stationName" -> JsString("stationName"),
+          "stationLogoUrl" -> JsString("stationLogoUrl"),
+          "stationLogoDisplay" -> JsBoolean(false),
+          "stationMainColor" -> JsString("stationMainColor"),
+          "channelId" -> JsString("channelId"),
+          "channelName" -> JsString("channelName"),
+          "showId" -> JsNumber(-1L),
+          "showTitle" -> JsString("showTitle"),
+          "showSourceTitle" -> JsString("showSourceTitle"),
+          "showSubtitle" -> JsString("showLogoUrl"),
+          "showLogoUrl" -> JsString("showLogoUrl"),
+          "showVideoHDUrl" -> JsString("showVideoHDUrl"),
+          "showVideoSDUrl" -> JsString("showVideoSDUrl"),
+          "channelBroadcastInfo" -> JsString("channelBroadcastInfo"),
+          "rootPortalURL" -> JsString("rootPortalURL"),
+          "vimeoId" -> JsNumber(-1L),
+          "vimeoEncodingStatus" -> JsString(DONE.name)
+        ))
 
-      val json = Json.obj("vimeo-encoding-status" -> "IN_PROGRESS", "$variant" -> "IN_PROGRESS")
-//      val json = Json.obj("vimeo-encoding-status" -> "IN_PROGRESS") // replacing the above line with this one breaks the test
-      val obj = json.asOpt[VimeoEncodingStatus]
+        val show = json.validate[Show]
+        println(show.get)
 
-      obj must beSome
-      obj.get.vimeoEncodingStatus mustEqual "IN_PROGRESS"
+        show.get.stationName mustEqual "stationName"
+      }
     }
-
-//    "parse CASE OBJECT into a Show JSON" in {
-//
-//      val show = new Show("stationId",
-//                          "stationName",
-//                          "stationLogoUrl",
-//                          false, // stationLogoDisplay
-//                          "stationMainColor",
-//                          "channelId",
-//                          "channelName",
-//                          -1L, // showId
-//                          "showTitle",
-//                          "showSourceTitle",
-//                          "showSubtitle",
-//                          "showLogoUrl",
-//                          Some("showVideoHDUrl"),
-//                          "showVideoSDUrl",
-//                          "channelBroadcastInfo",
-//                          "rootPortalUrl",
-//                          Some(-1L), // vimeoId
-//                          Some(DONE)
-//      )
-//
-//      val json = Json.toJson(show)
-//
-//      (json \ "show" \ "$variant") mustEqual("DONE")
-////      (json \ "show" \ "vimeo-encoding-status") mustEqual(DONE.toString)
-//
-//    }
-
   }
 }

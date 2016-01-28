@@ -40,7 +40,61 @@ object Show {
 
   val showsCollection = ReactiveMongoPlugin.db.collection[JSONCollection]("shows")
 
-  implicit val format = Json.format[Show]
+  implicit object ShowReads extends Format[Show] {
+
+    override def reads(json: JsValue): JsResult[Show] = {
+
+      val vimeoEncodingStatus = (json \ "vimeoEncodingStatus").asOpt[String]
+      val vimeoJson = Json.obj("name" -> vimeoEncodingStatus, "$variant" -> vimeoEncodingStatus)
+
+      val show = Show(
+        (json \ "stationId").as[String],
+        (json \ "stationName").as[String],
+        (json \ "stationLogoUrl").as[String],
+        (json \ "stationLogoDisplay").as[Boolean],
+        (json \ "stationMainColor").as[String],
+        (json \ "channelId").as[String],
+        (json \ "channelName").as[String],
+        (json \ "showId").as[Long],
+        (json \ "showTitle").as[String],
+        (json \ "showSourceTitle").as[String],
+        (json \ "showSubtitle").as[String],
+        (json \ "showLogoUrl").as[String],
+        (json \ "showVideoHDUrl").asOpt[String],
+        (json \ "showVideoSDUrl").as[String],
+        (json \ "channelBroadcastInfo").as[String],
+        (json \ "rootPortalURL").as[String],
+        (json \ "vimeoId").asOpt[Long],
+        vimeoJson.asOpt[VimeoEncodingStatus])
+
+      JsSuccess(show)
+    }
+
+    def writes(s: Show) = {
+      val vimeoEncodingStatus = if(s.vimeoEncodingStatus.isDefined) s.vimeoEncodingStatus.get.name else ""
+
+      JsObject(Seq(
+        "stationId" -> JsString(s.stationId),
+        "stationName" -> JsString(s.stationName),
+        "stationLogoUrl" -> JsString(s.stationLogoUrl),
+        "stationLogoDisplay" -> JsBoolean(s.stationLogoDisplay),
+        "stationMainColor" -> JsString(s.stationMainColor),
+        "channelId" -> JsString(s.channelId),
+        "channelName" -> JsString(s.channelName),
+        "showId" -> JsNumber(s.showId),
+        "showTitle" -> JsString(s.showTitle),
+        "showSourceTitle" -> JsString(s.showSourceTitle),
+        "showSubtitle" -> JsString(s.showSubtitle),
+        "showLogoUrl" -> JsString(s.showLogoUrl),
+        "showVideoHDUrl" -> JsString(s.showVideoHDUrl.getOrElse("")),
+        "showVideoSDUrl" -> JsString(s.showVideoSDUrl),
+        "channelBroadcastInfo" -> JsString(s.channelBroadcastInfo),
+        "rootPortalURL" -> JsString(s.rootPortalURL),
+        "vimeoId" -> JsNumber(s.vimeoId.get),
+        "vimeoEncodingStatus" -> JsString(vimeoEncodingStatus)
+      ))
+    }
+  }
 
   def findCurrentShow(stationId: String, channelId: String) = {
     Logger.info("find current show for: %s / %s".format(stationId, channelId))
@@ -80,7 +134,7 @@ object Show {
 
   def findShowVimeoEncodingInProgress: Future[List[JsObject]] = {
 
-    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS.vimeoEncodingStatus)
+    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS)
     val limit = Play.configuration.getInt("vimeo.encoding.batch.size").getOrElse(10)
 
     showsCollection.
