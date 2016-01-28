@@ -10,7 +10,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest
 import constants.VimeoEncodingStatusSystem._
 import org.slf4j.LoggerFactory
 import play.api.Play.current
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json._
 import play.api.libs.ws.{WS, WSResponse}
 import play.api.{Logger, Play}
 
@@ -180,17 +180,59 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           } yield {
 
-            meta.vimeoId = Some(videoId.get.asInstanceOf[Long])
+            val EmbeddedNumberFmt = """(\d+)""".r
+            val videoIdLong = videoId.get match {
+              case EmbeddedNumberFmt(n) => Some(n.toLong)
+              case _ => throw new NumberFormatException(s"failed to convert id to long: vimeoId=$videoId")
+            }
+            log.debug(s"videoId=$videoId; vimeoId=$videoIdLong")
+
+            meta.vimeoId = videoIdLong
             meta.vimeoEncodingStatus = Some(IN_PROGRESS)
 
             // construct  url from videoId and return result
             // TODO refactor code into scheduled actor: query https://api.vimeo.com/videos/${VIDEO-ID}
-            //TODO ugly shit!!
-            val url = s"http://mmv-mediathek.de/import/vimeo.php?auth=408ff63c-cf4e-4032-9213-bf71ff93d113&hms_id=${meta.showId.get}&vimeo_id=${videoId.get}"
-            WS.url(url).get()
-            log.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
-            // TODO use url from /videos/${VIDEO-ID} request ...set HD url, too
+
+            // TODO refactor into separate class (or method in the actor querying https://api.vimeo.com/videos/${VIDEO-ID}
+            val webjazzToken = Play.configuration.getString("webjazz.auth-token")
+            webjazzToken match {
+              case None => log.error("unable to notify Webjazz: config 'webjazz.auth-token' is missing")
+              case _ => {
+                val body = Json.obj(
+                  "auth" -> webjazzToken.get,
+                  "vimeo-id" -> meta.vimeoId.get,
+                  "hms-id" -> videoId.get,
+                  "width" -> 1280, // TODO set value dynamically
+                  "height" -> 720, // TODO set value dynamically
+                  "thumbnails" -> JsArray(Seq(
+                    JsObject(Seq(
+                      "width" -> JsString("100"), // TODO set value dynamically
+                      "height" -> JsString("75"), // TODO set value dynamically
+                      "url" -> JsString("https://i.vimeocdn.com/video/552752804_100x75.jpg?r=pad")) // TODO set value dynamically
+                    ),
+                    JsObject(Seq(
+                      "width" -> JsString("1280"), // TODO set value dynamically
+                      "height" -> JsString("720"), // TODO set value dynamically
+                      "url" -> JsString("https://i.vimeocdn.com/video/552752804_1280x720.jpg?r=pad")) // TODO set value dynamically
+                    )
+                  ))
+                )
+
+                val webjazzResponse = WS.url("http://mmv-mediathek.de/import/vimeo.php")
+                  .withHeaders(("Content-Type", "application/json"))
+                  .withBody(body)
+                  .execute("PUT")
+
+                // TODO conditional logging based on http status code
+                log.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
+
+
+              }
+            }
+
+            // TODO use url from /videos/${VIDEO-ID} response
             new URL(vimeoUrl + "/" + videoId.get)
+
           }
 
           Await.result(res, 10 minute)
@@ -268,7 +310,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     }
   }
 
-  def videoStatus(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
+  def videoStatus(videoId: String): Future[WSResponse] = {
     vimeoRequest("GET", s"/videos/$videoId", None)
   }
 
