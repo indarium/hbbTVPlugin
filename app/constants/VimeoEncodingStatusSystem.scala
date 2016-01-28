@@ -1,6 +1,5 @@
 package constants
 
-import julienrf.variants.Variants
 import play.api.libs.json._
 
 /**
@@ -10,20 +9,29 @@ import play.api.libs.json._
 object VimeoEncodingStatusSystem {
 
   sealed trait VimeoEncodingStatus {
-    val name: String
+    val vimeoEncodingStatus: String
   }
 
   case object IN_PROGRESS extends VimeoEncodingStatus {
-    override val name: String = "IN_PROGRESS"
+    override val vimeoEncodingStatus: String = "IN_PROGRESS"
   }
   case object DONE extends VimeoEncodingStatus {
-    override val name: String = "DONE"
+    override val vimeoEncodingStatus: String = "DONE"
   }
 
-//  implicit val locationFormat: Format[VimeoEncodingStatus] = (
-//    (JsPath \ "vimeo-encoding-status").format[String]
-//  )(VimeoEncodingStatus.apply, unlift(VimeoEncodingStatus.unapply))
+  implicit def vimeoStatusEncodingReads[T](implicit fmt: Reads[T]): Reads[VimeoEncodingStatus] = new Reads[VimeoEncodingStatus] {
+    def reads(json: JsValue): VimeoEncodingStatus = new VimeoEncodingStatus (
+      (json \ "vimeo-encoding-status").as[String]
+    )
+  }
 
-  implicit val reads: Reads[VimeoEncodingStatus] = Variants.reads[VimeoEncodingStatus]
-  implicit val writes: Writes[VimeoEncodingStatus] = Variants.writes[VimeoEncodingStatus]
+  implicit def vimeoStatusEncodingWrites[T](implicit fmt: Writes[T]): Writes[VimeoEncodingStatus] = new Writes[VimeoEncodingStatus] {
+    def writes(vimeoEncodingStatus: VimeoEncodingStatus) = JsObject(Seq(
+      "vimeo-encoding-status" -> JsString(vimeoEncodingStatus.vimeoEncodingStatus)
+    ))
+  }
+
+//  implicit val reads: Reads[VimeoEncodingStatus] = Variants.reads[VimeoEncodingStatus]
+//  implicit val writes: Writes[VimeoEncodingStatus] = Variants.writes[VimeoEncodingStatus]
+
 }

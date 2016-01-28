@@ -80,7 +80,7 @@ object Show {
 
   def findShowVimeoEncodingInProgress: Future[List[JsObject]] = {
 
-    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS.name)
+    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS.vimeoEncodingStatus)
     val limit = Play.configuration.getInt("vimeo.encoding.batch.size").getOrElse(10)
 
     showsCollection.
@@ -115,6 +115,7 @@ object Show {
           station.defaultRootPortalURL,
           meta.vimeoId,
           meta.vimeoEncodingStatus
+//          if(meta.vimeoEncodingStatus.isDefined) Some(meta.vimeoEncodingStatus.get.vimeoEncodingStatus) else None
         )
         Logger.debug("new show doc: " + Json.prettyPrint(Json.toJson(show)))
         showsCollection.insert(Json.toJson(show))

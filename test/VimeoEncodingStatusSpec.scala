@@ -13,7 +13,7 @@ class VimeoEncodingStatusSpec extends Specification {
     "parse CASE OBJECT into a JSON" in {
       val obj = Json.toJson(IN_PROGRESS)
 //      (obj \ "vimeo-encoding-status") mustEqual "IN_PROGRESS" // no key "vimeo-encoding-status" exists in resulting json
-      obj.as[VimeoEncodingStatus].name mustEqual "IN_PROGRESS"
+      obj.as[VimeoEncodingStatus].vimeoEncodingStatus mustEqual "IN_PROGRESS"
     }
 
     "parse JSON into a CASE OBJECT" in {
@@ -23,7 +23,7 @@ class VimeoEncodingStatusSpec extends Specification {
       val obj = json.asOpt[VimeoEncodingStatus]
 
       obj must beSome
-      obj.get.name mustEqual "IN_PROGRESS"
+      obj.get.vimeoEncodingStatus mustEqual "IN_PROGRESS"
     }
 
 //    "parse CASE OBJECT into a Show JSON" in {
