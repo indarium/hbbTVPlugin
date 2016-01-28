@@ -139,8 +139,6 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
         try {
           Logger.debug("Uploading video to vimeo. Meta: " + meta)
 
-          import collection.JavaConversions._
-
           val res = for {
           // request upload ticket
             ticketResponse <- vimeoRequest("POST", "/me/videos", Some(Json.obj("type" -> "streaming")))
@@ -168,8 +166,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
             // get video id from response
             videoId = finishResponse.header("Location").flatMap(_.split("/").lastOption)
-            /*vimeoId <- videoId.get.asInstanceOf[Long]
-            if videoId.isDefined*/ //TODO: this is giving an error, saying filter is not a member of Long
+            if videoId.isDefined
 
             // update metadata
             metadataResponse <- {
