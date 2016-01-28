@@ -20,6 +20,10 @@ object VimeoEncodingStatusSystem {
     override val name: String = "DONE"
   }
 
+//  implicit val locationFormat: Format[VimeoEncodingStatus] = (
+//    (JsPath \ "vimeo-encoding-status").format[String]
+//  )(VimeoEncodingStatus.apply, unlift(VimeoEncodingStatus.unapply))
+
   implicit val reads: Reads[VimeoEncodingStatus] = Variants.reads[VimeoEncodingStatus]
   implicit val writes: Writes[VimeoEncodingStatus] = Variants.writes[VimeoEncodingStatus]
 }
