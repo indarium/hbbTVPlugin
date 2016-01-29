@@ -1,14 +1,8 @@
 package actors
 
-import java.io.FileNotFoundException
-import java.net.URL
-import java.util.UUID
-
 import akka.actor.Actor
 import akka.event.Logging
 import helper._
-import play.api.Play
-import play.api.Play.current
 
 /**
  * Upload video to storage backend

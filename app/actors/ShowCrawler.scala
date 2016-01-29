@@ -13,7 +13,6 @@ import play.api.Play.current
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.util.Random
 
 /**
   * Created by dermicha on 07/09/14.

@@ -1,15 +1,11 @@
 package actors
 
-import java.util.concurrent.TimeUnit
-
 import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
 import models.Show
 import play.api.Play
 import play.api.Play.current
-
-import scala.concurrent.duration.Duration;
 
 /**
   * Process a show, fill in information, download video, upload it and update
@@ -21,8 +17,6 @@ import scala.concurrent.duration.Duration;
 case class ScheduleNextStep(meta: ShowMetaData)
 
 class ShowProcessingActor(backend: StorageBackend) extends Actor {
-
-  import context._
 
   val accessToken = Play.configuration.getString("vimeo.accessToken").get
   val vimeoBackend = new VimeoBackend(accessToken)
@@ -65,4 +59,6 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
       log.info("schedule next processing in %d Min.".format(crawlerPeriod))
       context.parent ! ScheduleProcess(ProcessStationData(meta.hmsStationId.get, meta.stationId, meta.channelId))
   }
+
 }
+

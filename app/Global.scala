@@ -9,14 +9,16 @@ import java.io.File
 import actors._
 import akka.actor.Props
 import com.fasterxml.jackson.core.JsonParseException
+import play.api.Play.current
 import play.api._
-import play.api.libs.json.{JsResultException, JsValue, JsObject, Json}
+import play.api.libs.json.{JsObject, JsResultException, JsValue, Json}
 import play.libs.Akka
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
- import play.api.Play.current
-import scala.io.Source
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.io.Source
+
 object Global extends GlobalSettings {
 
   override def onStart(app: Application): Unit = {
