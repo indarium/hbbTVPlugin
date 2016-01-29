@@ -190,47 +190,9 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             meta.vimeoId = videoIdLong
             meta.vimeoEncodingStatus = Some(IN_PROGRESS)
 
-            // construct  url from videoId and return result
-            // TODO refactor code into scheduled actor: query https://api.vimeo.com/videos/${VIDEO-ID}
+            log.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
 
-            // TODO refactor into separate class (or method in the actor querying https://api.vimeo.com/videos/${VIDEO-ID}
-            val webjazzToken = Play.configuration.getString("webjazz.auth-token")
-            webjazzToken match {
-              case None => log.error("unable to notify Webjazz: config 'webjazz.auth-token' is missing")
-              case _ => {
-                val body = Json.obj(
-                  "auth" -> webjazzToken.get,
-                  "vimeo-id" -> meta.vimeoId.get,
-                  "hms-id" -> videoId.get,
-                  "width" -> 1280, // TODO set value dynamically
-                  "height" -> 720, // TODO set value dynamically
-                  "thumbnails" -> JsArray(Seq(
-                    JsObject(Seq(
-                      "width" -> JsString("100"), // TODO set value dynamically
-                      "height" -> JsString("75"), // TODO set value dynamically
-                      "url" -> JsString("https://i.vimeocdn.com/video/552752804_100x75.jpg?r=pad")) // TODO set value dynamically
-                    ),
-                    JsObject(Seq(
-                      "width" -> JsString("1280"), // TODO set value dynamically
-                      "height" -> JsString("720"), // TODO set value dynamically
-                      "url" -> JsString("https://i.vimeocdn.com/video/552752804_1280x720.jpg?r=pad")) // TODO set value dynamically
-                    )
-                  ))
-                )
-
-                val webjazzResponse = WS.url("http://mmv-mediathek.de/import/vimeo.php")
-                  .withHeaders(("Content-Type", "application/json"))
-                  .withBody(body)
-                  .execute("PUT")
-
-                // TODO conditional logging based on http status code
-                log.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
-
-
-              }
-            }
-
-            // TODO use url from /videos/${VIDEO-ID} response
+            // TODO ??use url from /videos/${VIDEO-ID} response??
             new URL(vimeoUrl + "/" + videoId.get)
 
           }

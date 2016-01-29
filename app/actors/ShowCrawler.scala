@@ -50,6 +50,7 @@ class ShowCrawler extends Actor {
 
   //@TODO add control which stations
 
+
   def receive = {
     case processShow: ProcessShow =>
       log.info("starting show processing for: %d / %s".format(processShow.processShowData.show.ID, processShow.processShowData.show.Name))
@@ -94,18 +95,8 @@ class ShowCrawler extends Actor {
 
     case startProcess: StartProcess =>
       log.info("starting show crawler")
-      Station.allStations.map { stations =>
-        log.debug("found stations: " + stations.iterator.length)
-        var count: Int = 0
-        stations.foreach { station =>
-          count += 10
-          log.info("will launch processing of station: %s in %d seconds ".format(station.stationId, count))
-          context.system.scheduler.scheduleOnce(
-            Duration.create(count, TimeUnit.SECONDS),
-            self,
-            ProcessStation(ProcessStationData(station.hmsStationId, station.stationId, station.channelId)))
-        }
-      }
+      processAllStations
+      startVimeoEncodingStatusScheduler
 
     case scheduleProcess: ScheduleProcess =>
       log.info("scheduling show crawler")
@@ -113,6 +104,37 @@ class ShowCrawler extends Actor {
         Duration.create(crawlerPeriod, TimeUnit.MINUTES),
         self,
         ProcessStation(scheduleProcess.processStationData))
+  }
+
+  private def processAllStations = {
+
+    Station.allStations.map { stations =>
+
+      log.debug("found stations: " + stations.iterator.length)
+      var count: Int = 0
+
+      stations.foreach { station =>
+        count += 10
+        log.info("will launch processing of station: %s in %d seconds ".format(station.stationId, count))
+        context.system.scheduler.scheduleOnce(
+          Duration.create(count, TimeUnit.SECONDS),
+          self,
+          ProcessStation(ProcessStationData(station.hmsStationId, station.stationId, station.channelId)))
+      }
+
+    }
+
+  }
+
+  private def startVimeoEncodingStatusScheduler = {
+
+    val delay = Duration.create(1, TimeUnit.SECONDS)
+    val intervalConfig = Play.configuration.getInt("vimeo.encoding.check-interval").getOrElse(120)
+    val interval = Duration.create(intervalConfig, TimeUnit.SECONDS)
+    val vimeoVideoStatusActor = context.actorOf(Props(new VimeoVideoStatusActor()))
+
+    context.system.scheduler.schedule(delay, interval, vimeoVideoStatusActor, None)
+
   }
 
 }
