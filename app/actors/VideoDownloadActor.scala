@@ -65,7 +65,7 @@ class VideoDownloadActor extends Actor {
     Play.current.mode match {
       case play.api.Mode.Prod => AuthDownloader.downloadFile(source.toString, target)
       case _ =>
-        val localPath = Play.configuration.getString("hms.localDownload").getOrElse("")
+        val localPath = Play.configuration.getString("hms.localDownload").getOrElse(source.toString)
         AuthDownloader.downloadFile(localPath, target)
     }
 
