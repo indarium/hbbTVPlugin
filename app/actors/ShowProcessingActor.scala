@@ -42,6 +42,7 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
     case VideoDownloadSuccess(meta) =>
       log.info("downloaded %s".format(meta.localVideoFile.getOrElse("???")))
+      log.info("check for vimeo exception stuff after download!!")
       if (meta.vimeo.isDefined && meta.vimeo.get && !meta.vimeoDone.isDefined)
         videoVimeoUploadActor ! meta
       else
