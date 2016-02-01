@@ -272,8 +272,8 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     }
   }
 
-  def videoStatus(videoId: String): Future[WSResponse] = {
-    vimeoRequest("GET", s"/videos/$videoId", None)
+  def videoStatus(vimeoId: Long): Future[WSResponse] = {
+    vimeoRequest("GET", s"/videos/$vimeoId", None)
   }
 
   def vimeoRequest(method: String, endpoint: String, body: Option[JsObject]): Future[WSResponse] = {

@@ -8,6 +8,7 @@ import play.api.Play.current
 import play.api.Play
 import play.api.libs.json.{JsArray, JsObject, JsString, Json}
 import play.api.libs.ws.WS
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * author: cvandrei
@@ -23,26 +24,27 @@ class VimeoVideoStatusActor() extends Actor {
   override def receive = {
 
     val shows = Show.findShowVimeoEncodingInProgress
-
-//    shows foreach { showJson =>
-//
-//      val show = showJson.validate[Show]
-//      // ...
-//
-//    }
-
-    for (showJson <- shows) {
+    for (showJson <- shows) yield {
 
       val show = showJson.validate[Show].get
+      show.vimeoId match {
 
-      // query video status
+        case None => log.error(s"unable to query vimeo encoding status for show with missing vimeoId: showId=${show.vimeoId}")
 
-      // set sd url
-      // set hd url (if we have one)
-      // update vimeoEncodingStatus if necessary
-      //persist changes
+        case _ => {
 
-      notifyWebjazz(show)
+          val videoStatusResponse = vimeoBackend.videoStatus(show.vimeoId.get)
+
+          // set sd url
+          // set hd url (if we have one)
+          // update vimeoEncodingStatus if necessary
+          //persist changes
+
+          notifyWebjazz(show)
+
+        }
+
+      }
 
     }
 
