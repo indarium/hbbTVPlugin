@@ -35,6 +35,7 @@ class VimeoEncodingStatusSpec extends Specification with PlayRunners {
         )
 
         val json = Json.toJson(show)
+        val jsonString = json.toString()
 
         println(json)
 

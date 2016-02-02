@@ -13,7 +13,6 @@ import play.api.Play.current
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.util.Random
 
 /**
   * Created by dermicha on 07/09/14.
@@ -45,11 +44,12 @@ class ShowCrawler extends Actor {
   val vimeoAccessToken: String = Play.configuration.getString("vimeo.accessToken").getOrElse("NO-ACCESS-TOKEN")
   val vimeoBackend: VimeoBackend = new VimeoBackend(vimeoAccessToken)
 
-  val mmv = List("MV1", "WIS")
+  val mmv = List("mv1", "wis")
 
   val showProcessingActor = context.actorOf(Props(new ShowProcessingActor(s3Backend)))
 
   //@TODO add control which stations
+
 
   def receive = {
     case processShow: ProcessShow =>
@@ -61,7 +61,8 @@ class ShowCrawler extends Actor {
       //meta.sourceVideoUrl = Some(new URL(processShow.show.DownloadURL.getOrElse("").replaceAllLiterally(" ", "%20")))
       meta.sourceVideoUrl = Some(new URL(processShow.processShowData.show.DownloadURL.get))
 
-      if (mmv.contains(meta.stationId)) {
+      log.info("check for vimeo exception stuff!!")
+      if (mmv.contains(meta.stationId.toLowerCase)) {
         log.info(s"found mvv tv station ${meta.hmsStationId}")
         meta.vimeo = Some(true)
       }
@@ -95,18 +96,8 @@ class ShowCrawler extends Actor {
 
     case startProcess: StartProcess =>
       log.info("starting show crawler")
-      Station.allStations.map { stations =>
-        log.debug("found stations: " + stations.iterator.length)
-        var count: Int = 0
-        stations.foreach { station =>
-          count += 10
-          log.info("will launch processing of station: %s in %d seconds ".format(station.stationId, count))
-          context.system.scheduler.scheduleOnce(
-            Duration.create(count, TimeUnit.SECONDS),
-            self,
-            ProcessStation(ProcessStationData(station.hmsStationId, station.stationId, station.channelId)))
-        }
-      }
+      processAllStations
+      startVimeoEncodingStatusScheduler
 
     case scheduleProcess: ScheduleProcess =>
       log.info("scheduling show crawler")
@@ -114,6 +105,37 @@ class ShowCrawler extends Actor {
         Duration.create(crawlerPeriod, TimeUnit.MINUTES),
         self,
         ProcessStation(scheduleProcess.processStationData))
+  }
+
+  private def processAllStations = {
+
+    Station.allStations.map { stations =>
+
+      log.debug("found stations: " + stations.iterator.length)
+      var count: Int = 0
+
+      stations.foreach { station =>
+        count += 10
+        log.info("will launch processing of station: %s in %d seconds ".format(station.stationId, count))
+        context.system.scheduler.scheduleOnce(
+          Duration.create(count, TimeUnit.SECONDS),
+          self,
+          ProcessStation(ProcessStationData(station.hmsStationId, station.stationId, station.channelId)))
+      }
+
+    }
+
+  }
+
+  private def startVimeoEncodingStatusScheduler = {
+
+    val delay = Duration.create(1, TimeUnit.SECONDS)
+    val intervalConfig = Play.configuration.getInt("vimeo.encoding.check-interval").getOrElse(120)
+    val interval = Duration.create(intervalConfig, TimeUnit.SECONDS)
+    val vimeoVideoStatusActor = context.actorOf(Props(new VimeoVideoStatusActor()))
+
+    context.system.scheduler.schedule(delay, interval, vimeoVideoStatusActor, None)
+
   }
 
 }

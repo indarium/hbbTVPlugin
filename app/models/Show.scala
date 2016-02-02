@@ -5,11 +5,12 @@ import helper.ShowMetaData
 import play.Logger
 import play.api.Play
 import play.api.Play.current
+import play.api.libs.iteratee.Enumerator
+import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 /**
  * Created by dermicha on 06/09/14.
@@ -38,10 +39,6 @@ case class Show(stationId: String,
 object Show {
 
   val showsCollection = ReactiveMongoPlugin.db.collection[JSONCollection]("shows")
-
-  import constants.VimeoEncodingStatusSystem._
-  import play.api.libs.json.Reads._
-  import play.api.libs.json._
 
   implicit object ShowReads extends Format[Show] {
 
@@ -119,7 +116,7 @@ object Show {
     }
   }
 
-  def findShowById(showId: Int): Future[Option[Show]] = {
+  def findShowById(showId: Int) = {
     showsCollection.
       // find all people with name `name`
       find(
@@ -135,15 +132,15 @@ object Show {
     }
   }
 
-  def findShowVimeoEncodingInProgress: Future[List[JsObject]] = {
+  def findShowVimeoEncodingInProgress: Enumerator[JsObject] = {
 
-    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS.name)
+    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS)
     val limit = Play.configuration.getInt("vimeo.encoding.batch.size").getOrElse(10)
 
     showsCollection.
       find(query).
       cursor[JsObject].
-      collect[List](limit)
+      enumerate(limit)
 
   }
 

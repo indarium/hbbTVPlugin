@@ -10,7 +10,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest
 import constants.VimeoEncodingStatusSystem._
 import org.slf4j.LoggerFactory
 import play.api.Play.current
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json._
 import play.api.libs.ws.{WS, WSResponse}
 import play.api.{Logger, Play}
 
@@ -139,8 +139,6 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
         try {
           Logger.debug("Uploading video to vimeo. Meta: " + meta)
 
-          import collection.JavaConversions._
-
           val res = for {
           // request upload ticket
             ticketResponse <- vimeoRequest("POST", "/me/videos", Some(Json.obj("type" -> "streaming")))
@@ -168,8 +166,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
             // get video id from response
             videoId = finishResponse.header("Location").flatMap(_.split("/").lastOption)
-            /*vimeoId <- videoId.get.asInstanceOf[Long]
-            if videoId.isDefined*/ //TODO: this is giving an error, saying filter is not a member of Long
+            if videoId.isDefined
 
             // update metadata
             metadataResponse <- {
@@ -183,17 +180,21 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           } yield {
 
-            meta.vimeoId = Some(videoId.get.asInstanceOf[Long])
+            val EmbeddedNumberFmt = """(\d+)""".r
+            val videoIdLong = videoId.get match {
+              case EmbeddedNumberFmt(n) => Some(n.toLong)
+              case _ => throw new NumberFormatException(s"failed to convert id to long: vimeoId=$videoId")
+            }
+            log.debug(s"videoId=$videoId; vimeoId=$videoIdLong")
+
+            meta.vimeoId = videoIdLong
             meta.vimeoEncodingStatus = Some(IN_PROGRESS)
 
-            // construct  url from videoId and return result
-            // TODO refactor code into scheduled actor: query https://api.vimeo.com/videos/${VIDEO-ID}
-            //TODO ugly shit!!
-            val url = s"http://mmv-mediathek.de/import/vimeo.php?auth=408ff63c-cf4e-4032-9213-bf71ff93d113&hms_id=${meta.showId.get}&vimeo_id=${videoId.get}"
-            WS.url(url).get()
             log.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
-            // TODO use url from /videos/${VIDEO-ID} request ...set HD url, too
+
+            // TODO ??use url from /videos/${VIDEO-ID} response??
             new URL(vimeoUrl + "/" + videoId.get)
+
           }
 
           Await.result(res, 10 minute)
@@ -271,8 +272,8 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     }
   }
 
-  def videoStatus(videoId: String, meta: ShowMetaData): Future[WSResponse] = {
-    vimeoRequest("GET", s"/videos/$videoId", None)
+  def videoStatus(vimeoId: Long): Future[WSResponse] = {
+    vimeoRequest("GET", s"/videos/$vimeoId", None)
   }
 
   def vimeoRequest(method: String, endpoint: String, body: Option[JsObject]): Future[WSResponse] = {
