@@ -140,7 +140,7 @@ object Show {
     showsCollection.
       find(query).
       cursor[JsObject].
-      enumerate(limit, true)
+      enumerate(limit)
 
   }
 

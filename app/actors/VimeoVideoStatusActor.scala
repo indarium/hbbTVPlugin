@@ -4,11 +4,13 @@ import akka.actor.Actor
 import helper.VimeoBackend
 import models.Show
 import org.slf4j.LoggerFactory
-import play.api.Play.current
 import play.api.Play
+import play.api.Play.current
 import play.api.libs.json.{JsArray, JsObject, JsString, Json}
-import play.api.libs.ws.WS
+import play.api.libs.ws.{WS, WSResponse}
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * author: cvandrei
@@ -23,24 +25,28 @@ class VimeoVideoStatusActor() extends Actor {
 
   override def receive = {
 
-    val shows = Show.findShowVimeoEncodingInProgress
-    for (showJson <- shows) yield {
+    case _ => {
 
-      val show = showJson.validate[Show].get
-      show.vimeoId match {
+      val shows = Show.findShowVimeoEncodingInProgress
+      for (showJson <- shows) yield {
 
-        case None => log.error(s"unable to query vimeo encoding status for show with missing vimeoId: showId=${show.vimeoId}")
+        val show = showJson.validate[Show].get
+        show.vimeoId match {
 
-        case _ => {
+          case None => log.error(s"unable to query vimeo encoding status for show with missing vimeoId: showId=${show.vimeoId}")
 
-          val videoStatusResponse = vimeoBackend.videoStatus(show.vimeoId.get)
+          case _ => {
 
-          // set sd url
-          // set hd url (if we have one)
-          // update vimeoEncodingStatus if necessary
-          //persist changes
+            val videoStatusResponse = vimeoBackend.videoStatus(show.vimeoId.get)
 
-          notifyWebjazz(show)
+            // set sd url
+            // set hd url (if we have one)
+            // update vimeoEncodingStatus if necessary
+            //persist changes
+
+            notifyWebjazz(show)
+
+          }
 
         }
 
@@ -57,10 +63,13 @@ class VimeoVideoStatusActor() extends Actor {
 
       case None => log.error("unable to notify Webjazz: config 'webjazz.auth-token' is missing")
 
-      case _ => {
+      case _ =>
+
+        val vimeoId = show.vimeoId.get
+
         val body = Json.obj(
           "auth" -> webjazzToken.get,
-          "vimeo-id" -> show.vimeoId.get,
+          "vimeo-id" -> vimeoId,
           "hms-id" -> show.showId,
           "width" -> 1280, // TODO set value dynamically
           "height" -> 720, // TODO set value dynamically
@@ -78,12 +87,13 @@ class VimeoVideoStatusActor() extends Actor {
           ))
         )
 
-        val webjazzResponse = WS.url("http://mmv-mediathek.de/import/vimeo.php")
+        log.info(s"notifying Webjazz about new video: vimeoId=$vimeoId")
+        log.debug(s"webjazz request: ${body.toString}")
+        val webjazzResponse: Future[WSResponse] = WS.url("http://mmv-mediathek.de/import/vimeo.php")
           .withHeaders(("Content-Type", "application/json"))
-          .withBody(body)
-          .execute("PUT")
-
-      }
+          .put(body)
+        log.debug(s"Webjazz response: ${webjazzResponse.toString}")
+      // TODO info log depending on webjazz https status code
 
     }
 

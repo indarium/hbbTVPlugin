@@ -1,5 +1,6 @@
 package models.vimeo.video
 
+import models.vimeo.video.util.SizeHelper
 import org.specs2.mutable.Specification
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.{FakeApplication, PlayRunners}
@@ -10,30 +11,26 @@ import play.api.test.{FakeApplication, PlayRunners}
   */
 class SizeSpec extends Specification with PlayRunners {
 
-  val width = 1280
-  val height = 720
-  val link = "https://i.vimeocdn.com/video/552752804_1280x720.jpg?r=pad"
-
   "The Json library" should {
 
     "write object to JSON" in {
       running(FakeApplication()) {
 
         // prepare
-        val size = defaultSize
+        val size = SizeHelper.defaultSize
 
         // test
         val json = Json.toJson(size)
 
         // verify
         val widthCurrent = (json \ "width").as[Int]
-        widthCurrent mustEqual width
+        widthCurrent mustEqual SizeHelper.width
 
         val heightCurrent = (json \ "height").as[Int]
-        heightCurrent mustEqual height
+        heightCurrent mustEqual SizeHelper.height
 
         val linkCurrent = (json \ "link").as[String]
-        linkCurrent mustEqual link
+        linkCurrent mustEqual SizeHelper.link
 
       }
     }
@@ -42,32 +39,18 @@ class SizeSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val json: JsValue = Json.parse(defaultJson)
+        val json: JsValue = Json.parse(SizeHelper.defaultJson)
 
         // test
         val size = json.validate[Size]
 
         // verify
-        size.get.width mustEqual width
-        size.get.height mustEqual height
-        size.get.link mustEqual link
+        size.get.width mustEqual SizeHelper.width
+        size.get.height mustEqual SizeHelper.height
+        size.get.link mustEqual SizeHelper.link
 
       }
     }
-
-  }
-
-  def defaultSize: Size = {
-    Size(width, height, link)
-  }
-
-  def defaultJson: String = {
-
-    s"""{
-        |    "width": $width,
-        |    "height": $height,
-        |    "link": "$link"
-        |}""".stripMargin
 
   }
 
