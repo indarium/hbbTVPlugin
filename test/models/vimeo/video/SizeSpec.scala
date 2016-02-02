@@ -13,7 +13,7 @@ class SizeSpec extends Specification with PlayRunners {
 
   "The Json library" should {
 
-    "write object to JSON" in {
+    "convert object to JSON" in {
       running(FakeApplication()) {
 
         // prepare
@@ -35,7 +35,7 @@ class SizeSpec extends Specification with PlayRunners {
       }
     }
 
-    "parse JSON to object" in {
+    "convert JSON to object" in {
       running(FakeApplication()) {
 
         // prepare

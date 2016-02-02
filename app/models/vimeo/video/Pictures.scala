@@ -12,7 +12,7 @@ import play.api.libs.json._
 case class Pictures(uri: String,
                     active: Boolean,
                     pictureType: String,
-                    sizes: Seq[Size]
+                    sizes: List[Size]
                    )
 
 object Pictures {
@@ -25,7 +25,7 @@ object Pictures {
         (json \ "uri").as[String],
         (json \ "active").as[Boolean],
         (json \ "type").as[String],
-        (json \ "sizes").as[Seq[Size]]
+        (json \ "sizes").as[List[Size]]
       )
 
       JsSuccess(pictures)

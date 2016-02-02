@@ -1,7 +1,8 @@
 package models.vimeo.video
 
+import models.vimeo.video.util.PicturesHelper
 import org.specs2.mutable.Specification
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.{FakeApplication, PlayRunners}
 
 /**
@@ -32,27 +33,29 @@ class PicturesSpec extends Specification with PlayRunners {
         picturesTypeCurrent mustEqual PicturesHelper.picturesType
 
         // TODO verify picture sizes
+        val sizes = (json \ "sizes")(0)
+        sizes mustEqual Some
 
       }
     }
 
-    // TODO adapt test
-    //    "parse JSON to object" in {
-    //      running(FakeApplication()) {
-    //
-    //        // prepare
-    //        val json: JsValue = Json.parse(PicturesHelper.defaultJson)
-    //
-    //        // test
-    //        val pictures = json.validate[Pictures]
-    //
-    //        // verify
-    //        size.get.width mustEqual PicturesHelper.width
-    //        size.get.height mustEqual PicturesHelper.height
-    //        size.get.link mustEqual PicturesHelper.link
-    //
-    //      }
-    //    }
+    "convert JSON to object" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val json: JsValue = Json.parse(PicturesHelper.defaultJson)
+
+        // test
+        val pictures = json.validate[Pictures]
+
+        // verify
+        pictures.get.uri mustEqual PicturesHelper.uri
+        pictures.get.active mustEqual PicturesHelper.active
+        pictures.get.pictureType mustEqual PicturesHelper.picturesType
+        // TODO verify picture sizes
+
+      }
+    }
 
   }
 

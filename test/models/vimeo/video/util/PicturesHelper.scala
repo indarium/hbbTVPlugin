@@ -1,6 +1,6 @@
-package models.vimeo.video
+package models.vimeo.video.util
 
-import models.vimeo.video.util.SizeHelper
+import models.vimeo.video.{Pictures, Size}
 
 /**
   * author: cvandrei
@@ -16,12 +16,14 @@ object PicturesHelper {
   val width1 = 100
   val height1 = 75
   val link1 = SizeHelper.link(width1, height1, pictureId)
+  val size1 = Size(width1, height1, link1)
   val width2 = 1280
   val height2 = 720
   val link2 = SizeHelper.link(width2, height2, pictureId)
+  val size2 = Size(width2, height2, link2)
 
   def defaultPictures: Pictures = {
-    Pictures(uri, active, picturesType, Seq())
+    Pictures(uri, active, picturesType, List(size1, size2))
   }
 
   def defaultJson: String = {
