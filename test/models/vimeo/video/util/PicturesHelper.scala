@@ -29,7 +29,6 @@ object PicturesHelper {
   def defaultJson: String = {
 
     s"""{
-        |"pictures": {
         |    "uri": "$uri",
         |    "active": $active,
         |    "type": "$picturesType",
@@ -37,9 +36,7 @@ object PicturesHelper {
         |    ${SizeHelper.json(width1, height1, pictureId)},
         |    ${SizeHelper.json(width2, height2, pictureId)}
         |    ]
-        |}
         |}""".stripMargin
 
   }
-
 }

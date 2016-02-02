@@ -32,10 +32,8 @@ class PicturesSpec extends Specification with PlayRunners {
         val picturesTypeCurrent = (json \ "type").as[String]
         picturesTypeCurrent mustEqual PicturesHelper.picturesType
 
-        // TODO verify picture sizes
-        val sizes = (json \ "sizes")(0)
-        sizes mustEqual Some
-
+        val sizes = (json \ "sizes").as[List[Size]]
+        sizes must have size 2
       }
     }
 
@@ -52,7 +50,7 @@ class PicturesSpec extends Specification with PlayRunners {
         pictures.get.uri mustEqual PicturesHelper.uri
         pictures.get.active mustEqual PicturesHelper.active
         pictures.get.pictureType mustEqual PicturesHelper.picturesType
-        // TODO verify picture sizes
+        pictures.get.sizes must have size 2
 
       }
     }
