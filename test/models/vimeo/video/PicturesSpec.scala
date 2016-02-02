@@ -13,7 +13,7 @@ class PicturesSpec extends Specification with PlayRunners {
 
   "The Json library" should {
 
-    "write object to JSON" in {
+    "convert object to JSON" in {
       running(FakeApplication()) {
 
         // prepare
