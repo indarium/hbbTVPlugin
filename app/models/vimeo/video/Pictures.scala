@@ -1,7 +1,5 @@
 package models.vimeo.video
 
-import play.api.libs.json._
-
 /**
   * path = /pictures
   *
@@ -17,6 +15,9 @@ case class Pictures(uri: String,
 
 object Pictures {
 
+  import play.api.libs.json.Reads._
+  import play.api.libs.json._
+
   implicit object PicturesReads extends Format[Pictures] {
 
     override def reads(json: JsValue): JsResult[Pictures] = {
@@ -27,22 +28,16 @@ object Pictures {
         (json \ "type").as[String],
         (json \ "sizes").as[List[Size]]
       )
-
       JsSuccess(pictures)
-
     }
 
     def writes(p: Pictures): JsValue = {
-
-      JsObject(Seq(
-        "uri" -> JsString(p.uri),
-        "active" -> JsBoolean(p.active),
-        "type" -> JsString(p.pictureType),
-        "sizes" -> Json.arr(p.sizes)
-      ))
-
+      Json.obj(
+        "uri" -> p.uri,
+        "active" -> p.active,
+        "type" -> p.pictureType,
+        "sizes" -> p.sizes
+      )
     }
-
   }
-
 }
