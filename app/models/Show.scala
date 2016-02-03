@@ -2,6 +2,7 @@ package models
 
 import constants.VimeoEncodingStatusSystem._
 import helper.ShowMetaData
+import org.slf4j.LoggerFactory
 import play.Logger
 import play.api.Play
 import play.api.Play.current
@@ -37,6 +38,8 @@ case class Show(stationId: String,
                  )
 
 object Show {
+
+  val log = LoggerFactory.getLogger(this.getClass)
 
   val showsCollection = ReactiveMongoPlugin.db.collection[JSONCollection]("shows")
 
@@ -136,6 +139,8 @@ object Show {
 
     val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS)
     val limit = Play.configuration.getInt("vimeo.encoding.batch.size").getOrElse(10)
+
+    log.info(s"query shows with vimeoEncodingStatus=IN_PROGRESS: limit=$limit")
 
     showsCollection.
       find(query).
