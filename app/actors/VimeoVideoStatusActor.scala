@@ -41,7 +41,6 @@ class VimeoVideoStatusActor() extends Actor {
             } yield {
 
               val videoStatus = videoStatusResponse.json
-              val pictures = VideoStatusUtil.extractPictures(videoStatus)
               val files = VideoStatusUtil.extractPictures(videoStatus )
               val downloads = VideoStatusUtil.extractPictures(videoStatus)
 
@@ -50,7 +49,7 @@ class VimeoVideoStatusActor() extends Actor {
               // TODO update vimeoEncodingStatus if necessary
               // TODO persist changes
 
-              (new WebjazzRest).notifyWebjazz(show)
+              (new WebjazzRest).notifyWebjazz(show, videoStatus)
 
             }
 

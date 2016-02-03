@@ -9,6 +9,10 @@ import play.api.libs.json.JsValue
   */
 object VideoStatusUtil {
 
+  def extractWidth(json: JsValue): Int = (json \ "width").validate[Int].get
+
+  def extractHeight(json: JsValue): Int = (json \ "height").validate[Int].get
+
   def extractPictures(json: JsValue): Pictures = (json \ "pictures").validate[Pictures].get
 
   def extractDownloads(json: JsValue): List[Download] = (json \ "download").validate[List[Download]].get

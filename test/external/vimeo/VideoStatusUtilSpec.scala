@@ -418,7 +418,31 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
 
   "The Json library" should {
 
-    "extract /pictures from Json and convert it to object Pictures" in {
+    "extractWidth() extract /width from Json and convert as Long" in {
+      running(FakeApplication()) {
+
+        // test
+        val width = VideoStatusUtil.extractWidth(webjazzJson)
+
+        // verify
+        width mustEqual 1280
+
+      }
+    }
+
+    "extractHeight() extract /height from Json and convert as Long" in {
+      running(FakeApplication()) {
+
+        // test
+        val height = VideoStatusUtil.extractHeight(webjazzJson)
+
+        // verify
+        height mustEqual 1280
+
+      }
+    }
+
+    "extractPictures() extract /pictures from Json and convert it to object Pictures" in {
       running(FakeApplication()) {
 
         // test
@@ -430,7 +454,7 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
       }
     }
 
-    "extract /download from Json and convert it to List[Download]" in {
+    "extractDownloads() extract /download from Json and convert it to List[Download]" in {
       running(FakeApplication()) {
 
         // test
@@ -442,7 +466,7 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
       }
     }
 
-    "extract /file from Json and convert it to List[File]" in {
+    "extractFiles() extract /file from Json and convert it to List[File]" in {
       running(FakeApplication()) {
 
         // test
