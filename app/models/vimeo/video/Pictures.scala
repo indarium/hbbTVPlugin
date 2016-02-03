@@ -6,7 +6,6 @@ package models.vimeo.video
   * author: cvandrei
   * since: 2016-02-01
   */
-// TODO unit tests
 case class Pictures(uri: String,
                     active: Boolean,
                     pictureType: String,
