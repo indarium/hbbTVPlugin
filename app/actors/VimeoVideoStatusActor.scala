@@ -40,7 +40,6 @@ class VimeoVideoStatusActor() extends Actor {
               videoStatusResponse <- vimeoBackend.videoStatus(show.vimeoId.get)
             } yield {
 
-              // TODO unit tests: extraction and parse partial json trees
               val videoStatus = videoStatusResponse.json
               val pictures = VideoStatusUtil.extractPictures(videoStatus)
               val files = VideoStatusUtil.extractPictures(videoStatus )
