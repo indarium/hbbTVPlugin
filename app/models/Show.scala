@@ -17,7 +17,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * Created by dermicha on 06/09/14.
  */
 
-case class Show(stationId: String,
+case class Show(_id: Option[String],
+                stationId: String,
                 stationName: String,
                 stationLogoUrl: String,
                 stationLogoDisplay: Boolean,
@@ -51,6 +52,7 @@ object Show {
       val vimeoJson = Json.obj("name" -> vimeoEncodingStatus, "$variant" -> vimeoEncodingStatus)
 
       val show = Show(
+        None,
         (json \ "stationId").as[String],
         (json \ "stationName").as[String],
         (json \ "stationLogoUrl").as[String],
@@ -156,6 +158,7 @@ object Show {
       case Some(station) =>
         Logger.debug("found fitting station")
         val show = new Show(
+          None,
           meta.stationId,
           meta.stationName.getOrElse(station.defaultStationName),
           station.defaultStationLogoUrl,
@@ -182,4 +185,7 @@ object Show {
         None
     }
   }
+
+  def update(show: Show) = showsCollection.save(show) // TODO refactor to return new show object; None if error
+
 }

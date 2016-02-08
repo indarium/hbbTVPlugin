@@ -15,6 +15,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * author: cvandrei
   * since: 2016-01-29
   */
+
+case class QueryVimeoVideoStatus()
+
 class VimeoVideoStatusActor() extends Actor {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -24,7 +27,7 @@ class VimeoVideoStatusActor() extends Actor {
 
   override def receive = {
 
-    case _ =>
+    case QueryVimeoVideoStatus =>
 
       val shows = Show.findShowVimeoEncodingInProgress
       for (showJson <- shows) yield {
@@ -41,13 +44,32 @@ class VimeoVideoStatusActor() extends Actor {
             } yield {
 
               val videoStatus = videoStatusResponse.json
-              val files = VideoStatusUtil.extractPictures(videoStatus )
-              val downloads = VideoStatusUtil.extractPictures(videoStatus)
+              val files = VideoStatusUtil.extractFiles(videoStatus)
 
-              // TODO set sd url
-              // TODO set hd url (if we have one)
-              // TODO update vimeoEncodingStatus if necessary
-              // TODO persist changes
+              val sdUrl = VideoStatusUtil.sdUrl(files)
+              val hdUrl = VideoStatusUtil.hdUrl(files)
+
+              val newShow = show.copy(
+                showVideoSDUrl = sdUrl.getOrElse(show.showVideoSDUrl),
+                showVideoHDUrl = hdUrl
+              )
+
+              val downloads = VideoStatusUtil.extractDownloads(videoStatus)
+              val downloadSource = VideoStatusUtil.downloadSource(downloads)
+              /*
+               * TODO update vimeoEncodingStatus if necessary; depends on:
+               *   - if source HD (e.g. 1080p) then HD resolution may be at least source resolution
+               *   - if source < HD then hdUrl = None
+               *
+               *   - sdUrl may have highest possible resolution (960x54)
+               *     - unless source is less
+               */
+
+              // TODO idea: store meta in second collection "unreleased"; move to shows collection once vimeoEncodingStatus is DONE
+
+              // TODO idea: refactor Webjazz notification into separate actor
+
+              // TODO persist changes -> update
 
               (new WebjazzRest).notifyWebjazz(show, videoStatus)
 

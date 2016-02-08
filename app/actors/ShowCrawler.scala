@@ -58,7 +58,6 @@ class ShowCrawler extends Actor {
       meta.hmsStationId = Some(processShow.processShowData.processStationData.hmsStationId)
       meta.showId = Some(processShow.processShowData.show.ID)
       meta.showTitle = processShow.processShowData.show.Name
-      //meta.sourceVideoUrl = Some(new URL(processShow.show.DownloadURL.getOrElse("").replaceAllLiterally(" ", "%20")))
       meta.sourceVideoUrl = Some(new URL(processShow.processShowData.show.DownloadURL.get))
 
       log.info("check for vimeo exception stuff!!")
@@ -134,7 +133,7 @@ class ShowCrawler extends Actor {
     val interval = Duration.create(intervalConfig, TimeUnit.SECONDS)
     val vimeoVideoStatusActor = context.actorOf(Props(new VimeoVideoStatusActor()))
 
-    context.system.scheduler.schedule(delay, interval, vimeoVideoStatusActor, None)
+    context.system.scheduler.schedule(delay, interval, vimeoVideoStatusActor, QueryVimeoVideoStatus)
 
   }
 
