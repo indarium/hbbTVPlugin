@@ -1,9 +1,11 @@
 package actors
 
 import akka.actor.Actor
+import constants.VimeoEncodingStatusSystem.DONE
 import external.vimeo.VideoStatusUtil
 import external.webjazz.WebjazzRest
 import helper.VimeoBackend
+import helper.model.ShowUtil
 import models.Show
 import org.slf4j.LoggerFactory
 import play.api.Play
@@ -40,38 +42,42 @@ class VimeoVideoStatusActor() extends Actor {
           case _ =>
 
             for {
+
               videoStatusResponse <- vimeoBackend.videoStatus(show.vimeoId.get)
+
+              videoStatus = videoStatusResponse.json
+
+              files = VideoStatusUtil.extractFiles(videoStatus)
+              sdFile = VideoStatusUtil.sdFile(files)
+              hdFile = VideoStatusUtil.hdFile(files)
+
+              downloads = VideoStatusUtil.extractDownloads(videoStatus)
+              downloadSource = VideoStatusUtil.downloadSource(downloads)
+
             } yield {
 
-              val videoStatus = videoStatusResponse.json
-              val files = VideoStatusUtil.extractFiles(videoStatus)
+              val showWithSdUrl = ShowUtil.updateSdUrl(show, sdFile)
+              val showWithSdAndHdUrl = ShowUtil.updateHdUrl(showWithSdUrl, hdFile)
 
-              val sdUrl = VideoStatusUtil.sdUrl(files)
-              val hdUrl = VideoStatusUtil.hdUrl(files)
+              downloadSource.isDefined match {
 
-              val newShow = show.copy(
-                showVideoSDUrl = sdUrl.getOrElse(show.showVideoSDUrl),
-                showVideoHDUrl = hdUrl
-              )
+                case true =>
 
-              val downloads = VideoStatusUtil.extractDownloads(videoStatus)
-              val downloadSource = VideoStatusUtil.downloadSource(downloads)
-              /*
-               * TODO update vimeoEncodingStatus if necessary; depends on:
-               *   - if source HD (e.g. 1080p) then HD resolution may be at least source resolution
-               *   - if source < HD then hdUrl = None
-               *
-               *   - sdUrl may have highest possible resolution (960x54)
-               *     - unless source is less
-               */
+                  val source = downloadSource.get
+                  val newShow = ShowUtil.updateEncodingStatus(showWithSdAndHdUrl, sdFile, hdFile, source)
 
-              // TODO idea: store meta in second collection "unreleased"; move to shows collection once vimeoEncodingStatus is DONE
+                  // TODO idea: store meta in second collection "unreleasedShow"; move to shows collection once vimeoEncodingStatus is DONE
 
-              // TODO idea: refactor Webjazz notification into separate actor
+                  // TODO persist changes -> update
 
-              // TODO persist changes -> update
+                  // TODO refactor Webjazz notification into separate actor
+                  if (showWithSdAndHdUrl.vimeoEncodingStatus.get == DONE) {
+                    (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
+                  }
 
-              (new WebjazzRest).notifyWebjazz(show, videoStatus)
+                case false => log.error("unable to update vimeo encoding status: found no download/file with quality source in vimeo response")
+
+              }
 
             }
 

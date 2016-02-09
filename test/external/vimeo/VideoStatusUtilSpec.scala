@@ -1,6 +1,6 @@
 package external.vimeo
 
-import models.vimeo.video.File
+import models.vimeo.video.{Download, File}
 import org.joda.time.DateTime
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
@@ -484,65 +484,85 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
 
   "determine https url for SD or HD file" should {
 
-    "sdUrl() -- two sd files; smaller resolution first" in {
+    "sdFile() -- empty list" in {
+
+      // test
+      val result = VideoStatusUtil.sdFile(List.empty)
+
+      // verify
+      result must beNone
+
+    }
+
+    "sdFile() -- two sd files; smaller resolution first" in {
 
       // prepare
       val file1 = file(640, 360, "sd")
       val file2 = file(960, 540, "sd")
       val fileList = List(file1, file2)
-      val expected = file2.linkSecure
+      val expected = file2
 
       // test
-      val url = VideoStatusUtil.sdUrl(fileList)
+      val result = VideoStatusUtil.sdFile(fileList)
 
       // verify
-      url.get mustEqual expected
+      result.get mustEqual expected
 
     }
 
-    "sdUrl() -- two sd files; smaller resolution last" in {
+    "sdFile() -- two sd files; smaller resolution last" in {
 
       // prepare
       val file1 = file(960, 540, "sd")
       val file2 = file(640, 360, "sd")
       val fileList = List(file1, file2)
-      val expected = file1.linkSecure
+      val expected = file1
 
       // test
-      val url = VideoStatusUtil.sdUrl(fileList)
+      val result = VideoStatusUtil.sdFile(fileList)
 
       // verify
-      url.get mustEqual expected
+      result.get mustEqual expected
 
     }
 
-    "sdUrl() -- one sd file and one hd file" in {
+    "sdFile() -- one sd file and one hd file" in {
 
       // prepare
       val file1 = file(960, 540, "sd")
       val file2 = file(1920, 1080, "hd")
       val fileList = List(file1, file2)
-      val expected = file1.linkSecure
+      val expected = file1
 
       // test
-      val url = VideoStatusUtil.sdUrl(fileList)
+      val result = VideoStatusUtil.sdFile(fileList)
 
       // verify
-      url.get mustEqual expected
+      result.get mustEqual expected
 
     }
 
-    "hdUrl() -- no hd files" in {
+    "sdFile() -- no sd files" in {
 
       // prepare
-      val file1 = file(960, 540, "sd")
+      val file1 = file(1280, 720, "hd")
       val fileList = List(file1)
 
       // test
-      val url = VideoStatusUtil.hdUrl(fileList)
+      val result = VideoStatusUtil.sdFile(fileList)
 
       // verify
-      url must beNone
+      result must beNone
+
+    }
+
+    "hdFile() -- empty list" in {
+
+      // test
+      val result = VideoStatusUtil.hdFile(List.empty)
+
+      // verify
+      result must beNone
 
     }
 
@@ -552,13 +572,13 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
       val file1 = file(1280, 720, "hd")
       val file2 = file(1920, 1080, "hd")
       val fileList = List(file1, file2)
-      val expected = file2.linkSecure
+      val expected = file2
 
       // test
-      val url = VideoStatusUtil.hdUrl(fileList)
+      val result = VideoStatusUtil.hdFile(fileList)
 
       // verify
-      url.get mustEqual expected
+      result.get mustEqual expected
 
     }
 
@@ -568,13 +588,13 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
       val file1 = file(1920, 1080, "hd")
       val file2 = file(1280, 720, "hd")
       val fileList = List(file1, file2)
-      val expected = file1.linkSecure
+      val expected = file1
 
       // test
-      val url = VideoStatusUtil.hdUrl(fileList)
+      val result = VideoStatusUtil.hdFile(fileList)
 
       // verify
-      url.get mustEqual expected
+      result.get mustEqual expected
 
     }
 
@@ -584,13 +604,13 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
       val file1 = file(960, 540, "sd")
       val file2 = file(1920, 1080, "hd")
       val fileList = List(file1, file2)
-      val expected = file2.linkSecure
+      val expected = file2
 
       // test
-      val url = VideoStatusUtil.hdUrl(fileList)
+      val result = VideoStatusUtil.hdFile(fileList)
 
       // verify
-      url.get mustEqual expected
+      result.get mustEqual expected
 
     }
 
@@ -601,14 +621,79 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
       val fileList = List(file1)
 
       // test
-      val url = VideoStatusUtil.hdUrl(fileList)
+      val result = VideoStatusUtil.hdFile(fileList)
 
       // verify
-      url must beNone
+      result must beNone
 
     }
 
   }
+
+  "downloadSource()" should {
+
+    "input with two elements, source first" in {
+
+      // prepare
+      val download1 = download("source", 1280, 720)
+      val download2 = download("hd", 1920, 1080)
+      val downloads = List(download1, download2)
+      val expected = download1
+
+      // test
+      val result = VideoStatusUtil.downloadSource(downloads)
+
+      // verify
+      result.get mustEqual expected
+
+    }
+
+    "input with two elements, source first" in {
+
+      // prepare
+      val download1 = download("hd", 1920, 1080)
+      val download2 = download("source", 1280, 720)
+      val downloads = List(download1, download2)
+      val expected = download2
+
+      // test
+      val result = VideoStatusUtil.downloadSource(downloads)
+
+      // verify
+      result.get mustEqual expected
+
+    }
+
+    "input with two elements, no source though" in {
+
+      // prepare
+      val download1 = download("hd", 1920, 1080)
+      val download2 = download("sd", 640, 360)
+      val downloads = List(download1, download2)
+
+      // test
+      val result = VideoStatusUtil.downloadSource(downloads)
+
+      // verify
+      result must beNone
+
+    }
+
+    "empty list" in {
+
+      // test
+      val result = VideoStatusUtil.downloadSource(List.empty)
+
+      // verify
+      result must beNone
+
+    }
+
+  }
+
+  /*
+   * TEST HELPERS
+   ********************************************************************************************************************/
 
   private def file(width: Int, height: Int, quality: String) = {
     File(quality,
@@ -624,5 +709,9 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
   }
 
   private def secureUrl(width: Int, height: Int, quality: String) = s"https://${width}x$height-$quality.com"
+
+  private def download(quality: String, width: Int, height: Int) = {
+    Download(quality, "video/mp4", width, height, DateTime.now.toString, "link", DateTime.now.toString, 25, 1000000L, "md5")
+  }
 
 }

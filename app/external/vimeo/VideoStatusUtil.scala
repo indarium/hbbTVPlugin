@@ -20,45 +20,45 @@ object VideoStatusUtil {
   def extractFiles(json: JsValue): List[File] = (json \ "files").validate[List[File]].get
 
   /**
-    * Gives us the https url for the SD video with the highest resolution available.
+    * Gives us the file object with quality SD and the highest resolution available.
     *
     * @param files can be empty
     * @return None if no sd file is found or it's https url is missing
     */
-  def sdUrl(files: List[File]): Option[String] = highestResolutionUrl("sd", files)
+  def sdFile(files: List[File]): Option[File] = highestResolutionUrl("sd", files)
 
   /**
-    * Gives us the https url for the HD video with the highest resolution available.
+    * Gives us the file object with quality HD and the highest resolution available.
     *
     * @param files can be empty
     * @return None if no hd file is found or it's https url is missing
     */
-  def hdUrl(files: List[File]): Option[String] = highestResolutionUrl("hd", files)
+  def hdFile(files: List[File]): Option[File] = highestResolutionUrl("hd", files)
 
-  private def highestResolutionUrl(quality: String, files: List[File]): Option[String] = {
+  private def highestResolutionUrl(quality: String, files: List[File]): Option[File] = {
 
-    var width = -1
-    var linkSecure = ""
+    var result: Option[File] = None
 
     for (file <- files) {
 
-      if (file.quality == quality && width < file.width) {
-        width = file.width
-        linkSecure = file.linkSecure
+      if (file.quality == quality && (result.isEmpty || result.get.width < file.width)) {
+        result = Some(file)
       }
 
     }
 
-    linkSecure match {
-      case s if s.length > 0 => Some(linkSecure)
-      case _ => None
-    }
+    result
 
   }
 
+  /**
+    * Gives us the download with quality="source" from a given list of downloads.
+    *
+    * @param downloads can be empty
+    * @return None if no element with quality="source" is found
+    */
   def downloadSource(downloads: List[Download]): Option[Download] = {
 
-    // TODO unit tests
     var result: Option[Download] = None
 
     for (download <- downloads) {
