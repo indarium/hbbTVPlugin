@@ -37,13 +37,13 @@ class VimeoVideoStatusActor() extends Actor {
         val show = showJson.validate[Show].get
         show.vimeoId match {
 
-          case None => log.error(s"unable to query vimeo encoding status for show with missing vimeoId: showId=${show.vimeoId}")
+          case None => log.error(s"unable to query vimeo encoding status for show with missing vimeoId: showId=${show.showId}")
 
-          case _ =>
+          case Some(vimeoId) =>
 
             for {
 
-              videoStatusResponse <- vimeoBackend.videoStatus(show.vimeoId.get)
+              videoStatusResponse <- vimeoBackend.videoStatus(vimeoId)
 
               videoStatus = videoStatusResponse.json
 
@@ -64,17 +64,16 @@ class VimeoVideoStatusActor() extends Actor {
                 case Some(source) =>
 
                   val newShow = ShowUtil.updateEncodingStatus(showWithSdAndHdUrl, sdFile, hdFile, source)
-
-                  // TODO idea: store meta in second collection "unreleasedShow"; move to shows collection once vimeoEncodingStatus is DONE
-
-                  // TODO persist changes -> update
+                  Show.update(newShow)
+                  // TODO idea: store ShowMetaData in second collection "unreleasedShow" first; move to shows collection once vimeoEncodingStatus is DONE
 
                   // TODO refactor Webjazz notification into separate actor
                   if (showWithSdAndHdUrl.vimeoEncodingStatus.get == DONE) {
                     (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
                   }
 
-                case None => log.error("unable to update vimeo encoding status: found no download/file with quality source in vimeo response")
+                case None => log.error(s"unable to update vimeo encoding status: found no download/file with quality " +
+                  s"source in vimeo response: vimeoId=$vimeoId")
 
               }
 
