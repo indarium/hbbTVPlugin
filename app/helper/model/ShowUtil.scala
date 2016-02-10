@@ -98,7 +98,6 @@ object ShowUtil {
     */
   def hdCriteriaCheck(hdFileIn: Option[File], source: Download): Boolean = {
 
-    // TODO unit test
     val sourceIsHd = atLeastHd(source)
 
     sourceIsHd match {

@@ -304,6 +304,78 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
   }
 
+  "hdCriteriaCheck()" should {
+
+    "file below lower HD bound; source is HD" in {
+
+      // prepare
+      val file = defaultFile("hd", 960, 540, "link", "linkSecure")
+      val source = defaultDownload(1920, 1080)
+
+      // test
+      val result = ShowUtil.hdCriteriaCheck(file, source)
+
+      // verify
+      result must beFalse
+
+    }
+
+    "file at upper HD bound; source at upper HD bound" in {
+
+      // prepare
+      val file = defaultFile("hd", 1920, 1080, "link", "linkSecure")
+      val source = defaultDownload(1920, 1080)
+
+      // test
+      val result = ShowUtil.hdCriteriaCheck(file, source)
+
+      // verify
+      result must beTrue
+
+    }
+
+    "file at upper HD bound; source below upper HD bound" in {
+
+      // prepare
+      val file = defaultFile("hd", 1920, 1080, "link", "linkSecure")
+      val source = defaultDownload(1280, 720)
+
+      // test
+      val result = ShowUtil.hdCriteriaCheck(file, source)
+
+      // verify
+      result must beTrue
+
+    }
+
+    "file undefined; source is HD" in {
+
+      // prepare
+      val source = defaultDownload(1920, 1080)
+
+      // test
+      val result = ShowUtil.hdCriteriaCheck(None, source)
+
+      // verify
+      result must beFalse
+
+    }
+
+    "file undefined; source below HD" in {
+
+      // prepare
+      val source = defaultDownload(960, 540)
+
+      // test
+      val result = ShowUtil.hdCriteriaCheck(None, source)
+
+      // verify
+      result must beTrue
+
+    }
+
+  }
+
   /*
    * TEST HELPERS
    ********************************************************************************************************************/
