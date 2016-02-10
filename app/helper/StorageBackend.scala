@@ -9,10 +9,10 @@ import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
 import constants.VimeoEncodingStatusSystem._
 import org.slf4j.LoggerFactory
+import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.ws.{WS, WSResponse}
-import play.api.{Logger, Play}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -86,7 +86,7 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
         s3.putObject(bucket, fileName, file)
         val s3Url = s3.getUrl(bucket, fileName)
         // create cdn url
-        new URL(Play.configuration.getString("cdn.baseUrl").get + s3Url.getPath)
+        new URL(Config.cdnBaseUrl + s3Url.getPath)
     }
   } catch {
     case e: Exception => throw new StorageException("can't store %s".format(meta.showTitle), e)

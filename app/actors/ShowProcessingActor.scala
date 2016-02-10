@@ -4,8 +4,6 @@ import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
 import models.Show
-import play.api.Play
-import play.api.Play.current
 
 /**
   * Process a show, fill in information, download video, upload it and update
@@ -18,7 +16,7 @@ case class ScheduleNextStep(meta: ShowMetaData)
 
 class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
-  val accessToken = Play.configuration.getString("vimeo.accessToken").get
+  val accessToken = Config.vimeoAccessToken
   val vimeoBackend = new VimeoBackend(accessToken)
 
   val log = Logging(context.system, this)
@@ -27,7 +25,7 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
   val videoUploadActor = context.actorOf(Props(new VideoUploadActor(backend)))
   val videoVimeoUploadActor = context.actorOf(Props(new VideoUploadActor(vimeoBackend)))
 
-  val crawlerPeriod = Play.configuration.getInt("hms.crawler.period").get
+  val crawlerPeriod = Config.hmsCrawlerPeriod
 
   def receive = {
     case meta: ShowMetaData =>

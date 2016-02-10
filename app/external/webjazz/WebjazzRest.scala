@@ -2,9 +2,9 @@ package external.webjazz
 
 import external.vimeo.VideoStatusUtil
 import external.webjazz.util.WebjazzUtil
+import helper.Config
 import models.Show
 import org.slf4j.LoggerFactory
-import play.api.Play
 import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.ws.WS
@@ -21,18 +21,18 @@ class WebjazzRest {
 
   def notifyWebjazz(show: Show, videoStatusJson: JsValue) = {
 
-    val webjazzToken = Play.configuration.getString("webjazz.auth-token")
-    val webjazzUrl = Play.configuration.getString("webjazz.url").getOrElse("http://mmv-mediathek.de/import/vimeo.php")
+    val webjazzToken = Config.webjazzToken
+    val webjazzUrl = Config.webjazzUrl
 
     val pictures = VideoStatusUtil.extractPictures(videoStatusJson)
 
     webjazzToken match {
 
-      case None => log.error("unable to notify Webjazz: config 'webjazz.auth-token' is missing")
+      case "NO-ACCESS-TOKEN" => log.error("unable to notify Webjazz: config 'webjazz.auth-token' is missing")
 
       case _ =>
 
-        val auth = webjazzToken.get
+        val auth = webjazzToken
         val vimeoId = show.vimeoId.get
         val hmsId = show.showId
         val width = VideoStatusUtil.extractWidth(videoStatusJson)

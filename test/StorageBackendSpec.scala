@@ -223,8 +223,8 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
     meta.channelName = Some("test_channel")
     var videoUrl: URL = null
 
-    Play.configuration.getString("vimeo.accessToken") must beSome
-    val accessToken = Play.configuration.getString("vimeo.accessToken").get
+    Config.vimeoAccessToken mustNotEqual "NO-ACCESS-TOKEN"
+    val accessToken = Config.vimeoAccessToken
     val backend = new VimeoBackend(accessToken)
 
     "Authenticate to vimeo API" in {
