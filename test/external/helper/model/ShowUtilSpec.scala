@@ -439,7 +439,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
       ShowUtil.sdCriteriaCheck(sdFile, source) must beTrue
       ShowUtil.hdCriteriaCheck(hdFile, source) must beFalse
 
-      val expected = show.copy()
+      val expected = show
 
       // test
       val result = ShowUtil.updateEncodingStatus(show, sdFile, hdFile, source)
@@ -460,7 +460,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
       ShowUtil.sdCriteriaCheck(sdFile, source) must beFalse
       ShowUtil.hdCriteriaCheck(hdFile, source) must beTrue
 
-      val expected = show.copy()
+      val expected = show
 
       // test
       val result = ShowUtil.updateEncodingStatus(show, sdFile, hdFile, source)
@@ -481,7 +481,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
       ShowUtil.sdCriteriaCheck(sdFile, source) must beFalse
       ShowUtil.hdCriteriaCheck(hdFile, source) must beFalse
 
-      val expected = show.copy()
+      val expected = show
 
       // test
       val result = ShowUtil.updateEncodingStatus(show, sdFile, hdFile, source)
