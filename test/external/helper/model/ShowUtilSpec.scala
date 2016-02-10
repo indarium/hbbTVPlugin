@@ -219,12 +219,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
   "sdCriteriaCheck()" should {
 
-    // TODO test case: file below upper bound for SD + source at upper bound for SD
-    // TODO test case: file at upper bound for SD + source at upper bound for SD
-    // TODO test case: file at upper bound for SD + source below upper bound for SD
-
-    // TODO review test case
-    "resolution < source" in {
+    "file below upper bound of SD AND source at upper bound of SD resolution" in {
 
       // prepare
       val file = defaultFile("sd", 640, 360, "link", "linkSecure")
@@ -238,8 +233,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
     }
 
-    // TODO review test case
-    "resolution = source" in {
+    "file at upper bound of SD AND source at upper bound of SD resolution" in {
 
       // prepare
       val file = defaultFile("sd", 960, 540, "link", "linkSecure")
@@ -253,8 +247,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
     }
 
-    // TODO review test case
-    "resolution > source" in {
+    "file at upper bound of SD AND source below upper bound of SD resolution" in {
 
       // prepare
       val file = defaultFile("sd", 960, 540, "link", "linkSecure")
@@ -268,17 +261,18 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
     }
 
-    "resolution is below SD" in {
+    "file below SD resolution AND source has SD resolution" in {
 
       // prepare
-      val file = defaultFile("sd", 600, 300, "link", "linkSecure")
-      val source = defaultDownload(960, 540)
+      val file = defaultFile("sd", 500, 200, "link", "linkSecure")
+      val source = defaultDownload(640, 360)
+      ShowUtil.atLeastSd(source) must beTrue
 
       // test
       val result = ShowUtil.sdCriteriaCheck(file, source)
 
       // verify
-      result must beTrue
+      result must beFalse
 
     }
 

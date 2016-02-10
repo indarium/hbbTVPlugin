@@ -61,23 +61,29 @@ object ShowUtil {
   /**
     * Tells us if we already have an SD video with the expected resolution.
     *
-    * @param sdFileIn current sdFile
-    * @param source   source file
+    * @param sdFile current sdFile
+    * @param source source file
     * @return true if Vimeo should be done encoding all SD videos we'd want
     */
-  def sdCriteriaCheck(sdFileIn: Option[File], source: Download): Boolean = {
+  def sdCriteriaCheck(sdFile: Option[File], source: Download): Boolean = {
 
-    val sourceIsSd = atLeastSd(source)
+    val sourceAtLeastSd = atLeastSd(source)
 
-    sourceIsSd match {
+    sdFile.isDefined match {
 
-      case true if sdFileIn.isDefined =>
+      case true =>
 
-        val sdFile = sdFileIn.get
-        sdFile.width > source.width && sdFile.height > source.height || sdFile.width <= 960 && sdFile.height <= 540
+        sourceAtLeastSd match {
+          case true => sdFile.get.width >= source.width && sdFile.get.height >= source.height
+          case false => false
+        }
 
-      case false => true
-      case _ => false
+      case false =>
+
+        sourceAtLeastSd match {
+          case true => false
+          case false => true
+        }
 
     }
 
