@@ -59,11 +59,10 @@ class VimeoVideoStatusActor() extends Actor {
               val showWithSdUrl = ShowUtil.updateSdUrl(show, sdFile)
               val showWithSdAndHdUrl = ShowUtil.updateHdUrl(showWithSdUrl, hdFile)
 
-              downloadSource.isDefined match {
+              downloadSource match {
 
-                case true =>
+                case Some(source) =>
 
-                  val source = downloadSource.get
                   val newShow = ShowUtil.updateEncodingStatus(showWithSdAndHdUrl, sdFile, hdFile, source)
 
                   // TODO idea: store meta in second collection "unreleasedShow"; move to shows collection once vimeoEncodingStatus is DONE
@@ -75,7 +74,7 @@ class VimeoVideoStatusActor() extends Actor {
                     (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
                   }
 
-                case false => log.error("unable to update vimeo encoding status: found no download/file with quality source in vimeo response")
+                case None => log.error("unable to update vimeo encoding status: found no download/file with quality source in vimeo response")
 
               }
 
