@@ -14,14 +14,14 @@ object ShowUtil {
     * Set the sd url on the given show.
     *
     * @param show   returned object is a copy of this object
-    * @param sdFile source for the sd url
+    * @param sdFileIn source for the sd url
     * @return an updated copy of the given show
     */
-  def updateSdUrl(show: Show, sdFile: Option[File]): Show = {
+  def updateSdUrl(show: Show, sdFileIn: Option[File]): Show = {
 
-    sdFile.isDefined match {
-      case true => show.copy(showVideoSDUrl = sdFile.get.linkSecure)
-      case false => show
+    sdFileIn match {
+      case Some(sdFile) => show.copy(showVideoSDUrl = sdFile.linkSecure)
+      case None => show
     }
 
   }
@@ -30,14 +30,14 @@ object ShowUtil {
     * Set the hd url on the given show.
     *
     * @param show   returned object is a copy of this object
-    * @param hdFile source for the hd url
+    * @param hdFileIn source for the hd url
     * @return an updated copy of the given show
     */
-  def updateHdUrl(show: Show, hdFile: Option[File]): Show = {
+  def updateHdUrl(show: Show, hdFileIn: Option[File]): Show = {
 
-    hdFile.isDefined match {
-      case true => show.copy(showVideoSDUrl = hdFile.get.linkSecure)
-      case false => show
+    hdFileIn match {
+      case Some(hdFile) => show.copy(showVideoSDUrl = hdFile.linkSecure)
+      case None => show
     }
 
   }
@@ -61,31 +61,31 @@ object ShowUtil {
   /**
     * Tells us if we already have an SD video with the expected resolution.
     *
-    * @param sdFile current sdFile
+    * @param sdFileIn current sdFile
     * @param source source file
     * @return true if Vimeo should be done encoding all SD videos we'd want
     */
-  def sdCriteriaCheck(sdFile: Option[File], source: Download): Boolean = {
+  def sdCriteriaCheck(sdFileIn: Option[File], source: Download): Boolean = {
 
     val sourceAtLeastSd = atLeastSd(source)
 
-    sdFile.isDefined match {
+    sdFileIn match {
 
-      case true =>
+      case Some(sdFile) =>
 
         sourceAtLeastSd match {
 
           case true =>
 
             atLeastHd(source) match {
-              case true => sdFile.get.width == 960 && sdFile.get.height == 540
-              case false => sdFile.get.width >= source.width && sdFile.get.height >= source.height
+              case true => sdFile.width == 960 && sdFile.height == 540
+              case false => sdFile.width >= source.width && sdFile.height >= source.height
             }
 
           case false => false
         }
 
-      case false =>
+      case None =>
 
         sourceAtLeastSd match {
           case true => false
