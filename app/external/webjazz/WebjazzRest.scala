@@ -40,8 +40,8 @@ class WebjazzRest {
 
         val notification = WebjazzUtil.createWebjazzNotification(auth, vimeoId, hmsId, width, height, pictures.sizes)
 
-        log.info(s"notifying Webjazz about new video: vimeoId=$vimeoId")
-        log.info(s"webjazz request: ${notification.toString}")
+        log.debug(s"notifying Webjazz about new video: vimeoId=$vimeoId")
+        log.debug(s"webjazz request: ${notification.toString}")
 
         for {
           webjazzResponse <- WS.url(webjazzUrl)
@@ -49,7 +49,7 @@ class WebjazzRest {
             .put(notification)
 
         } yield {
-          log.info(s"Webjazz response: ${webjazzResponse.toString}")
+          log.info(s"Webjazz response: ${webjazzResponse}")
           // TODO info log depending on webjazz https status code??
           // TODO return webjazzResponse??
         }

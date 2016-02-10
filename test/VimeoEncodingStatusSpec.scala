@@ -14,7 +14,7 @@ class VimeoEncodingStatusSpec extends Specification with PlayRunners {
     "parse Show Scala into a Show JSON" in {
       running(FakeApplication()) {
         val show = Show(
-          None,
+//          None,
           "stationId",
           "stationName",
           "stationLogoUrl",

@@ -31,7 +31,7 @@ class VimeoVideoStatusActor() extends Actor {
 
     case QueryVimeoVideoStatus =>
 
-      log.info("QueryVimeoVideoStatus.receive() - begin")
+      log.debug("QueryVimeoVideoStatus.receive() - begin")
       val shows = Show.findShowVimeoEncodingInProgress
       for (showJson <- shows) yield {
 
@@ -42,7 +42,7 @@ class VimeoVideoStatusActor() extends Actor {
 
           case Some(vimeoId) =>
 
-            log.info(s"QueryVimeoVideoStatus.receive() - processing vimeoId=$vimeoId")
+            log.debug(s"QueryVimeoVideoStatus.receive() - processing vimeoId=$vimeoId")
             for {
 
               videoStatusResponse <- vimeoBackend.videoStatus(vimeoId)
@@ -58,9 +58,9 @@ class VimeoVideoStatusActor() extends Actor {
             } yield {
 
               val showWithSdUrl = ShowUtil.updateSdUrl(show, sdFile)
-              log.info(s"updated sdUrl: ${showWithSdUrl.showVideoSDUrl}")
+              log.debug(s"updated sdUrl: ${showWithSdUrl.showVideoSDUrl}")
               val showWithSdAndHdUrl = ShowUtil.updateHdUrl(showWithSdUrl, hdFile)
-              log.info(s"updated hdUrl: ${showWithSdAndHdUrl.showVideoHDUrl}")
+              log.debug(s"updated hdUrl: ${showWithSdAndHdUrl.showVideoHDUrl}")
 
               downloadSource match {
 
@@ -68,7 +68,7 @@ class VimeoVideoStatusActor() extends Actor {
 
                   val newShow = ShowUtil.updateEncodingStatus(showWithSdAndHdUrl, sdFile, hdFile, source)
                   Show.update(newShow)
-                  log.info(s"current vimeoEncodingStatus: ${newShow.vimeoEncodingStatus}")
+                  log.debug(s"current vimeoEncodingStatus: ${newShow.vimeoEncodingStatus}")
                   // TODO idea: store ShowMetaData in second collection "unreleasedShow" first; move to shows collection once vimeoEncodingStatus is DONE
 
                   // TODO refactor Webjazz notification into separate actor

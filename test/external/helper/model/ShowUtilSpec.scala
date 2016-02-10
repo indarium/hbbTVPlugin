@@ -499,7 +499,8 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
   def defaultShow(sdUrl: String, hdUrl: Option[String]): Show = defaultShow(sdUrl, hdUrl, None)
 
-  def defaultShow(sdUrl: String, hdUrl: Option[String], vimeoEncodingStatus: Option[VimeoEncodingStatus]) = Show(None,
+  def defaultShow(sdUrl: String, hdUrl: Option[String], vimeoEncodingStatus: Option[VimeoEncodingStatus]) = Show(
+//    None,
     "stationId",
     "stationName",
     "logoUrl",
