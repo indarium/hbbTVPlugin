@@ -74,7 +74,14 @@ object ShowUtil {
       case true =>
 
         sourceAtLeastSd match {
-          case true => sdFile.get.width >= source.width && sdFile.get.height >= source.height
+
+          case true =>
+
+            atLeastHd(source) match {
+              case true => sdFile.get.width == 960 && sdFile.get.height == 540
+              case false => sdFile.get.width >= source.width && sdFile.get.height >= source.height
+            }
+
           case false => false
         }
 
@@ -116,7 +123,6 @@ object ShowUtil {
 
   def updateEncodingStatus(show: Show, sdFile: Option[File], hdFile: Option[File], source: Download): Show = {
 
-    // TODO unit test
     val sdCriteriaFulfilled = sdCriteriaCheck(sdFile, source)
     val hdCriteriaFulfilled = hdCriteriaCheck(hdFile, source)
 

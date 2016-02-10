@@ -1,5 +1,6 @@
 package external.helper.model
 
+import constants.VimeoEncodingStatusSystem.{DONE, IN_PROGRESS, VimeoEncodingStatus}
 import helper.model.ShowUtil
 import models.Show
 import models.vimeo.video.{Download, File}
@@ -276,6 +277,34 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
     }
 
+    "file at lower bound for SD; source is HD" in {
+
+      // prepare
+      val file = defaultFile("sd", 640, 360, "link", "linkSecure")
+      val source = defaultDownload(1920, 1080)
+
+      // test
+      val result = ShowUtil.sdCriteriaCheck(file, source)
+
+      // verify
+      result must beFalse
+
+    }
+
+    "file at upper bound for SD; source is HD" in {
+
+      // prepare
+      val file = defaultFile("sd", 960, 540, "link", "linkSecure")
+      val source = defaultDownload(1920, 1080)
+
+      // test
+      val result = ShowUtil.sdCriteriaCheck(file, source)
+
+      // verify
+      result must beTrue
+
+    }
+
     "file undefined; source resolution at least SD" in {
 
       // prepare
@@ -376,11 +405,101 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
   }
 
+  "updateEncodingStatus()" should {
+
+    "sd=true && hd=true" in {
+
+      // prepare
+      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val sdFile = defaultFile("sd", 960, 540, "http://sdUrl", "https://sdUrl")
+      val hdFile = defaultFile("hd", 1920, 1080, "http://hdUrl", "https://hdUrl")
+      val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
+
+      ShowUtil.sdCriteriaCheck(sdFile, source) must beTrue
+      ShowUtil.hdCriteriaCheck(hdFile, source) must beTrue
+
+      val expected = show.copy(vimeoEncodingStatus = Some(DONE))
+
+      // test
+      val result = ShowUtil.updateEncodingStatus(show, sdFile, hdFile, source)
+
+      // verify
+      result mustEqual expected
+
+    }
+
+    "sd=true && hd=false" in {
+
+      // prepare
+      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val sdFile = defaultFile("sd", 960, 540, "http://sdUrl", "https://sdUrl")
+      val hdFile = defaultFile("hd", 1280, 720, "http://hdUrl", "https://hdUrl")
+      val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
+
+      ShowUtil.sdCriteriaCheck(sdFile, source) must beTrue
+      ShowUtil.hdCriteriaCheck(hdFile, source) must beFalse
+
+      val expected = show.copy()
+
+      // test
+      val result = ShowUtil.updateEncodingStatus(show, sdFile, hdFile, source)
+
+      // verify
+      result mustEqual expected
+
+    }
+
+    "sd=false && hd=true" in {
+
+      // prepare
+      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val sdFile = defaultFile("sd", 640, 360, "http://sdUrl", "https://sdUrl")
+      val hdFile = defaultFile("hd", 1920, 1080, "http://hdUrl", "https://hdUrl")
+      val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
+
+      ShowUtil.sdCriteriaCheck(sdFile, source) must beFalse
+      ShowUtil.hdCriteriaCheck(hdFile, source) must beTrue
+
+      val expected = show.copy()
+
+      // test
+      val result = ShowUtil.updateEncodingStatus(show, sdFile, hdFile, source)
+
+      // verify
+      result mustEqual expected
+
+    }
+
+    "sd=true && hd=false" in {
+
+      // prepare
+      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val sdFile = defaultFile("sd", 640, 360, "http://sdUrl", "https://sdUrl")
+      val hdFile = defaultFile("hd", 1280, 720, "http://hdUrl", "https://hdUrl")
+      val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
+
+      ShowUtil.sdCriteriaCheck(sdFile, source) must beFalse
+      ShowUtil.hdCriteriaCheck(hdFile, source) must beFalse
+
+      val expected = show.copy()
+
+      // test
+      val result = ShowUtil.updateEncodingStatus(show, sdFile, hdFile, source)
+
+      // verify
+      result mustEqual expected
+
+    }
+
+  }
+
   /*
    * TEST HELPERS
    ********************************************************************************************************************/
 
-  def defaultShow(sdUrl: String, hdUrl: Option[String]) = Show(None,
+  def defaultShow(sdUrl: String, hdUrl: Option[String]): Show = defaultShow(sdUrl, hdUrl, None)
+
+  def defaultShow(sdUrl: String, hdUrl: Option[String], vimeoEncodingStatus: Option[VimeoEncodingStatus]) = Show(None,
     "stationId",
     "stationName",
     "logoUrl",
@@ -398,7 +517,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "broadcastInfo",
     "rootPortalUrl",
     None,
-    None)
+    vimeoEncodingStatus)
 
   def defaultFile(link: String, linkSecure: String): Some[File] = defaultFile("sd", 1280, 720, link, linkSecure)
 
