@@ -133,6 +133,7 @@ class ShowCrawler extends Actor {
     val interval = Duration.create(intervalConfig, TimeUnit.SECONDS)
     val vimeoVideoStatusActor = context.actorOf(Props(new VimeoVideoStatusActor()))
 
+    log.debug(s"scheduling VimeoVideoStatusActor: delay=$delay, interval=$interval")
     context.system.scheduler.schedule(delay, interval, vimeoVideoStatusActor, QueryVimeoVideoStatus)
 
   }
