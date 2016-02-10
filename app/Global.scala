@@ -9,6 +9,7 @@ import java.io.File
 import actors._
 import akka.actor.Props
 import com.fasterxml.jackson.core.JsonParseException
+import helper.Config
 import play.api.Play.current
 import play.api._
 import play.api.libs.json.{JsObject, JsResultException, JsValue, Json}
@@ -24,7 +25,7 @@ object Global extends GlobalSettings {
   override def onStart(app: Application): Unit = {
 
     // load initial data, if not present
-    if(Play.configuration.getBoolean("startup.initialData.load").getOrElse(false)) {
+    if(Config.startupInitialDataLoad) {
       // get all files in fixtures
 
       new File(Play.application.path.getAbsolutePath + "/fixtures/").listFiles.toSeq.map {

@@ -7,7 +7,6 @@ import akka.actor.Actor
 import akka.event.Logging
 import helper._
 import play.api.Play
-import play.api.Play.current
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -19,7 +18,7 @@ import scala.concurrent.Future
  */
 class VideoDownloadActor extends Actor {
   val log = Logging(context.system, this)
-  val minFileSize = Play.configuration.getLong("hms.minFileSize").get
+  val minFileSize = Config.hmsMinFileSize
 
   def receive = {
     
@@ -43,7 +42,7 @@ class VideoDownloadActor extends Actor {
               currentSender ! VideoDownloadSuccess(meta)
             }
             else {
-              log.error(s"downloaded file size limit: ${minFileSize}")
+              log.error(s"downloaded file size limit: $minFileSize")
               log.error(s"downloaded file to small: ${downloadedFile.length}")
               currentSender ! VideoDownloadFailure(meta, new Exception("downloaded file to small: %d".format(target.length)))
             }
@@ -65,7 +64,7 @@ class VideoDownloadActor extends Actor {
     Play.current.mode match {
       case play.api.Mode.Prod => AuthDownloader.downloadFile(source.toString, target)
       case _ =>
-        val localPath = Play.configuration.getString("hms.localDownload").getOrElse(source.toString)
+        val localPath = Config.hmsLocalDownload(source)
         AuthDownloader.downloadFile(localPath, target)
     }
 

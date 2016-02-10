@@ -1,10 +1,10 @@
 package helper
 
 
+import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.ws.{WS, WSRequestHolder}
-import play.api.{Logger, Play}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -56,9 +56,9 @@ object HMSApi {
   def authenticate: Future[Option[AccessToken]] = {
     Logger.debug("HMSApi.authenticate")
 
-    val username = Play.configuration.getString("hms.username").get
-    val password = Play.configuration.getString("hms.password").get
-    val apiUrl = Play.configuration.getString("hms.apiBroadcastURL").get + ("/login/")
+    val username = Config.hmsUserName
+    val password = Config.hmsPassword
+    val apiUrl = Config.hmsApiUrl + ("/login/")
 
     Logger.debug("apiURL: " + apiUrl)
     Logger.debug("username: " + username)
@@ -93,7 +93,7 @@ object HMSApi {
     Logger.info("HMSApi.getShows: " + stationId)
 
     val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
-    val apiUrl = Play.configuration.getString("hms.apiBroadcastURL").get + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=25"
+    val apiUrl = Config.hmsBroadcastUrl + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=25"
     Logger.debug("HMSApi.getShows apiURL: %s".format(apiUrl))
     try {
       wsAuthRequest(apiUrl).flatMap {

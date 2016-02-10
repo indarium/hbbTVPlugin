@@ -34,14 +34,14 @@ case class ScheduleProcess(processStationData: ProcessStationData)
 class ShowCrawler extends Actor {
   val log = Logging(context.system, this)
 
-  val crawlerPeriod = Play.configuration.getInt("hms.crawler.period").get
+  val crawlerPeriod = Config.hmsCrawlerPeriod
 
   val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
   val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
   val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
   val s3Backend: S3Backend = new S3Backend(credentials, Play.configuration.getString("aws.bucket").get)
 
-  val vimeoAccessToken: String = Play.configuration.getString("vimeo.accessToken").getOrElse("NO-ACCESS-TOKEN")
+  val vimeoAccessToken: String = Config.vimeoAccessToken
   val vimeoBackend: VimeoBackend = new VimeoBackend(vimeoAccessToken)
 
   val mmv = List("mv1", "wis")
@@ -129,7 +129,7 @@ class ShowCrawler extends Actor {
   private def startVimeoEncodingStatusScheduler = {
 
     val delay = Duration.create(1, TimeUnit.SECONDS)
-    val intervalConfig = Play.configuration.getInt("vimeo.encoding.check-interval").getOrElse(120)
+    val intervalConfig = Config.vimeoEncodingCheckInterval
     val interval = Duration.create(intervalConfig, TimeUnit.SECONDS)
     val vimeoVideoStatusActor = context.actorOf(Props(new VimeoVideoStatusActor()))
 

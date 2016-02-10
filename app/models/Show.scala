@@ -1,10 +1,9 @@
 package models
 
 import constants.VimeoEncodingStatusSystem._
-import helper.ShowMetaData
+import helper.{Config, ShowMetaData}
 import org.slf4j.LoggerFactory
 import play.Logger
-import play.api.Play
 import play.api.Play.current
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json._
@@ -140,10 +139,10 @@ object Show {
 
   def findShowVimeoEncodingInProgress: Enumerator[JsObject] = {
 
-    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS)
-    val limit = Play.configuration.getInt("vimeo.encoding.batch.size").getOrElse(10)
+    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS.toString)
+    val limit = Config.vimeoEncodingBatchSize
 
-    log.info(s"query shows with vimeoEncodingStatus=IN_PROGRESS: limit=$limit")
+    log.info(s"query shows with vimeoEncodingStatus=$IN_PROGRESS: limit=$limit")
 
     showsCollection.
       find(query).

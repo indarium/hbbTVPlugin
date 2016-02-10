@@ -4,12 +4,10 @@ import akka.actor.Actor
 import constants.VimeoEncodingStatusSystem.DONE
 import external.vimeo.VideoStatusUtil
 import external.webjazz.WebjazzRest
-import helper.VimeoBackend
 import helper.model.ShowUtil
+import helper.{Config, VimeoBackend}
 import models.Show
 import org.slf4j.LoggerFactory
-import play.api.Play
-import play.api.Play.current
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -24,7 +22,7 @@ class VimeoVideoStatusActor() extends Actor {
 
   val log = LoggerFactory.getLogger(this.getClass)
 
-  val accessToken = Play.configuration.getString("vimeo.accessToken").getOrElse("NO-ACCESS-TOKEN")
+  val accessToken = Config.vimeoAccessToken
   val vimeoBackend = new VimeoBackend(accessToken)
 
   override def receive = {
