@@ -468,7 +468,7 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
       }
     }
 
-    "extractFiles() extract /file from Json and convert it to List[File]" in {
+    "extractFiles() extract /files from Json and convert it to List[File]" in {
       running(FakeApplication()) {
 
         // test

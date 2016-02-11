@@ -274,6 +274,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   }
 
   def videoStatus(vimeoId: Long): Future[WSResponse] = {
+    log.debug(s"Vimeo.query: /videos/$vimeoId")
     vimeoRequest("GET", s"/videos/$vimeoId", None)
   }
 

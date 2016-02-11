@@ -140,20 +140,19 @@ object Show {
   def findShowVimeoEncodingInProgress: Future[Set[Show]] = {
 
     val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS.toString)
+    val filter = Json.obj()
     val limit = Config.vimeoEncodingBatchSize
 
     log.info(s"query shows with vimeoEncodingStatus=IN_PROGRESS: limit=$limit")
 
-    val wumms = showsCollection.
-      find(
-        query,
-        Json.obj()
-      ).
-      cursor[JsObject].collect[Set](1).map { shows =>
-      shows.map { currentShowMeta => currentShowMeta.as[Show]
+    val futureShows = showsCollection
+      .find(query, filter)
+      .cursor[JsObject]
+      .collect[Set](limit)
+      .map { shows =>
+        shows.map { currentShowMeta => currentShowMeta.as[Show] }
       }
-    }
-    wumms
+    futureShows
   }
 
   def createShowByMeta(meta: ShowMetaData) = {

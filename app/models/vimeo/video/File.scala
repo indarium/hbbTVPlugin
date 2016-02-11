@@ -3,7 +3,7 @@ package models.vimeo.video
 import play.api.libs.json._
 
 /**
-  * path = /files/{[*]}
+  * path = /files/[*]
   *
   * author: cvandrei
   * since: 2016-02-01
