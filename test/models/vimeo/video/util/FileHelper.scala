@@ -23,15 +23,32 @@ object FileHelper {
     File(quality, fileType, width, height, link, linkSecure, createdTime, fps, size, md5)
   }
 
+  def defaultFileMinimal: File = {
+    File(quality, fileType, None, None, link, linkSecure, createdTime, fps, size, md5)
+  }
+
   def defaultJson: String = {
 
-    val widthValue: String = if (width.isEmpty) "" else s"""|    "width": ${width.get},"""
-    val heightValue: String = if (height.isEmpty) "" else  s"""|    "height": ${height.get},"""
     s"""{
         |    "quality": "$quality",
         |    "type": "$fileType",
-        $widthValue
-        $heightValue
+        |    "width": ${width.get},
+        |    "height": ${height.get},
+        |    "link": "$link",
+        |    "link_secure": "$linkSecure",
+        |    "created_time": "$createdTime",
+        |    "fps": $fps,
+        |    "size": $size,
+        |    "md5": "$md5"
+        |}""".stripMargin
+
+  }
+
+  def defaultJsonMinimal: String = {
+
+    s"""{
+        |    "quality": "$quality",
+        |    "type": "$fileType",
         |    "link": "$link",
         |    "link_secure": "$linkSecure",
         |    "created_time": "$createdTime",

@@ -45,11 +45,14 @@ object File {
 
     override def writes(f: File): JsValue = {
 
+      val width: JsValue = if (f.width.isEmpty) JsNull else JsNumber(f.width.get)
+      val height: JsValue = if (f.height.isEmpty) JsNull else JsNumber(f.height.get)
+
       JsObject(Seq(
         "quality" -> JsString(f.quality),
         "type" -> JsString(f.fileType),
-        "width" -> JsNumber(f.width.get), // TODO can be None which could cause problems but in our use case we only read and never write
-        "height" -> JsNumber(f.height.get), // TODO can be None which could cause problems but in our use case we only read and never write
+        "width" -> width,
+        "height" -> height,
         "link" -> JsString(f.link),
         "link_secure" -> JsString(f.linkSecure),
         "created_time" -> JsString(f.createdTime),
