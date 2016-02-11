@@ -10,8 +10,8 @@ import play.api.libs.json._
   */
 case class File(quality: String,
                 fileType: String,
-                width: Int,
-                height: Int,
+                width: Option[Int],
+                height: Option[Int],
                 link: String,
                 linkSecure: String,
                 createdTime: String, // TODO refactor to date
@@ -29,8 +29,8 @@ object File {
       val file = File(
         (json \ "quality").as[String],
         (json \ "type").as[String],
-        (json \ "width").as[Int],
-        (json \ "height").as[Int],
+        (json \ "width").as[Option[Int]],
+        (json \ "height").as[Option[Int]],
         (json \ "link").as[String],
         (json \ "link_secure").as[String],
         (json \ "created_time").as[String], // TODO refactor to date
@@ -45,11 +45,14 @@ object File {
 
     override def writes(f: File): JsValue = {
 
+      val width: BigDecimal = f.width.getOrElse[Int](0)
+      val height: BigDecimal = f.height.getOrElse[Int](0)
+
       JsObject(Seq(
         "quality" -> JsString(f.quality),
         "type" -> JsString(f.fileType),
-        "width" -> JsNumber(f.width),
-        "height" -> JsNumber(f.height),
+        "width" -> JsNumber(width),
+        "height" -> JsNumber(height),
         "link" -> JsString(f.link),
         "link_secure" -> JsString(f.linkSecure),
         "created_time" -> JsString(f.createdTime),

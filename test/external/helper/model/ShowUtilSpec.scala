@@ -525,7 +525,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
   def defaultFile(quality: String, width: Int, height: Int, link: String, linkSecure: String): Some[File] = {
 
     Some(
-      File(quality, "video/mp4", width, height, link, linkSecure, DateTime.now.toString, 25, 1000000L, "md5")
+      File(quality, "video/mp4", Some(width), Some(height), link, linkSecure, DateTime.now.toString, 25, 1000000L, "md5")
     )
   }
 
