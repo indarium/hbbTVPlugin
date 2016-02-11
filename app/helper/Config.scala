@@ -39,6 +39,14 @@ object Config {
 
   def webjazzUrl: String = Play.configuration.getString("webjazz.url").getOrElse("http://mmv-mediathek.de/import/vimeo.php")
 
+  /* AWS CONFIG *******************************************************************************************************/
+
+  def awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
+
+  def awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+
+  def awsBucket: String = Play.configuration.getString("aws.bucket").get
+
   /* VIMEO CONFIGS ****************************************************************************************************/
 
   /**

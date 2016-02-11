@@ -8,8 +8,6 @@ import akka.event.Logging
 import com.amazonaws.auth.BasicAWSCredentials
 import helper._
 import models.{Show, Station}
-import play.api.Play
-import play.api.Play.current
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
@@ -36,10 +34,10 @@ class ShowCrawler extends Actor {
 
   val crawlerPeriod = Config.hmsCrawlerPeriod
 
-  val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-  val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+  val awsAccessKeyId: String = Config.awsAccessKeyId
+  val awsSecretKey: String = Config.awsSecretKey
   val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
-  val s3Backend: S3Backend = new S3Backend(credentials, Play.configuration.getString("aws.bucket").get)
+  val s3Backend: S3Backend = new S3Backend(credentials, Config.awsBucket)
 
   val vimeoAccessToken: String = Config.vimeoAccessToken
   val vimeoBackend: VimeoBackend = new VimeoBackend(vimeoAccessToken)

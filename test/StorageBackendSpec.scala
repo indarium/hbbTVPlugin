@@ -1,4 +1,4 @@
-import java.io.{ File, FileOutputStream }
+import java.io.{File, FileOutputStream}
 import java.net.URL
 
 import com.amazonaws.auth.BasicAWSCredentials
@@ -7,17 +7,11 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import helper._
 import org.junit.runner.RunWith
 import org.specs2.matcher.ThrownMessages
-import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
-import play.api.libs.ws.WS
-import play.api.{ Logger, Play }
-import play.api.test.{ WithApplication, PlaySpecification, FakeApplication }
-import play.api.test.Helpers._
+import play.api.Logger
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Await
 import scala.io.Source
-import play.api.Play.current
 
 /**
  * Specification for the storage backend. Test that the backend can store, retrieve and delete a file.
@@ -49,10 +43,9 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
   // TODO: Fix these
     "AWS S3" should {
       "have a bucket" in {
-          import play.api.Play.current
 
-          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+          val awsAccessKeyId: String = Config.awsAccessKeyId
+          val awsSecretKey: String = Config.awsSecretKey
 
           awsAccessKeyId must not be "NO-ACCESS-KEY"
           awsSecretKey must not be "NO-SECRET-KEY"
@@ -65,10 +58,9 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
       }
 
       "have an empty bucket" in {
-          import play.api.Play.current
 
-          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+          val awsAccessKeyId: String = Config.awsAccessKeyId
+          val awsSecretKey: String = Config.awsSecretKey
 
           awsAccessKeyId must not be "NO-ACCESS-KEY"
           awsSecretKey must not be "NO-SECRET-KEY"
@@ -91,10 +83,9 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
     var s3FileName = ""
     "S3 Backend" should {
       "store a media file" in {
-          import play.api.Play.current
 
-          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+          val awsAccessKeyId: String = Config.awsAccessKeyId
+          val awsSecretKey: String = Config.awsSecretKey
 
           awsAccessKeyId must not be "NO-ACCESS-KEY"
           awsSecretKey must not be "NO-SECRET-KEY"
@@ -114,10 +105,9 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
         }
 
       "retrieve a media file" in {
-          import play.api.Play.current
 
-          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+          val awsAccessKeyId: String = Config.awsAccessKeyId
+          val awsSecretKey: String = Config.awsSecretKey
 
           awsAccessKeyId must not be "NO-ACCESS-KEY"
           awsSecretKey must not be "NO-SECRET-KEY"
@@ -133,10 +123,9 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
       }
 
       "delete a media file" in {
-          import play.api.Play.current
 
-          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+          val awsAccessKeyId: String = Config.awsAccessKeyId
+          val awsSecretKey: String = Config.awsSecretKey
 
           awsAccessKeyId must not be "NO-ACCESS-KEY"
           awsSecretKey must not be "NO-SECRET-KEY"
@@ -158,8 +147,8 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
 //      "list media files" in {
 //          import play.api.Play.current
 //
-//          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-//          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+//          val awsAccessKeyId: String = Config.awsAccessKeyId
+//          val awsSecretKey: String = Config.awsSecretKey
 //
 //          awsAccessKeyId must not be "NO-ACCESS-KEY"
 //          awsSecretKey must not be "NO-SECRET-KEY"
@@ -187,8 +176,8 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
 //      "accept maximal 1024 character long file names" in {
 //          import play.api.Play.current
 //
-//          val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-//          val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+//          val awsAccessKeyId: String = Config.awsAccessKeyId
+//          val awsSecretKey: String = Config.awsSecretKey
 //
 //          awsAccessKeyId must not be "NO-ACCESS-KEY"
 //          awsSecretKey must not be "NO-SECRET-KEY"

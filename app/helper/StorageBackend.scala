@@ -192,7 +192,8 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
             log.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
 
-            // TODO ??use url from /videos/${VIDEO-ID} response??
+            // TODO ??use url from /videos/${VIDEO-ID} response instead??
+            // TODO ??field showVideoSDUrl might as well be optional??
             new URL(vimeoUrl + "/" + videoId.get)
 
           }

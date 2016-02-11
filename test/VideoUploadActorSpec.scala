@@ -4,10 +4,9 @@ import actors.VideoUploadActor
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import com.amazonaws.auth.BasicAWSCredentials
-import helper.{VideoUploadFailure, S3Backend, ShowMetaData, VideoUploadSuccess}
+import helper._
 import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable.SpecificationLike
-import play.api.Play
 import play.api.test.FakeApplication
 import play.api.test.Helpers._
 
@@ -38,10 +37,9 @@ class VideoUploadActorSpec extends TestKit(ActorSystem("test")) with Specificati
   "VideoUploadActor" should {
     "be able to upload a file" in {
       running(FakeApplication()) {
-        import play.api.Play.current
 
-        val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-        val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+        val awsAccessKeyId: String = Config.awsAccessKeyId
+        val awsSecretKey: String = Config.awsSecretKey
 
         awsAccessKeyId must not be "NO-ACCESS-KEY"
         awsSecretKey must not be "NO-SECRET-KEY"
@@ -62,10 +60,9 @@ class VideoUploadActorSpec extends TestKit(ActorSystem("test")) with Specificati
 
     "reply with a failure in case of an error" in {
       running(FakeApplication()) {
-        import play.api.Play.current
 
-        val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-        val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+        val awsAccessKeyId: String = Config.awsAccessKeyId
+        val awsSecretKey: String = Config.awsSecretKey
 
         awsAccessKeyId must not be "NO-ACCESS-KEY"
         awsSecretKey must not be "NO-SECRET-KEY"
@@ -87,10 +84,9 @@ class VideoUploadActorSpec extends TestKit(ActorSystem("test")) with Specificati
 
     "reply with a failure in case of a missing file" in {
       running(FakeApplication()) {
-        import play.api.Play.current
 
-        val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-        val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+        val awsAccessKeyId: String = Config.awsAccessKeyId
+        val awsSecretKey: String = Config.awsSecretKey
 
         awsAccessKeyId must not be "NO-ACCESS-KEY"
         awsSecretKey must not be "NO-SECRET-KEY"

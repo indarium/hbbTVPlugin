@@ -4,10 +4,9 @@ import actors.ShowProcessingActor
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import com.amazonaws.auth.BasicAWSCredentials
-import helper.{S3Backend, ShowMetaData}
+import helper.{Config, S3Backend, ShowMetaData}
 import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable.SpecificationLike
-import play.api.Play
 import play.api.test.FakeApplication
 import play.api.test.Helpers._
 
@@ -37,10 +36,9 @@ class ShowProcessingActorSpec extends TestKit(ActorSystem("test")) with Specific
   "ShowProcessingActor" should {
     "download a a video file, upload it and provide a public url" in {
       running(FakeApplication()) {
-        import play.api.Play.current
 
-        val awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
-        val awsSecretKey: String = Play.configuration.getString("aws.secretKey").getOrElse("NO-SECRET-KEY")
+        val awsAccessKeyId: String = Config.awsAccessKeyId
+        val awsSecretKey: String = Config.awsSecretKey
 
         awsAccessKeyId must not be "NO-ACCESS-KEY"
         awsSecretKey must not be "NO-SECRET-KEY"
