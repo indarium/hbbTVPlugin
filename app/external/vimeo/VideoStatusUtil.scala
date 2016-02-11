@@ -1,7 +1,7 @@
 package external.vimeo
 
 import models.vimeo.video.{Download, File, Pictures}
-import play.api.libs.json.{JsResult, JsValue}
+import play.api.libs.json.JsValue
 
 /**
   * author: cvandrei
@@ -17,13 +17,7 @@ object VideoStatusUtil {
 
   def extractDownloads(json: JsValue): List[Download] = (json \ "download").validate[List[Download]].get
 
-//  def extractFiles(json: JsValue): List[File] = (json \ "files").validate[List[File]].get
-  def extractFiles(json: JsValue): List[File] = {
-    val value: JsValue = json \ "files"
-    val result: JsResult[List[File]] = value.validate[List[File]]
-    val files: List[File] = result.get
-    files
-  }
+  def extractFiles(json: JsValue): List[File] = (json \ "files").validate[List[File]].get
 
   /**
     * Gives us the file object with quality SD and the highest resolution available.
@@ -47,7 +41,7 @@ object VideoStatusUtil {
 
     for (file <- files) {
 
-      if (file.quality == quality && (result.isEmpty || result.get.width < file.width)) {
+      if (file.quality == quality && (result.isEmpty || result.get.width.get < file.width.get)) {
         result = Some(file)
       }
 

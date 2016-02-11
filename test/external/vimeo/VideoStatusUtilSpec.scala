@@ -497,8 +497,8 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
     "sdFile() -- two sd files; smaller resolution first" in {
 
       // prepare
-      val file1 = file(640, 360, "sd")
-      val file2 = file(960, 540, "sd")
+      val file1 = file(Some(640), Some(360), "sd")
+      val file2 = file(Some(960), Some(540), "sd")
       val fileList = List(file1, file2)
       val expected = file2
 
@@ -513,8 +513,8 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
     "sdFile() -- two sd files; smaller resolution last" in {
 
       // prepare
-      val file1 = file(960, 540, "sd")
-      val file2 = file(640, 360, "sd")
+      val file1 = file(Some(960), Some(540), "sd")
+      val file2 = file(Some(640), Some(360), "sd")
       val fileList = List(file1, file2)
       val expected = file1
 
@@ -529,8 +529,8 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
     "sdFile() -- one sd file and one hd file" in {
 
       // prepare
-      val file1 = file(960, 540, "sd")
-      val file2 = file(1920, 1080, "hd")
+      val file1 = file(Some(960), Some(540), "sd")
+      val file2 = file(Some(1920), Some(1080), "hd")
       val fileList = List(file1, file2)
       val expected = file1
 
@@ -545,7 +545,7 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
     "sdFile() -- no sd files" in {
 
       // prepare
-      val file1 = file(1280, 720, "hd")
+      val file1 = file(Some(1280), Some(720), "hd")
       val fileList = List(file1)
 
       // test
@@ -569,8 +569,8 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
     "hdUrl() -- two hd files; smaller resolution first" in {
 
       // prepare
-      val file1 = file(1280, 720, "hd")
-      val file2 = file(1920, 1080, "hd")
+      val file1 = file(Some(1280), Some(720), "hd")
+      val file2 = file(Some(1920), Some(1080), "hd")
       val fileList = List(file1, file2)
       val expected = file2
 
@@ -585,8 +585,8 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
     "hdUrl() -- two hd files; smaller resolution last" in {
 
       // prepare
-      val file1 = file(1920, 1080, "hd")
-      val file2 = file(1280, 720, "hd")
+      val file1 = file(Some(1920), Some(1080), "hd")
+      val file2 = file(Some(1280), Some(720), "hd")
       val fileList = List(file1, file2)
       val expected = file1
 
@@ -601,8 +601,8 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
     "hdUrl() -- one sd file and one hd file" in {
 
       // prepare
-      val file1 = file(960, 540, "sd")
-      val file2 = file(1920, 1080, "hd")
+      val file1 = file(Some(960), Some(540), "sd")
+      val file2 = file(Some(1920), Some(1080), "hd")
       val fileList = List(file1, file2)
       val expected = file2
 
@@ -617,7 +617,7 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
     "hdUrl() -- no hd files" in {
 
       // prepare
-      val file1 = file(960, 540, "sd")
+      val file1 = file(Some(960), Some(540), "sd")
       val fileList = List(file1)
 
       // test
@@ -695,10 +695,11 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
    * TEST HELPERS
    ********************************************************************************************************************/
 
-  private def file(width: Int, height: Int, quality: String) = {
+  private def file(width: Option[Int], height: Option[Int], quality: String) = {
     File(quality,
       "video/mp4",
-      width, height,
+      width,
+      height,
       "link",
       secureUrl(width, height, quality),
       DateTime.now.toString,
@@ -708,7 +709,7 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
     )
   }
 
-  private def secureUrl(width: Int, height: Int, quality: String) = s"https://${width}x$height-$quality.com"
+  private def secureUrl(width: Option[Int], height: Option[Int], quality: String) = s"https://${width}x$height-$quality.com"
 
   private def download(quality: String, width: Int, height: Int) = {
     Download(quality, "video/mp4", width, height, DateTime.now.toString, "link", DateTime.now.toString, 25, 1000000L, "md5")

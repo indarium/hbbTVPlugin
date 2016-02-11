@@ -223,7 +223,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "file below upper bound of SD AND source at upper bound of SD resolution" in {
 
       // prepare
-      val file = defaultFile("sd", 640, 360, "link", "linkSecure")
+      val file = defaultFile("sd", Some(640), Some(360), "link", "linkSecure")
       val source = defaultDownload(960, 540)
 
       // test
@@ -237,7 +237,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "file at upper bound of SD AND source at upper bound of SD resolution" in {
 
       // prepare
-      val file = defaultFile("sd", 960, 540, "link", "linkSecure")
+      val file = defaultFile("sd", Some(960), Some(540), "link", "linkSecure")
       val source = defaultDownload(960, 540)
 
       // test
@@ -251,7 +251,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "file at upper bound of SD AND source below upper bound of SD resolution" in {
 
       // prepare
-      val file = defaultFile("sd", 960, 540, "link", "linkSecure")
+      val file = defaultFile("sd", Some(960), Some(540), "link", "linkSecure")
       val source = defaultDownload(640, 360)
 
       // test
@@ -265,7 +265,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "file below SD resolution AND source has SD resolution" in {
 
       // prepare
-      val file = defaultFile("sd", 500, 200, "link", "linkSecure")
+      val file = defaultFile("sd", Some(500), Some(200), "link", "linkSecure")
       val source = defaultDownload(640, 360)
       ShowUtil.atLeastSd(source) must beTrue
 
@@ -280,7 +280,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "file at lower bound for SD; source is HD" in {
 
       // prepare
-      val file = defaultFile("sd", 640, 360, "link", "linkSecure")
+      val file = defaultFile("sd", Some(640), Some(360), "link", "linkSecure")
       val source = defaultDownload(1920, 1080)
 
       // test
@@ -294,7 +294,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "file at upper bound for SD; source is HD" in {
 
       // prepare
-      val file = defaultFile("sd", 960, 540, "link", "linkSecure")
+      val file = defaultFile("sd", Some(960), Some(540), "link", "linkSecure")
       val source = defaultDownload(1920, 1080)
 
       // test
@@ -338,7 +338,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "file below lower HD bound; source is HD" in {
 
       // prepare
-      val file = defaultFile("hd", 960, 540, "link", "linkSecure")
+      val file = defaultFile("hd", Some(960), Some(540), "link", "linkSecure")
       val source = defaultDownload(1920, 1080)
 
       // test
@@ -352,7 +352,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "file at upper HD bound; source at upper HD bound" in {
 
       // prepare
-      val file = defaultFile("hd", 1920, 1080, "link", "linkSecure")
+      val file = defaultFile("hd", Some(1920), Some(1080), "link", "linkSecure")
       val source = defaultDownload(1920, 1080)
 
       // test
@@ -366,7 +366,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "file at upper HD bound; source below upper HD bound" in {
 
       // prepare
-      val file = defaultFile("hd", 1920, 1080, "link", "linkSecure")
+      val file = defaultFile("hd", Some(1920), Some(1080), "link", "linkSecure")
       val source = defaultDownload(1280, 720)
 
       // test
@@ -411,8 +411,8 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
       // prepare
       val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
-      val sdFile = defaultFile("sd", 960, 540, "http://sdUrl", "https://sdUrl")
-      val hdFile = defaultFile("hd", 1920, 1080, "http://hdUrl", "https://hdUrl")
+      val sdFile = defaultFile("sd", Some(960), Some(540), "http://sdUrl", "https://sdUrl")
+      val hdFile = defaultFile("hd", Some(1920), Some(1080), "http://hdUrl", "https://hdUrl")
       val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
 
       ShowUtil.sdCriteriaCheck(sdFile, source) must beTrue
@@ -432,8 +432,8 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
       // prepare
       val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
-      val sdFile = defaultFile("sd", 960, 540, "http://sdUrl", "https://sdUrl")
-      val hdFile = defaultFile("hd", 1280, 720, "http://hdUrl", "https://hdUrl")
+      val sdFile = defaultFile("sd", Some(960), Some(540), "http://sdUrl", "https://sdUrl")
+      val hdFile = defaultFile("hd", Some(1280), Some(720), "http://hdUrl", "https://hdUrl")
       val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
 
       ShowUtil.sdCriteriaCheck(sdFile, source) must beTrue
@@ -453,8 +453,8 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
       // prepare
       val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
-      val sdFile = defaultFile("sd", 640, 360, "http://sdUrl", "https://sdUrl")
-      val hdFile = defaultFile("hd", 1920, 1080, "http://hdUrl", "https://hdUrl")
+      val sdFile = defaultFile("sd", Some(640), Some(360), "http://sdUrl", "https://sdUrl")
+      val hdFile = defaultFile("hd", Some(1920), Some(1080), "http://hdUrl", "https://hdUrl")
       val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
 
       ShowUtil.sdCriteriaCheck(sdFile, source) must beFalse
@@ -474,8 +474,8 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
       // prepare
       val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
-      val sdFile = defaultFile("sd", 640, 360, "http://sdUrl", "https://sdUrl")
-      val hdFile = defaultFile("hd", 1280, 720, "http://hdUrl", "https://hdUrl")
+      val sdFile = defaultFile("sd", Some(640), Some(360), "http://sdUrl", "https://sdUrl")
+      val hdFile = defaultFile("hd", Some(1280), Some(720), "http://hdUrl", "https://hdUrl")
       val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
 
       ShowUtil.sdCriteriaCheck(sdFile, source) must beFalse
@@ -520,9 +520,9 @@ class ShowUtilSpec extends Specification with PlayRunners {
     None,
     vimeoEncodingStatus)
 
-  def defaultFile(link: String, linkSecure: String): Some[File] = defaultFile("sd", 1280, 720, link, linkSecure)
+  def defaultFile(link: String, linkSecure: String): Some[File] = defaultFile("sd", Some(1280), Some(720), link, linkSecure)
 
-  def defaultFile(quality: String, width: Int, height: Int, link: String, linkSecure: String): Some[File] = {
+  def defaultFile(quality: String, width: Option[Int], height: Option[Int], link: String, linkSecure: String): Some[File] = {
 
     Some(
       File(quality, "video/mp4", width, height, link, linkSecure, DateTime.now.toString, 25, 1000000L, "md5")

@@ -10,7 +10,6 @@ import helper.{Config, VimeoBackend}
 import models.Show
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 /**
   * author: cvandrei
@@ -29,7 +28,7 @@ class VimeoVideoStatusActor() extends Actor {
   override def receive = {
 
     case QueryVimeoVideoStatus =>
-      log.debug("QueryVimeoVideoStatus.receive() - begin")
+
       Show.findShowVimeoEncodingInProgress.foreach { shows =>
         shows.foreach { show =>
 
@@ -39,7 +38,6 @@ class VimeoVideoStatusActor() extends Actor {
 
             case Some(vimeoId) =>
 
-              log.debug(s"QueryVimeoVideoStatus.receive() - start processing vimeoId=$vimeoId")
               for {
 
                 videoStatusResponse <- vimeoBackend.videoStatus(vimeoId)
@@ -54,11 +52,8 @@ class VimeoVideoStatusActor() extends Actor {
 
               } yield {
 
-                log.debug(s"QueryVimeoVideoStatus.receive() - start yield vimeoId=$vimeoId")
                 val showWithSdUrl = ShowUtil.updateSdUrl(show, sdFile)
-                log.debug(s"updated sdUrl: ${showWithSdUrl.showVideoSDUrl}")
                 val showWithSdAndHdUrl = ShowUtil.updateHdUrl(showWithSdUrl, hdFile)
-                log.debug(s"updated hdUrl: ${showWithSdAndHdUrl.showVideoHDUrl}")
 
                 downloadSource match {
 
@@ -66,27 +61,24 @@ class VimeoVideoStatusActor() extends Actor {
 
                     val newShow = ShowUtil.updateEncodingStatus(showWithSdAndHdUrl, sdFile, hdFile, source)
                     Show.update(newShow)
-                    log.debug(s"current vimeoEncodingStatus: ${newShow.vimeoEncodingStatus}")
+                    log.debug(s"changed vimeoEncoding to DONE for vimeoId=${newShow.vimeoId}")
                     // TODO idea: store ShowMetaData in second collection "unreleasedShow" first; move to shows collection once vimeoEncodingStatus is DONE
 
                     // TODO refactor Webjazz notification into separate actor
-//                    if (showWithSdAndHdUrl.vimeoEncodingStatus.get == DONE) {
-//                      (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
-//                    }
+                    if (showWithSdAndHdUrl.vimeoEncodingStatus.get == DONE) {
+                      (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
+                    }
 
                   case None => log.error(s"unable to update vimeo encoding status: found no download/file with quality " +
                     s"source in vimeo response: vimeoId=$vimeoId")
 
                 }
-                log.debug(s"QueryVimeoVideoStatus.receive() - end yield vimeoId=$vimeoId")
 
               }
-              log.debug(s"QueryVimeoVideoStatus.receive() - end processing vimeoId=$vimeoId")
           }
         }
 
       }
-      log.info("QueryVimeoVideoStatus.receive() - end")
 
   }
 

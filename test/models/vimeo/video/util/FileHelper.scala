@@ -10,8 +10,8 @@ object FileHelper {
 
   val quality = "hd"
   val fileType = "video/mp4"
-  val width = 1280
-  val height = 720
+  val width = Some(1280)
+  val height = Some(720)
   val link = "http://player.vimeo.com/external/152690945.hd.mp4?s=e514c83b1988801c9067e150d2470e32bfc1c2c0&profile_id=113&oauth2_token_id=393716837"
   val linkSecure = "https://player.vimeo.com/external/152690945.hd.mp4?s=e514c83b1988801c9067e150d2470e32bfc1c2c0&profile_id=113&oauth2_token_id=393716837"
   val createdTime = "2016-01-22T11:52:48+00:00"
@@ -25,11 +25,13 @@ object FileHelper {
 
   def defaultJson: String = {
 
+    val widthValue: String = if (width.isEmpty) "" else s"""|    "width": ${width.get},"""
+    val heightValue: String = if (height.isEmpty) "" else  s"""|    "height": ${height.get},"""
     s"""{
         |    "quality": "$quality",
         |    "type": "$fileType",
-        |    "width": $width,
-        |    "height": $height,
+        $widthValue
+        $heightValue
         |    "link": "$link",
         |    "link_secure": "$linkSecure",
         |    "created_time": "$createdTime",

@@ -13,7 +13,7 @@ object ShowUtil {
   /**
     * Set the sd url on the given show.
     *
-    * @param show   returned object is a copy of this object
+    * @param show     returned object is a copy of this object
     * @param sdFileIn source for the sd url
     * @return an updated copy of the given show
     */
@@ -29,7 +29,7 @@ object ShowUtil {
   /**
     * Set the hd url on the given show.
     *
-    * @param show   returned object is a copy of this object
+    * @param show     returned object is a copy of this object
     * @param hdFileIn source for the hd url
     * @return an updated copy of the given show
     */
@@ -62,7 +62,7 @@ object ShowUtil {
     * Tells us if we already have an SD video with the expected resolution.
     *
     * @param sdFileIn current sdFile
-    * @param source source file
+    * @param source   source file
     * @return true if Vimeo should be done encoding all SD videos we'd want
     */
   def sdCriteriaCheck(sdFileIn: Option[File], source: Download): Boolean = {
@@ -78,8 +78,8 @@ object ShowUtil {
           case true =>
 
             atLeastHd(source) match {
-              case true => sdFile.width == 960 && sdFile.height == 540
-              case false => sdFile.width >= source.width && sdFile.height >= source.height
+              case true => sdFile.width == Some(960) && sdFile.height == Some(540)
+              case false => sdFile.width.get >= source.width && sdFile.height.get >= source.height
             }
 
           case false => false
@@ -112,7 +112,7 @@ object ShowUtil {
       case true if hdFileIn.isDefined =>
 
         val hdFile = hdFileIn.get
-        source.width <= hdFile.width && source.height <= hdFile.height
+        source.width <= hdFile.width.get && source.height <= hdFile.height.get
 
       case false => true
       case _ => false

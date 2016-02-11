@@ -10,8 +10,8 @@ import play.api.libs.json._
   */
 case class File(quality: String,
                 fileType: String,
-                width: Int,
-                height: Int,
+                width: Option[Int],
+                height: Option[Int],
                 link: String,
                 linkSecure: String,
                 createdTime: String, // TODO refactor to date
@@ -29,8 +29,8 @@ object File {
       val file = File(
         (json \ "quality").as[String],
         (json \ "type").as[String],
-        (json \ "width").as[Int],
-        (json \ "height").as[Int],
+        (json \ "width").asOpt[Int],
+        (json \ "height").asOpt[Int],
         (json \ "link").as[String],
         (json \ "link_secure").as[String],
         (json \ "created_time").as[String], // TODO refactor to date
@@ -48,8 +48,8 @@ object File {
       JsObject(Seq(
         "quality" -> JsString(f.quality),
         "type" -> JsString(f.fileType),
-        "width" -> JsNumber(f.width),
-        "height" -> JsNumber(f.height),
+        "width" -> JsNumber(f.width.get), // TODO can be None which could cause problems but in our use case we only read and never write
+        "height" -> JsNumber(f.height.get), // TODO can be None which could cause problems but in our use case we only read and never write
         "link" -> JsString(f.link),
         "link_secure" -> JsString(f.linkSecure),
         "created_time" -> JsString(f.createdTime),
