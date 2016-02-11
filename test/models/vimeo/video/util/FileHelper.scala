@@ -20,7 +20,7 @@ object FileHelper {
   val md5 = "b2b3412e3d757943f58d661928ff81bc"
 
   def defaultFile: File = {
-    File(quality, fileType, width, height, link, linkSecure, createdTime, fps, size, md5)
+    File(quality, fileType, Some(width), Some(height), link, linkSecure, createdTime, fps, size, md5)
   }
 
   def defaultJson: String = {

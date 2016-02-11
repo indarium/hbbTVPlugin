@@ -698,7 +698,7 @@ class VideoStatusUtilSpec extends Specification with PlayRunners {
   private def file(width: Int, height: Int, quality: String) = {
     File(quality,
       "video/mp4",
-      width, height,
+      Some(width), Some(height),
       "link",
       secureUrl(width, height, quality),
       DateTime.now.toString,

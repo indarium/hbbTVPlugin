@@ -47,7 +47,7 @@ object VideoStatusUtil {
 
     for (file <- files) {
 
-      if (file.quality == quality && (result.isEmpty || result.get.width < file.width)) {
+      if (file.quality == quality && (result.isEmpty || result.get.width.get < file.width.get)) {
         result = Some(file)
       }
 

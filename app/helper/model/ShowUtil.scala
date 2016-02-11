@@ -79,7 +79,7 @@ object ShowUtil {
 
             atLeastHd(source) match {
               case true => sdFile.width == 960 && sdFile.height == 540
-              case false => sdFile.width >= source.width && sdFile.height >= source.height
+              case false => sdFile.width.get >= source.width && sdFile.height.get >= source.height
             }
 
           case false => false
@@ -112,7 +112,7 @@ object ShowUtil {
       case true if hdFileIn.isDefined =>
 
         val hdFile = hdFileIn.get
-        source.width <= hdFile.width && source.height <= hdFile.height
+        source.width <= hdFile.width.get && source.height <= hdFile.height.get
 
       case false => true
       case _ => false
