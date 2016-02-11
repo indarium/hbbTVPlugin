@@ -22,7 +22,7 @@ case class Download(quality: String,
 
 object Download {
 
-  implicit object downloadReads extends Format[Download] {
+  implicit object DownloadReads extends Format[Download] {
 
     override def reads(json: JsValue): JsResult[Download] = {
 
