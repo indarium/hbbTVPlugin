@@ -2,7 +2,7 @@ package external.helper.model
 
 import constants.VimeoEncodingStatusSystem.{DONE, IN_PROGRESS, VimeoEncodingStatus}
 import helper.model.ShowUtil
-import models.Show
+import models.{MongoId, Show}
 import models.vimeo.video.{Download, File}
 import org.joda.time.DateTime
 import org.specs2.mutable.Specification
@@ -500,7 +500,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
   def defaultShow(sdUrl: String, hdUrl: Option[String]): Show = defaultShow(sdUrl, hdUrl, None)
 
   def defaultShow(sdUrl: String, hdUrl: Option[String], vimeoEncodingStatus: Option[VimeoEncodingStatus]) = Show(
-//    None,
+    Some(MongoId("56be0905e667f841bc321cc4")),
     "stationId",
     "stationName",
     "logoUrl",

@@ -1,5 +1,5 @@
 import constants.VimeoEncodingStatusSystem._
-import models.Show
+import models.{MongoId, Show}
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 import play.api.test.{FakeApplication, PlayRunners}
@@ -14,7 +14,7 @@ class VimeoEncodingStatusSpec extends Specification with PlayRunners {
     "parse Show Scala into a Show JSON" in {
       running(FakeApplication()) {
         val show = Show(
-//          None,
+          Some(MongoId("56be0905e667f841bc321cc4")),
           "stationId",
           "stationName",
           "stationLogoUrl",
@@ -48,6 +48,7 @@ class VimeoEncodingStatusSpec extends Specification with PlayRunners {
     "parse a Show JSON into a Show Scala" in {
       running(FakeApplication()) {
         val json: JsValue = JsObject(Seq(
+          "_id" -> JsObject(Seq("$oid" -> JsString("56be0905e667f841bc321cc4"))),
           "stationId" -> JsString("stationId"),
           "stationName" -> JsString("stationName"),
           "stationLogoUrl" -> JsString("stationLogoUrl"),

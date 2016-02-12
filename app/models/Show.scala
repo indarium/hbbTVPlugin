@@ -8,6 +8,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
+import reactivemongo.core.commands.LastError
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -16,7 +17,7 @@ import scala.concurrent.Future
   * Created by dermicha on 06/09/14.
   */
 
-case class Show(/*id: Option[MongoId],*/
+case class Show(_id: Option[MongoId],
                 stationId: String,
                 stationName: String,
                 stationLogoUrl: String,
@@ -51,7 +52,7 @@ object Show {
       val vimeoJson = Json.obj("name" -> vimeoEncodingStatus, "$variant" -> vimeoEncodingStatus)
 
       val show = Show(
-        //        (json \ "_id").asOpt[MongoId],
+        (json \ "_id").asOpt[MongoId],
         (json \ "stationId").as[String],
         (json \ "stationName").as[String],
         (json \ "stationLogoUrl").as[String],
@@ -75,10 +76,12 @@ object Show {
     }
 
     def writes(s: Show) = {
-      val vimeoEncodingStatus = if (s.vimeoEncodingStatus.isDefined) s.vimeoEncodingStatus.get.name else ""
+
+      val _id = if (s._id.isDefined) MongoId.idFormat.writes(s._id.get) else JsNull
+      val vimeoEncodingStatus = if (s.vimeoEncodingStatus.isDefined) JsString(s.vimeoEncodingStatus.get.name) else JsNull
 
       JsObject(Seq(
-        //        "_id" -> JsString(s.id.getOrElse("").toString),
+        "_id" -> _id,
         "stationId" -> JsString(s.stationId),
         "stationName" -> JsString(s.stationName),
         "stationLogoUrl" -> JsString(s.stationLogoUrl),
@@ -96,7 +99,7 @@ object Show {
         "channelBroadcastInfo" -> JsString(s.channelBroadcastInfo),
         "rootPortalURL" -> JsString(s.rootPortalURL),
         "vimeoId" -> JsNumber(s.vimeoId.get),
-        "vimeoEncodingStatus" -> JsString(vimeoEncodingStatus)
+        "vimeoEncodingStatus" -> vimeoEncodingStatus
       ))
     }
   }
@@ -150,7 +153,7 @@ object Show {
       .cursor[JsObject]
       .collect[Set](limit)
       .map { shows =>
-        shows.map { currentShowMeta => currentShowMeta.as[Show] }
+        shows.map { currentShow => currentShow.as[Show] }
       }
     futureShows
   }
@@ -162,7 +165,7 @@ object Show {
       case Some(station) =>
         Logger.debug("found fitting station")
         val show = new Show(
-          //          None,
+          None,
           meta.stationId,
           meta.stationName.getOrElse(station.defaultStationName),
           station.defaultStationLogoUrl,
@@ -190,6 +193,6 @@ object Show {
     }
   }
 
-  def update(show: Show) = showsCollection.save(show) // TODO refactor to return new show object; None if error
+  def update(show: Show): Future[LastError] = showsCollection.save(show) // TODO refactor to return new show object; None if error
 
 }

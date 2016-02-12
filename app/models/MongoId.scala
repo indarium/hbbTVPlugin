@@ -1,34 +1,17 @@
 package models
 
-import play.api.libs.json._
+import play.api.libs.json.Json
 
 /**
+  * Mapping Mongo's ObjectId("<some-hex-value>") as mentioned here: https://stackoverflow.com/questions/26840173/map-mongodb-id-using-play-reactivemongo-plugin?rq=1
+  *
   * author: cvandrei
-  * since: 2016-02-10
+  * since: 2016-02-12
   */
-case class MongoId(id: String) {
-
-  override def toString = id
-
-  def toJson: JsString = {
-    JsString(id)
-  }
-}
+case class MongoId($oid: String)
 
 object MongoId {
 
-  def createReads: Reads[MongoId] = {
-    __.read[String].map {
-      l => MongoId(l)
-    }
-  }
+  implicit val idFormat = Json.format[MongoId]
 
-  implicit def mongoReads: Reads[MongoId] =
-    (__ \ 'mongoId).read[String].map {
-      l => MongoId(l)
-    }
-
-  implicit def mongoWrites: Writes[MongoId] = Writes {
-    id => Json.obj("mongoId" -> id.id)
-  }
 }

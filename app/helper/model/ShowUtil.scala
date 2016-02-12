@@ -121,6 +121,9 @@ object ShowUtil {
 
   }
 
+  /**
+    * Changes vimeoEncodingStatus when no further video status calls to Vimeo are necessary.
+    */
   def updateEncodingStatus(show: Show, sdFile: Option[File], hdFile: Option[File], source: Download): Show = {
 
     val sdCriteriaFulfilled = sdCriteriaCheck(sdFile, source)
