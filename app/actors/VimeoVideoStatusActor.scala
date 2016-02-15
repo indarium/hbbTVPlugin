@@ -66,7 +66,7 @@ class VimeoVideoStatusActor() extends Actor {
                     // TODO refactor Webjazz notification into separate actor
                     if (showWithSdAndHdUrl.vimeoEncodingStatus.get == DONE) {
                       val response = (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
-                      log.info(s"notified Webjazz: vimeoId=$vimeoId") // TODO handle errors by sending notifications again
+                      log.info(s"notified Webjazz: vimeoId=$vimeoId")
                     }
 
                   case None => log.error(s"unable to update vimeo encoding status: found no download/file with quality " +

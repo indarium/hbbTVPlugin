@@ -68,6 +68,7 @@ class WebjazzRest {
 
     log.debug(s"notified Webjazz: response=$result.get")
     result.get
+    // TODO handle errors by sending notifications again --> remember notification for later sending?
 
   }
 
