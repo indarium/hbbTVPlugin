@@ -110,7 +110,11 @@ object Show {
       find(
         Json.obj(
           "stationId" -> stationId,
-          "channelId" -> channelId
+          "channelId" -> channelId,
+          "$or" -> Json.arr(
+            Json.obj("vimeoEncodingStatus" -> Json.obj("$exists" -> false)),
+            Json.obj("vimeoEncodingStatus" -> DONE.name)
+          )
         ),
         Json.obj("_id" -> 0
           , "showId" -> 0
@@ -148,14 +152,13 @@ object Show {
 
     log.info(s"query shows with vimeoEncodingStatus=IN_PROGRESS: limit=$limit")
 
-    val futureShows = showsCollection
+    showsCollection
       .find(query, filter)
       .cursor[JsObject]
       .collect[Set](limit)
       .map { shows =>
         shows.map { currentShow => currentShow.as[Show] }
       }
-    futureShows
   }
 
   def createShowByMeta(meta: ShowMetaData) = {
