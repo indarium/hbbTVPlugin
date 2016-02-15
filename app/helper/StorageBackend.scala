@@ -234,8 +234,9 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     val body = Json.obj(
       "name" -> name,
       "description" -> description,
-      "privacy.view" -> "anybody",
+      "privacy.view" -> "unlisted",
       "privacy.embed" -> "public",
+      "privacy.download" -> false,
       "review_link" -> "false"
     )
     val path = "/videos/" + videoId
