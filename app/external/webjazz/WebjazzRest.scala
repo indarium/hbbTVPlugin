@@ -9,7 +9,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.ws.{WS, WSResponse}
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * author: cvandrei
@@ -19,7 +19,7 @@ class WebjazzRest {
 
   val log = LoggerFactory.getLogger(this.getClass)
 
-  def notifyWebjazz(show: Show, videoStatusJson: JsValue): Future[WSResponse] = {
+  def notifyWebjazz(show: Show, videoStatusJson: JsValue): WSResponse = {
 
     val notification = prepare(show, videoStatusJson)
     log.debug(s"about to send webjazz notification: $notification")
@@ -51,13 +51,23 @@ class WebjazzRest {
 
   }
 
-  private def execute(notification: JsValue): Future[WSResponse] = {
+  private def execute(notification: JsValue): WSResponse = {
 
     val webjazzUrl = Config.webjazzUrl
 
-    WS.url(webjazzUrl)
-      .withHeaders(("Content-Type", "application/json"))
-      .put(notification)
+    var result: Option[WSResponse] = None
+    for {
+
+      response <- WS.url(webjazzUrl)
+        .withHeaders(("Content-Type", "application/json"))
+        .put(notification)
+
+    } yield {
+      result = Some(response)
+    }
+
+    log.debug(s"notified Webjazz: response=$result.get")
+    result.get
 
   }
 

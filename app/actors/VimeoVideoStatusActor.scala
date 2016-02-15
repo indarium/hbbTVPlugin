@@ -62,13 +62,11 @@ class VimeoVideoStatusActor() extends Actor {
                     val newShow = ShowUtil.updateEncodingStatus(showWithSdAndHdUrl, sdFile, hdFile, source)
                     Show.update(newShow)
                     log.debug(s"changed vimeoEncoding to DONE for vimeoId=$vimeoId")
-                    // TODO idea: store ShowMetaData in second collection "unreleasedShow" first; move to shows collection once vimeoEncodingStatus is DONE
 
                     // TODO refactor Webjazz notification into separate actor
                     if (showWithSdAndHdUrl.vimeoEncodingStatus.get == DONE) {
                       val response = (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
-                      log.info(s"notified Webjazz: vimeoId=$vimeoId")
-                      log.debug(s"notified Webjazz: vimeoId=$vimeoId, response=$response") // TODO this probably logs only the Future[] object
+                      log.info(s"notified Webjazz: vimeoId=$vimeoId") // TODO handle errors by sending notifications again
                     }
 
                   case None => log.error(s"unable to update vimeo encoding status: found no download/file with quality " +
