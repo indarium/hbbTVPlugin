@@ -20,7 +20,7 @@ object ShowUtil {
   def updateSdUrl(show: Show, sdFileIn: Option[File]): Show = {
 
     sdFileIn match {
-      case Some(sdFile) => show.copy(showVideoSDUrl = sdFile.linkSecure)
+      case Some(sdFile) => show.copy(showVideoSDUrl = sdFile.link)
       case None => show
     }
 
@@ -36,7 +36,7 @@ object ShowUtil {
   def updateHdUrl(show: Show, hdFileIn: Option[File]): Show = {
 
     hdFileIn match {
-      case Some(hdFile) => show.copy(showVideoSDUrl = hdFile.linkSecure)
+      case Some(hdFile) => show.copy(showVideoSDUrl = hdFile.link)
       case None => show
     }
 
