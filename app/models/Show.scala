@@ -78,9 +78,8 @@ object Show {
     def writes(s: Show) = {
 
       val _id = if (s._id.isDefined) MongoId.idFormat.writes(s._id.get) else JsNull
-      val vimeoEncodingStatus = if (s.vimeoEncodingStatus.isDefined) JsString(s.vimeoEncodingStatus.get.name) else JsNull
 
-      JsObject(Seq(
+      var seq = Seq(
         "_id" -> _id,
         "stationId" -> JsString(s.stationId),
         "stationName" -> JsString(s.stationName),
@@ -93,14 +92,25 @@ object Show {
         "showTitle" -> JsString(s.showTitle),
         "showSourceTitle" -> JsString(s.showSourceTitle),
         "showSubtitle" -> JsString(s.showSubtitle),
-        "showLogoUrl" -> JsString(s.showLogoUrl),
-        "showVideoHDUrl" -> JsString(s.showVideoHDUrl.getOrElse("")),
+        "showLogoUrl" -> JsString(s.showLogoUrl))
+
+      if (s.showVideoHDUrl.isDefined) {
+        seq ++= Seq("showVideoHDUrl" -> JsString(s.showVideoHDUrl.get))
+      }
+
+      seq ++= Seq(
         "showVideoSDUrl" -> JsString(s.showVideoSDUrl),
         "channelBroadcastInfo" -> JsString(s.channelBroadcastInfo),
         "rootPortalURL" -> JsString(s.rootPortalURL),
-        "vimeoId" -> JsNumber(s.vimeoId.get),
-        "vimeoEncodingStatus" -> vimeoEncodingStatus
-      ))
+        "vimeoId" -> JsNumber(s.vimeoId.get)
+      )
+
+      if (s.vimeoEncodingStatus.isDefined) {
+        seq ++= Seq("vimeoEncodingStatus" -> JsString(s.vimeoEncodingStatus.get.name))
+      }
+
+      JsObject(seq)
+
     }
   }
 
