@@ -10,6 +10,12 @@ import models.vimeo.video.{Download, File}
   */
 object ShowUtil {
 
+  val SD_WIDTH_LOWER_BOUND = 640
+  val SD_HEIGHT_LOWER_BOUND = 300
+
+  val SD_WIDTH_UPPER_BOUND = 960
+  val SD_HEIGHT_UPPER_BOUND = 540
+
   /**
     * Set the sd url on the given show.
     *
@@ -48,7 +54,7 @@ object ShowUtil {
     * @param source source file
     * @return true if resolution is at least SD
     */
-  def atLeastSd(source: Download): Boolean = source.width >= 640 && source.height >= 360
+  def atLeastSd(source: Download): Boolean = source.width >= SD_WIDTH_LOWER_BOUND && source.height >= SD_HEIGHT_LOWER_BOUND
 
   /**
     * Tells us if the given source file's resolution is at least an HD video.
@@ -78,7 +84,7 @@ object ShowUtil {
           case true =>
 
             atLeastHd(source) match {
-              case true => sdFile.width == Some(960) && sdFile.height == Some(540)
+              case true => sdFile.width == Some(SD_WIDTH_UPPER_BOUND) && sdFile.height == Some(SD_HEIGHT_UPPER_BOUND)
               case false => sdFile.width.get >= source.width && sdFile.height.get >= source.height
             }
 

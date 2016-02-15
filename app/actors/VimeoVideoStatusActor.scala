@@ -68,7 +68,7 @@ class VimeoVideoStatusActor() extends Actor {
                     if (showWithSdAndHdUrl.vimeoEncodingStatus.get == DONE) {
                       val response = (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
                       log.info(s"notified Webjazz: vimeoId=$vimeoId")
-                      log.debug(s"notified Webjazz: vimeoId=$vimeoId, response=$response")
+                      log.debug(s"notified Webjazz: vimeoId=$vimeoId, response=$response") // TODO this probably logs only the Future[] object
                     }
 
                   case None => log.error(s"unable to update vimeo encoding status: found no download/file with quality " +
