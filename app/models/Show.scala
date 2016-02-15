@@ -168,7 +168,7 @@ object Show {
       case Some(station) =>
         Logger.debug("found fitting station")
         val show = new Show(
-          None,
+          Some(MongoId(MongoId.generate)),
           meta.stationId,
           meta.stationName.getOrElse(station.defaultStationName),
           station.defaultStationLogoUrl,
