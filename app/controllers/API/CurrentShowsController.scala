@@ -38,7 +38,7 @@ object CurrentShowsController extends Controller {
 
   def callBack = Action(BodyParsers.parse.tolerantJson) {
     request =>
-      Logger.debug("body:")
+      Logger.debug("HMS CallBack-Body:")
       Logger.debug(Json.prettyPrint(request.body))
       Ok(Json.obj("status" -> "OK"))
   }
