@@ -147,6 +147,32 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
     }
 
+    "debug test with TV data" in {
+
+      // prepare
+      val download = defaultDownload(960, 528)
+
+      // test
+      val result = ShowUtil.atLeastSd(download)
+
+      // verify
+      result must beTrue
+
+    }
+
+    "debug test with TV data" in {
+
+      // prepare
+      val download = defaultDownload(640, 352)
+
+      // test
+      val result = ShowUtil.atLeastSd(download)
+
+      // verify
+      result must beTrue
+
+    }
+
   }
 
   "atLeastHd()" should {
@@ -480,6 +506,48 @@ class ShowUtilSpec extends Specification with PlayRunners {
 
       ShowUtil.sdCriteriaCheck(sdFile, source) must beFalse
       ShowUtil.hdCriteriaCheck(hdFile, source) must beFalse
+
+      val expected = show
+
+      // test
+      val result = ShowUtil.updateEncodingStatus(show, sdFile, hdFile, source)
+
+      // verify
+      result mustEqual expected
+
+    }
+
+    "debug test with TV data: source=720x576, sd=960x528" in {
+
+      // prepare
+      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val sdFile = defaultFile("sd", Some(960), Some(528), "http://sdUrl", "https://sdUrl")
+      val hdFile = None
+      val source = defaultDownload("source", 720, 576, "https://sourceUrl")
+
+      ShowUtil.sdCriteriaCheck(sdFile, source) must beTrue
+      ShowUtil.hdCriteriaCheck(hdFile, source) must beTrue
+
+      val expected = show.copy(vimeoEncodingStatus = Some(DONE))
+
+      // test
+      val result = ShowUtil.updateEncodingStatus(show, sdFile, hdFile, source)
+
+      // verify
+      result mustEqual expected
+
+    }
+
+    "debug test with TV data: source=720x576, sd=640x352" in {
+
+      // prepare
+      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val sdFile = defaultFile("sd", Some(640), Some(352), "http://sdUrl", "https://sdUrl")
+      val hdFile = None
+      val source = defaultDownload("source", 720, 576, "https://sourceUrl")
+
+      ShowUtil.sdCriteriaCheck(sdFile, source) must beFalse
+      ShowUtil.hdCriteriaCheck(hdFile, source) must beTrue
 
       val expected = show
 

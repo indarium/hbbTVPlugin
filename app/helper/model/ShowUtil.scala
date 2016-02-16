@@ -84,8 +84,8 @@ object ShowUtil {
           case true =>
 
             atLeastHd(source) match {
-              case true => sdFile.width == Some(SD_WIDTH_UPPER_BOUND) && sdFile.height == Some(SD_HEIGHT_UPPER_BOUND)
-              case false => sdFile.width.get >= source.width && sdFile.height.get >= source.height
+              case true => sdFile.width == Some(SD_WIDTH_UPPER_BOUND)
+              case false => sdFile.width.get >= source.width
             }
 
           case false => false
