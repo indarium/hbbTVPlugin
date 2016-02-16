@@ -156,7 +156,7 @@ object Show {
 
   def findShowVimeoEncodingInProgress: Future[Set[Show]] = {
 
-    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS.toString)
+    val query = Json.obj("vimeoEncodingStatus" -> IN_PROGRESS.name)
     val filter = Json.obj()
     val limit = Config.vimeoEncodingBatchSize
 
@@ -167,7 +167,9 @@ object Show {
       .cursor[JsObject]
       .collect[Set](limit)
       .map { shows =>
-        shows.map { currentShow => currentShow.as[Show] }
+        shows.map { currentShow =>
+          currentShow.as[Show]
+        }
       }
   }
 

@@ -126,7 +126,7 @@ class ShowCrawler extends Actor {
 
   private def startVimeoEncodingStatusScheduler = {
 
-    val delay = Duration.create(1, TimeUnit.SECONDS)
+    val delay = Duration.create(20, TimeUnit.SECONDS)
     val intervalConfig = Config.vimeoEncodingCheckInterval
     val interval = Duration.create(intervalConfig, TimeUnit.SECONDS)
     val vimeoVideoStatusActor = context.actorOf(Props(new VimeoVideoStatusActor()))
