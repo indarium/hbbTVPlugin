@@ -64,7 +64,7 @@ class VimeoVideoStatusActor() extends Actor {
                     log.debug(s"changed vimeoEncoding to DONE for vimeoId=$vimeoId")
 
                     // TODO refactor Webjazz notification into separate actor
-                    if (showWithSdAndHdUrl.vimeoEncodingStatus.get == DONE) {
+                    if (newShow.vimeoEncodingStatus.get == DONE) {
                       val response = (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
                       log.info(s"notified Webjazz: vimeoId=$vimeoId")
                     }
