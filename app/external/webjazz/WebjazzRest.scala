@@ -66,9 +66,9 @@ class WebjazzRest {
       result = Some(response)
     }
 
-    log.debug(s"notified Webjazz: response=${result.get}")
+    log.info(s"notified Webjazz: response=${result.get}")
     result.get
-    // TODO handle errors by sending notifications again --> remember notification for later sending?
+    // TODO handle errors by sending notifications again --> remember notification in a new collection for later sending
 
   }
 
