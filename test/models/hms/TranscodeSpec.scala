@@ -1,7 +1,6 @@
-package models.vimeo.video
+package models.hms
 
-import models.hms.{Source, Transcode}
-import models.vimeo.video.util.TranscodeHelper
+import models.hms.util.TranscodeHelper
 import org.specs2.mutable.Specification
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.{FakeApplication, PlayRunners}

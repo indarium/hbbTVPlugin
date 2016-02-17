@@ -1,7 +1,6 @@
-package models.vimeo.video.util
+package models.hms.util
 
 import models.hms.Transcode
-import models.hms.util.SourceHelper
 import play.api.libs.json.Json
 
 /**
