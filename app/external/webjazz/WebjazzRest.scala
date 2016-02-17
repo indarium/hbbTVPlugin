@@ -5,6 +5,7 @@ import external.webjazz.util.WebjazzUtil
 import helper.Config
 import models.Show
 import org.slf4j.LoggerFactory
+import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.ws.{WS, WSResponse}
@@ -17,12 +18,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
   */
 class WebjazzRest {
 
-  val log = LoggerFactory.getLogger(this.getClass)
-
   def notifyWebjazz(show: Show, videoStatusJson: JsValue): WSResponse = {
 
     val notification = prepare(show, videoStatusJson)
-    log.debug(s"about to send webjazz notification: $notification")
+    Logger.debug(s"about to send webjazz notification: $notification")
 
     execute(notification)
 
@@ -65,8 +64,7 @@ class WebjazzRest {
     } yield {
       result = Some(response)
     }
-
-    log.info(s"notified Webjazz: response=${result.get}")
+    Logger.info(s"notified Webjazz: response=${result.get}")
     result.get
     // TODO handle errors by sending notifications again --> remember notification in a new collection for later sending
 
