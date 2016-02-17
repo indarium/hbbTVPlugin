@@ -8,7 +8,6 @@ import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
 import constants.VimeoEncodingStatusSystem._
-import org.slf4j.LoggerFactory
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
@@ -125,8 +124,6 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
   */
 class VimeoBackend(accessToken: String) extends StorageBackend {
 
-  val log = LoggerFactory.getLogger(this.getClass)
-
   val vimeoApiUrl = "https://api.vimeo.com"
   val vimeoUrl = "http://vimeo.com"
 
@@ -185,12 +182,12 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
               case EmbeddedNumberFmt(n) => Some(n.toLong)
               case _ => throw new NumberFormatException(s"failed to convert id to long: vimeoId=$videoId")
             }
-            log.debug(s"videoId=$videoId; vimeoId=$videoIdLong")
+            Logger.debug(s"videoId=$videoId; vimeoId=$videoIdLong")
 
             meta.vimeoId = videoIdLong
             meta.vimeoEncodingStatus = Some(IN_PROGRESS)
 
-            log.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
+            Logger.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
 
             // TODO ??use url from /videos/${VIDEO-ID} response instead??
             // TODO ??field showVideoSDUrl might as well be optional??
@@ -275,7 +272,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   }
 
   def videoStatus(vimeoId: Long): Future[WSResponse] = {
-    log.debug(s"Vimeo.query: /videos/$vimeoId")
+    Logger.debug(s"Vimeo.query: /videos/$vimeoId")
     vimeoRequest("GET", s"/videos/$vimeoId", None)
   }
 
