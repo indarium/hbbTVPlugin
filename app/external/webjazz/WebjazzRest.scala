@@ -4,7 +4,6 @@ import external.vimeo.VideoStatusUtil
 import external.webjazz.util.WebjazzUtil
 import helper.Config
 import models.Show
-import org.slf4j.LoggerFactory
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._

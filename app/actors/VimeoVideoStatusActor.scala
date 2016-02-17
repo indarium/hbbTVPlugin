@@ -1,13 +1,13 @@
 package actors
 
 import akka.actor.Actor
-import akka.event.Logging
 import constants.VimeoEncodingStatusSystem.DONE
 import external.vimeo.VideoStatusUtil
 import external.webjazz.WebjazzRest
 import helper.model.ShowUtil
 import helper.{Config, VimeoBackend}
 import models.Show
+import play.api.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -19,8 +19,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class QueryVimeoVideoStatus()
 
 class VimeoVideoStatusActor() extends Actor {
-
-  val log = Logging(context.system, this)
 
   val accessToken = Config.vimeoAccessToken
   val vimeoBackend = new VimeoBackend(accessToken)
@@ -34,7 +32,7 @@ class VimeoVideoStatusActor() extends Actor {
 
           show.vimeoId match {
 
-            case None => log.error(s"unable to query vimeo encoding status for show with missing vimeoId: showId=${show.showId}")
+            case None => Logger.error(s"unable to query vimeo encoding status for show with missing vimeoId: showId=${show.showId}")
 
             case Some(vimeoId) =>
 
@@ -64,12 +62,12 @@ class VimeoVideoStatusActor() extends Actor {
 
                     // TODO refactor Webjazz notification into separate actor
                     if (newShow.vimeoEncodingStatus.get == DONE) {
-                      log.debug(s"changed vimeoEncoding to DONE for vimeoId=$vimeoId")
+                      Logger.debug(s"changed vimeoEncoding to DONE for vimeoId=$vimeoId")
                       val response = (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
-                      log.info(s"notified Webjazz: vimeoId=$vimeoId")
+                      Logger.info(s"notified Webjazz: vimeoId=$vimeoId")
                     }
 
-                  case None => log.error(s"unable to update vimeo encoding status: found no download/file with quality " +
+                  case None => Logger.error(s"unable to update vimeo encoding status: found no download/file with quality " +
                     s"source in vimeo response: vimeoId=$vimeoId")
 
                 }
