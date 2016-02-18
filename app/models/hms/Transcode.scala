@@ -6,11 +6,11 @@ import play.api.libs.json.Json
   * author: cvandrei
   * since: 2016-02-17
   */
-case class Transcode(SourceType: String, // TODO use enum
+case class Transcode(SourceType: String, // TODO use enum?
                      Sources: List[Source],
                      Collapsed: Option[Boolean],
                      CollapsedName: Option[String],
-                     DownloadProvision: String, // TODO use enum
+                     DownloadProvision: String, // TODO use enum?
                      PushFinishedNotification: Boolean,
                      PushErrorNotification: Boolean,
                      PushStatusNotification: Boolean,
