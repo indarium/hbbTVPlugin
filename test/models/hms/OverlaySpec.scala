@@ -24,8 +24,27 @@ class OverlaySpec extends Specification with PlayRunners {
 
         // verify
         (json \ "ID").as[Long] mustEqual overlay.ID
-        (json \ "StartOffset").as[String] mustEqual overlay.StartOffset
-        (json \ "EndOffset").as[String] mustEqual overlay.EndOffset
+        (json \ "StartOffset").asOpt[String] mustEqual overlay.StartOffset
+        (json \ "EndOffset").asOpt[String] mustEqual overlay.EndOffset
+        (json \ "Layer").as[Int] mustEqual overlay.Layer
+
+      }
+
+    }
+
+    "convert minimum object to Json" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val overlay = OverlayHelper.defaultMinimum
+
+        // test
+        val json = Json.toJson(overlay)
+
+        // verify
+        (json \ "ID").as[Long] mustEqual overlay.ID
+        (json \ "StartOffset").asOpt[String] mustEqual None
+        (json \ "EndOffset").asOpt[String] mustEqual None
         (json \ "Layer").as[Int] mustEqual overlay.Layer
 
       }
@@ -43,19 +62,28 @@ class OverlaySpec extends Specification with PlayRunners {
 
         // verify
         overlay.get.ID mustEqual (json \ "ID").as[Long]
-        overlay.get.StartOffset mustEqual (json \ "StartOffset").as[String]
-        overlay.get.EndOffset mustEqual (json \ "EndOffset").as[String]
+        overlay.get.StartOffset mustEqual (json \ "StartOffset").asOpt[String]
+        overlay.get.EndOffset mustEqual (json \ "EndOffset").asOpt[String]
         overlay.get.Layer mustEqual (json \ "Layer").as[Int]
 
       }
     }
 
-    "foo" in {
+    "convert minimum JSON to object" in {
       running(FakeApplication()) {
-        val list = OverlayHelper.defaultList
-        val json = Json.toJson(list).toString()
 
-        json mustEqual ""
+        // prepare
+        val json: JsValue = Json.parse(OverlayHelper.defaultJsonMinimum)
+
+        // test
+        val overlay = json.validate[Overlay]
+
+        // verify
+        overlay.get.ID mustEqual (json \ "ID").as[Long]
+        overlay.get.StartOffset mustEqual None
+        overlay.get.EndOffset mustEqual None
+        overlay.get.Layer mustEqual (json \ "Layer").as[Int]
+
       }
     }
 

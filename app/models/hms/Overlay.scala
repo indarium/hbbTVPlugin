@@ -7,8 +7,8 @@ import play.api.libs.json.Json
   * since: 2016-02-17
   */
 case class Overlay(ID: Long,
-                   StartOffset: String,
-                   EndOffset: String,
+                   StartOffset: Option[String],
+                   EndOffset: Option[String],
                    Layer: Int
                   )
 
