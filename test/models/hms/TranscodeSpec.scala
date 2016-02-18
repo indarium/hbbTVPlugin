@@ -66,18 +66,18 @@ class TranscodeSpec extends Specification with PlayRunners {
         val json: JsValue = Json.parse(TranscodeHelper.defaultJson)
 
         // test
-        val transcode = json.validate[Transcode]
+        val transcode = json.validate[Transcode].get
 
         // verify
-        transcode.get.SourceType mustEqual (json \ "SourceType").as[String]
-        transcode.get.Sources mustEqual (json \ "Sources").as[List[Source]]
-        transcode.get.Collapsed mustEqual Some((json \ "Collapsed").as[Boolean])
-        transcode.get.CollapsedName mustEqual Some((json \ "CollapsedName").as[String])
-        transcode.get.DownloadProvision mustEqual (json \ "DownloadProvision").as[String]
-        transcode.get.PushFinishedNotification mustEqual (json \ "PushFinishedNotification").as[Boolean]
-        transcode.get.PushErrorNotification mustEqual (json \ "PushErrorNotification").as[Boolean]
-        transcode.get.PushStatusNotification mustEqual (json \ "PushStatusNotification").as[Boolean]
-        transcode.get.PushNotificationCallback mustEqual (json \ "PushNotificationCallback").as[String]
+        transcode.SourceType mustEqual (json \ "SourceType").as[String]
+        transcode.Sources mustEqual (json \ "Sources").as[List[Source]]
+        transcode.Collapsed mustEqual Some((json \ "Collapsed").as[Boolean])
+        transcode.CollapsedName mustEqual Some((json \ "CollapsedName").as[String])
+        transcode.DownloadProvision mustEqual (json \ "DownloadProvision").as[String]
+        transcode.PushFinishedNotification mustEqual (json \ "PushFinishedNotification").as[Boolean]
+        transcode.PushErrorNotification mustEqual (json \ "PushErrorNotification").as[Boolean]
+        transcode.PushStatusNotification mustEqual (json \ "PushStatusNotification").as[Boolean]
+        transcode.PushNotificationCallback mustEqual (json \ "PushNotificationCallback").as[String]
 
       }
     }
@@ -89,18 +89,18 @@ class TranscodeSpec extends Specification with PlayRunners {
         val json: JsValue = Json.parse(TranscodeHelper.defaultJsonMinimum)
 
         // test
-        val transcode = json.validate[Transcode]
+        val transcode = json.validate[Transcode].get
 
         // verify
-        transcode.get.SourceType mustEqual (json \ "SourceType").as[String]
-        transcode.get.Sources mustEqual (json \ "Sources").as[List[Source]]
-        transcode.get.Collapsed mustEqual None
-        transcode.get.CollapsedName mustEqual None
-        transcode.get.DownloadProvision mustEqual (json \ "DownloadProvision").as[String]
-        transcode.get.PushFinishedNotification mustEqual (json \ "PushFinishedNotification").as[Boolean]
-        transcode.get.PushErrorNotification mustEqual (json \ "PushErrorNotification").as[Boolean]
-        transcode.get.PushStatusNotification mustEqual (json \ "PushStatusNotification").as[Boolean]
-        transcode.get.PushNotificationCallback mustEqual (json \ "PushNotificationCallback").as[String]
+        transcode.SourceType mustEqual (json \ "SourceType").as[String]
+        transcode.Sources mustEqual (json \ "Sources").as[List[Source]]
+        transcode.Collapsed mustEqual None
+        transcode.CollapsedName mustEqual None
+        transcode.DownloadProvision mustEqual (json \ "DownloadProvision").as[String]
+        transcode.PushFinishedNotification mustEqual (json \ "PushFinishedNotification").as[Boolean]
+        transcode.PushErrorNotification mustEqual (json \ "PushErrorNotification").as[Boolean]
+        transcode.PushStatusNotification mustEqual (json \ "PushStatusNotification").as[Boolean]
+        transcode.PushNotificationCallback mustEqual (json \ "PushNotificationCallback").as[String]
 
       }
     }

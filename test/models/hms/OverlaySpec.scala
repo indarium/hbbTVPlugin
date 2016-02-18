@@ -58,13 +58,13 @@ class OverlaySpec extends Specification with PlayRunners {
         val json: JsValue = Json.parse(OverlayHelper.defaultJson)
 
         // test
-        val overlay = json.validate[Overlay]
+        val overlay = json.validate[Overlay].get
 
         // verify
-        overlay.get.ID mustEqual (json \ "ID").as[Long]
-        overlay.get.StartOffset mustEqual (json \ "StartOffset").asOpt[String]
-        overlay.get.EndOffset mustEqual (json \ "EndOffset").asOpt[String]
-        overlay.get.Layer mustEqual (json \ "Layer").as[Int]
+        overlay.ID mustEqual (json \ "ID").as[Long]
+        overlay.StartOffset mustEqual (json \ "StartOffset").asOpt[String]
+        overlay.EndOffset mustEqual (json \ "EndOffset").asOpt[String]
+        overlay.Layer mustEqual (json \ "Layer").as[Int]
 
       }
     }
@@ -76,13 +76,13 @@ class OverlaySpec extends Specification with PlayRunners {
         val json: JsValue = Json.parse(OverlayHelper.defaultJsonMinimum)
 
         // test
-        val overlay = json.validate[Overlay]
+        val overlay = json.validate[Overlay].get
 
         // verify
-        overlay.get.ID mustEqual (json \ "ID").as[Long]
-        overlay.get.StartOffset mustEqual None
-        overlay.get.EndOffset mustEqual None
-        overlay.get.Layer mustEqual (json \ "Layer").as[Int]
+        overlay.ID mustEqual (json \ "ID").as[Long]
+        overlay.StartOffset mustEqual None
+        overlay.EndOffset mustEqual None
+        overlay.Layer mustEqual (json \ "Layer").as[Int]
 
       }
     }

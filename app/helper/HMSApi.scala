@@ -1,6 +1,8 @@
 package helper
 
 
+import models.Show
+import models.hms.{JobResult, Source, Transcode}
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
@@ -10,8 +12,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
- * Created by dermicha on 21/06/14.
- */
+  * Created by dermicha on 21/06/14.
+  */
 
 case class HMSShow(ID: Int, Name: Option[String], DownloadURL: Option[String], ChannelID: Long, ParentID: Long)
 
@@ -58,7 +60,7 @@ object HMSApi {
 
     val username = Config.hmsUserName
     val password = Config.hmsPassword
-    val apiUrl = Config.hmsApiUrl + ("/login/")
+    val apiUrl = Config.hmsApiUrl + "/login/"
 
     Logger.debug("apiURL: " + apiUrl)
     Logger.debug("username: " + username)
@@ -151,4 +153,73 @@ object HMSApi {
         None
     }
   }
+
+  def transcode(show: Show): Future[Option[List[JobResult]]] = {
+
+    val hmsBaseUrl = Config.hmsBroadcastUrl + "/hmsWSTranscode/api/transcode/"
+    val channelId = java.net.URLEncoder.encode(show.channelId, "UTF-8")
+    val apiUrl = s"$hmsBaseUrl/$channelId"
+
+    Logger.debug(s"HMSApi.transcode apiURL: $apiUrl")
+    try {
+      wsAuthRequest(apiUrl).flatMap {
+
+        case Some(reqHolder) =>
+          callTranscode(reqHolder, show)
+
+        case None =>
+          Logger.error("HMSApi.transcode: authorization failed")
+          Future(None)
+
+      }
+    } catch {
+      case e: Exception =>
+        Logger.error("Error while fetching data", e)
+        Future(None)
+    }
+
+  }
+
+  private def callTranscode(requestHolder: WSRequestHolder, show: Show): Future[Option[List[JobResult]]] = {
+
+    val sourceType = "Show" // TODO determine dynamically?
+    val notificationFinished = Config.hmsEncodingNotificationFinished
+    val notificationError = Config.hmsEncodingNotificationError
+    val notificationStatus = Config.hmsEncodingNotificationStatus
+    val callbackUrl = Config.hmsEncodingCallbackUrl
+
+    val profile = Config.hmsEncodingProfile
+    val sources = List(Source(show.showId, None, None, None, show.showSourceTitle, None, profile))
+    val transcode = Transcode(sourceType, sources, None, None, "HTTP", notificationFinished, notificationError, notificationStatus, callbackUrl)
+    val json = Json.toJson(transcode)
+
+    val f = requestHolder.post(json)
+    f.onFailure {
+      case e => Logger.error("could not call hms transcoder!", e)
+        None
+    }
+    f.map { response =>
+
+      response.status match {
+
+        case s if s < 400 =>
+
+          response.json \ "Job" match {
+            case errorResult: JsUndefined =>
+              Logger.error(s"failed to parse transcode response: response=$response")
+              None
+            case result: JsValue =>
+              Some(result.validate[List[JobResult]].get)
+          }
+
+        case _ =>
+          Logger.error(s"HMSApi.transcode returned error: $response")
+          None
+
+      }
+
+    }
+
+  }
+
 }

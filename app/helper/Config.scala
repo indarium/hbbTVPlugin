@@ -11,6 +11,7 @@ import play.api.Play.current
   */
 object Config {
 
+
   /* APPLICATION CONFIGS **********************************************************************************************/
 
   def startupInitialDataLoad: Boolean = Play.configuration.getBoolean("startup.initialData.load").getOrElse(false)
@@ -32,6 +33,16 @@ object Config {
   def hmsCrawlerPeriod: Int = Play.configuration.getInt("hms.crawler.period").get
 
   def hmsLocalDownload(source: URL): String = Play.configuration.getString("hms.localDownload").getOrElse(source.toString)
+
+  def hmsEncodingProfile: String = Play.configuration.getString("hms.encoding.profiles").get
+
+  def hmsEncodingCallbackUrl: String = Play.configuration.getString("hms.encoding.callbackUrl").get
+
+  def hmsEncodingNotificationFinished: Boolean = Play.configuration.getBoolean("hms.encoding.notification.finished").get
+
+  def hmsEncodingNotificationError: Boolean = Play.configuration.getBoolean("hms.encoding.notification.error").get
+
+  def hmsEncodingNotificationStatus: Boolean = Play.configuration.getBoolean("hms.encoding.notification.status").get
 
   /* WEBJAZZ CONFIGS **************************************************************************************************/
 

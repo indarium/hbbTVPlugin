@@ -62,16 +62,16 @@ class SourceSpec extends Specification with PlayRunners {
         val json: JsValue = Json.parse(SourceHelper.defaultJson)
 
         // test
-        val source = json.validate[Source]
+        val source = json.validate[Source].get
 
         // verify
-        source.get.ID mustEqual (json \ "ID").as[Long]
-        source.get.SourceName mustEqual Some((json \ "SourceName").as[String])
-        source.get.StartOffset mustEqual Some((json \ "StartOffset").as[String])
-        source.get.EndOffset mustEqual Some((json \ "EndOffset").as[String])
-        source.get.DestinationName mustEqual (json \ "DestinationName").as[String]
-        source.get.Overlays mustEqual Some((json \ "Overlays").as[List[Overlay]])
-        source.get.Profile mustEqual (json \ "Profile").as[String]
+        source.ID mustEqual (json \ "ID").as[Long]
+        source.SourceName mustEqual Some((json \ "SourceName").as[String])
+        source.StartOffset mustEqual Some((json \ "StartOffset").as[String])
+        source.EndOffset mustEqual Some((json \ "EndOffset").as[String])
+        source.DestinationName mustEqual (json \ "DestinationName").as[String]
+        source.Overlays mustEqual Some((json \ "Overlays").as[List[Overlay]])
+        source.Profile mustEqual (json \ "Profile").as[String]
 
       }
     }
@@ -83,16 +83,16 @@ class SourceSpec extends Specification with PlayRunners {
         val json: JsValue = Json.parse(SourceHelper.defaultJsonMinimum)
 
         // test
-        val source = json.validate[Source]
+        val source = json.validate[Source].get
 
         // verify
-        source.get.ID mustEqual (json \ "ID").as[Long]
-        source.get.SourceName mustEqual None
-        source.get.StartOffset mustEqual None
-        source.get.EndOffset mustEqual None
-        source.get.DestinationName mustEqual (json \ "DestinationName").as[String]
-        source.get.Overlays mustEqual None
-        source.get.Profile mustEqual (json \ "Profile").as[String]
+        source.ID mustEqual (json \ "ID").as[Long]
+        source.SourceName mustEqual None
+        source.StartOffset mustEqual None
+        source.EndOffset mustEqual None
+        source.DestinationName mustEqual (json \ "DestinationName").as[String]
+        source.Overlays mustEqual None
+        source.Profile mustEqual (json \ "Profile").as[String]
 
       }
     }
