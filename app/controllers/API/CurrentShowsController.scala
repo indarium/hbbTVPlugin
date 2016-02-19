@@ -38,12 +38,18 @@ object CurrentShowsController extends Controller {
   }
 
   def callBack = Action(BodyParsers.parse.tolerantJson) {
+
     request =>
       Logger.debug("HMS CallBack-Body:")
       Logger.debug(Json.prettyPrint(request.body))
-      Logger.debug(s"converted to TranscodeCallback: ${request.body.validate[TranscodeCallback]}")
-      // TODO update related document in collection "hmsTranscode"
+
+      val transcodeCallback = request.body.validate[TranscodeCallback].get
+      Logger.debug(s"converted to TranscodeCallback: $transcodeCallback")
+      TranscodeCallback.save(transcodeCallback)
+      // TODO trigger further processing: download video, upload to Vimeo, etc
+
       Ok(Json.obj("status" -> "OK"))
+
   }
 
   private def KO = {

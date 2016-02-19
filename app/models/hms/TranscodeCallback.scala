@@ -27,6 +27,17 @@ object TranscodeCallback {
   implicit val reads = Json.reads[TranscodeCallback]
   implicit val writes = Json.writes[TranscodeCallback]
 
+  def insert(jobResults: List[JobResult]) = {
+
+    jobResults.foreach(
+      (jobResult: JobResult) => {
+        val transcodeCallback = TranscodeCallback(None, jobResult.ID, jobResult.VerboseResult, "queued", None, None, None)
+        transcodeCallCollection.insert(transcodeCallback) // TODO add error logging/handling
+      }
+    )
+
+  }
+
   def findByHmsId(hmsId: Long): Future[Option[TranscodeCallback]] = {
 
     val selector = Json.obj("ID" -> hmsId)
@@ -46,6 +57,6 @@ object TranscodeCallback {
 
   }
 
-  def update(transcodeCallback: TranscodeCallback): Future[LastError] = transcodeCallCollection.save(transcodeCallback)
+  def save(transcodeCallback: TranscodeCallback): Future[LastError] = transcodeCallCollection.save(transcodeCallback)
 
 }
