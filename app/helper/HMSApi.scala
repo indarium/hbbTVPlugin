@@ -182,17 +182,7 @@ object HMSApi {
 
   private def callTranscode(requestHolder: WSRequestHolder, show: Show): Future[Option[List[JobResult]]] = {
 
-    val sourceType = "Show"
-    val notificationFinished = Config.hmsEncodingNotificationFinished
-    val notificationError = Config.hmsEncodingNotificationError
-    val notificationStatus = Config.hmsEncodingNotificationStatus
-    val callbackUrl = Config.hmsEncodingCallbackUrl
-
-    val profile = Config.hmsEncodingProfile
-    val destinationName: String = s"${show.showId}-${show.showSourceTitle}.mp4"
-    val sources = List(Source(show.showId, None, None, None, destinationName, None, profile))
-
-    val transcode = Transcode(sourceType, sources, None, None, "HTTP", notificationFinished, notificationError, notificationStatus, callbackUrl)
+    val transcode = createTranscode(show)
     val json = Json.toJson(transcode)
 
     val f = requestHolder.post(json)
@@ -214,6 +204,21 @@ object HMSApi {
       }
 
     }
+
+  }
+
+  private def createTranscode(show: Show): Transcode = {
+
+    val profile = Config.hmsEncodingProfile
+    val destinationName: String = s"${show.showId}-${show.showSourceTitle}.mp4"
+    val sources = List(Source(show.showId, None, None, None, destinationName, None, profile))
+
+    val sourceType = "Show"
+    val notificationFinished = Config.hmsEncodingNotificationFinished
+    val notificationError = Config.hmsEncodingNotificationError
+    val notificationStatus = Config.hmsEncodingNotificationStatus
+    val callbackUrl = Config.hmsEncodingCallbackUrl
+    Transcode(sourceType, sources, None, None, "HTTP", notificationFinished, notificationError, notificationStatus, callbackUrl)
 
   }
 
