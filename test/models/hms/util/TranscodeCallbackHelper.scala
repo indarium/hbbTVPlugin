@@ -8,9 +8,20 @@ import models.hms.TranscodeCallback
   */
 object TranscodeCallbackHelper {
 
+  def queuedObject(id: Long): TranscodeCallback = TranscodeCallback(id, "created transcode job", "queued", None, None, None)
+
   def processingObject(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "processing", Some(80), Some("percentage"), None)
 
   def finishedObject(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "finished", None, None, downloadSource(id))
+
+  def queuedJson(id: Long): String =
+    s"""
+       |{
+       |  "ID":  $id,
+       |  "VerboseMessage": "created transcode job",
+       |  "Status": "queued"
+       |}
+     """.stripMargin
 
   def processingJson(id: Long): String =
     s"""

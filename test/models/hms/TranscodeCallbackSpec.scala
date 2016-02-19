@@ -13,6 +13,26 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
 
   "json library" should {
 
+    "convert object (queued) to json" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val processing = TranscodeCallbackHelper.queuedObject(-1L)
+
+        // test
+        val json = Json.toJson(processing)
+
+        // verify
+        (json \ "ID").as[Long] mustEqual processing.ID
+        (json \ "VerboseMessage").as[String] mustEqual processing.VerboseMessage
+        (json \ "Status").as[String] mustEqual processing.Status
+        (json \ "StatusValue").asOpt[Int] mustEqual None
+        (json \ "StatusUnit").asOpt[String] mustEqual None
+        (json \ "DownloadSource").asOpt[String] mustEqual None
+
+      }
+    }
+
     "convert object (processing) to json" in {
       running(FakeApplication()) {
 
@@ -49,6 +69,26 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         (json \ "StatusValue").asOpt[Int] mustEqual None
         (json \ "StatusUnit").asOpt[String] mustEqual None
         (json \ "DownloadSource").asOpt[String] mustEqual processing.DownloadSource
+
+      }
+    }
+
+    "convert json (queued) to object" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val json = Json.parse(TranscodeCallbackHelper.queuedJson(-1L))
+
+        // test
+        val transcodeCallback = json.validate[TranscodeCallback].get
+
+        // verify
+        transcodeCallback.ID mustEqual (json \ "ID").as[Long]
+        transcodeCallback.VerboseMessage mustEqual (json \ "VerboseMessage").as[String]
+        transcodeCallback.Status mustEqual (json \ "Status").as[String]
+        transcodeCallback.StatusValue mustEqual None
+        transcodeCallback.StatusUnit mustEqual None
+        transcodeCallback.DownloadSource mustEqual None
 
       }
     }

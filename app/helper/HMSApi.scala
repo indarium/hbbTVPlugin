@@ -164,7 +164,7 @@ object HMSApi {
       wsAuthRequest(apiUrl).flatMap {
 
         case Some(reqHolder) =>
-          callTranscode(reqHolder, show)
+          callTranscode(reqHolder, show) // TODO caller should create new documents in collection "hmsTranscode" (TranscodeCallback(id, "created transcode job", "queued", None, None, None)
 
         case None =>
           Logger.error("HMSApi.transcode: authorization failed")

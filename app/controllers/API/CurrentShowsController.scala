@@ -42,6 +42,7 @@ object CurrentShowsController extends Controller {
       Logger.debug("HMS CallBack-Body:")
       Logger.debug(Json.prettyPrint(request.body))
       Logger.debug(s"converted to TranscodeCallback: ${request.body.validate[TranscodeCallback]}")
+      // TODO update related document in collection "hmsTranscode"
       Ok(Json.obj("status" -> "OK"))
   }
 
