@@ -60,7 +60,7 @@ object HMSApi {
 
     val username = Config.hmsUserName
     val password = Config.hmsPassword
-    val apiUrl = Config.hmsApiUrl + "/login/"
+    val apiUrl = Config.hmsBroadcastUrl + "/login/"
 
     Logger.debug("apiURL: " + apiUrl)
     Logger.debug("username: " + username)
@@ -156,11 +156,10 @@ object HMSApi {
 
   def transcode(show: Show): Future[Option[List[JobResult]]] = {
 
-    val hmsBaseUrl = Config.hmsBroadcastUrl + "/hmsWSTranscode/api/transcode/"
-    val channelId = java.net.URLEncoder.encode(show.channelId, "UTF-8")
-    val apiUrl = s"$hmsBaseUrl/$channelId"
-
+    val encodedChannelId: String = java.net.URLEncoder.encode(show.channelId, "UTF-8")
+    val apiUrl = Config.hmsTranscodeUrl + "/transcode" + encodedChannelId
     Logger.debug(s"HMSApi.transcode apiURL: $apiUrl")
+
     try {
       wsAuthRequest(apiUrl).flatMap {
 

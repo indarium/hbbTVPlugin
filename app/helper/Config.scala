@@ -24,9 +24,9 @@ object Config {
 
   def hmsPassword: String = Play.configuration.getString("hms.password").get
 
-  def hmsApiUrl: String = Play.configuration.getString("hms.apiBroadcastURL").get
-
   def hmsBroadcastUrl: String = Play.configuration.getString("hms.apiBroadcastURL").get
+
+  def hmsTranscodeUrl: String = Play.configuration.getString("hms.apiTranscodeURL").get
 
   def hmsMinFileSize: Long = Play.configuration.getLong("hms.minFileSize").get
 
