@@ -1,5 +1,6 @@
 package controllers.API
 
+import models.hms.TranscodeCallback
 import models.{ApiKey, Show}
 import play.api._
 import play.api.libs.json._
@@ -21,7 +22,7 @@ object ShowApiCall {
 object CurrentShowsController extends Controller {
 
   //def current = WithCors("POST") {
-  def current = Action.async((BodyParsers.parse.json)) { request =>
+  def current = Action.async(BodyParsers.parse.json) { request =>
     val showApiCall = request.body.as[ShowApiCall]
     Logger.debug("ShowApiCall: " + showApiCall.toString)
     ApiKey.checkApiKey(showApiCall.apiKey).flatMap {
@@ -40,6 +41,7 @@ object CurrentShowsController extends Controller {
     request =>
       Logger.debug("HMS CallBack-Body:")
       Logger.debug(Json.prettyPrint(request.body))
+      Logger.debug(s"converted to TranscodeCallback: ${request.body.validate[TranscodeCallback]}")
       Ok(Json.obj("status" -> "OK"))
   }
 
