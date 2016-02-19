@@ -1,5 +1,6 @@
 package models.hms
 
+import models.MongoId
 import models.hms.util.TranscodeCallbackHelper
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
@@ -23,6 +24,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         val json = Json.toJson(processing)
 
         // verify
+        (json \ "_id").asOpt[MongoId] mustEqual None
         (json \ "ID").as[Long] mustEqual processing.ID
         (json \ "VerboseMessage").as[String] mustEqual processing.VerboseMessage
         (json \ "Status").as[String] mustEqual processing.Status
@@ -43,6 +45,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         val json = Json.toJson(processing)
 
         // verify
+        (json \ "_id").asOpt[MongoId] mustEqual None
         (json \ "ID").as[Long] mustEqual processing.ID
         (json \ "VerboseMessage").as[String] mustEqual processing.VerboseMessage
         (json \ "Status").as[String] mustEqual processing.Status
@@ -63,6 +66,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         val json = Json.toJson(processing)
 
         // verify
+        (json \ "_id").asOpt[MongoId] mustEqual None
         (json \ "ID").as[Long] mustEqual processing.ID
         (json \ "VerboseMessage").as[String] mustEqual processing.VerboseMessage
         (json \ "Status").as[String] mustEqual processing.Status
@@ -83,6 +87,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         val transcodeCallback = json.validate[TranscodeCallback].get
 
         // verify
+        transcodeCallback._id mustEqual None
         transcodeCallback.ID mustEqual (json \ "ID").as[Long]
         transcodeCallback.VerboseMessage mustEqual (json \ "VerboseMessage").as[String]
         transcodeCallback.Status mustEqual (json \ "Status").as[String]
@@ -103,6 +108,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         val transcodeCallback = json.validate[TranscodeCallback].get
 
         // verify
+        transcodeCallback._id mustEqual None
         transcodeCallback.ID mustEqual (json \ "ID").as[Long]
         transcodeCallback.VerboseMessage mustEqual (json \ "VerboseMessage").as[String]
         transcodeCallback.Status mustEqual (json \ "Status").as[String]
@@ -123,6 +129,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         val transcodeCallback = json.validate[TranscodeCallback].get
 
         // verify
+        transcodeCallback._id mustEqual None
         transcodeCallback.ID mustEqual (json \ "ID").as[Long]
         transcodeCallback.VerboseMessage mustEqual (json \ "VerboseMessage").as[String]
         transcodeCallback.Status mustEqual (json \ "Status").as[String]

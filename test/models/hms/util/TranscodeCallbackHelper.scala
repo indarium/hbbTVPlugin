@@ -8,11 +8,11 @@ import models.hms.TranscodeCallback
   */
 object TranscodeCallbackHelper {
 
-  def queuedObject(id: Long): TranscodeCallback = TranscodeCallback(id, "created transcode job", "queued", None, None, None)
+  def queuedObject(id: Long): TranscodeCallback = TranscodeCallback(None, id, "created transcode job", "queued", None, None, None)
 
-  def processingObject(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "processing", Some(80), Some("percentage"), None)
+  def processingObject(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "processing", Some(80), Some("percentage"), None)
 
-  def finishedObject(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "finished", None, None, downloadSource(id))
+  def finishedObject(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "finished", None, None, downloadSource(id))
 
   def queuedJson(id: Long): String =
     s"""
