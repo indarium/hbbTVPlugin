@@ -51,12 +51,16 @@ class ShowCrawler extends Actor {
 
   def receive = {
     case processShow: ProcessShow =>
-      log.info("starting show processing for: %d / %s".format(processShow.processShowData.show.ID, processShow.processShowData.show.Name))
-      val meta = new ShowMetaData(processShow.processShowData.processStationData.stationId, processShow.processShowData.processStationData.channelId)
-      meta.hmsStationId = Some(processShow.processShowData.processStationData.hmsStationId)
-      meta.showId = Some(processShow.processShowData.show.ID)
-      meta.showTitle = processShow.processShowData.show.Name
-      meta.sourceVideoUrl = Some(new URL(processShow.processShowData.show.DownloadURL.get))
+
+      val hmsShow: HMSShow = processShow.processShowData.show
+      val processStationData: ProcessStationData = processShow.processShowData.processStationData
+      log.info("starting show processing for: %d / %s".format(hmsShow.ID, hmsShow.Name))
+
+      val meta = new ShowMetaData(processStationData.stationId, processStationData.channelId)
+      meta.hmsStationId = Some(processStationData.hmsStationId)
+      meta.showId = Some(hmsShow.ID)
+      meta.showTitle = hmsShow.Name
+      meta.sourceVideoUrl = Some(new URL(hmsShow.DownloadURL.get))
 
       log.info("check for vimeo exception stuff!!")
       if (mmv.contains(meta.stationId.toLowerCase)) {
