@@ -5,6 +5,7 @@ import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import com.amazonaws.auth.BasicAWSCredentials
 import helper._
+import models.dto.{VideoUploadFailure, VideoUploadSuccess, ShowMetaData}
 import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable.SpecificationLike
 import play.api.test.FakeApplication

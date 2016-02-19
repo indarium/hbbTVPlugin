@@ -8,6 +8,7 @@ import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
 import constants.VimeoEncodingStatusSystem._
+import models.dto.ShowMetaData
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._

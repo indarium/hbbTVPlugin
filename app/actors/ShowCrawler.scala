@@ -7,6 +7,7 @@ import akka.actor.{Actor, Props}
 import akka.event.Logging
 import com.amazonaws.auth.BasicAWSCredentials
 import helper._
+import models.dto.ShowMetaData
 import models.{Show, Station}
 
 import scala.concurrent.ExecutionContext.Implicits.global

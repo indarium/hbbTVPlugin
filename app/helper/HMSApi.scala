@@ -1,12 +1,12 @@
 package helper
 
 
-import models.Show
+import models.dto.ShowMetaData
 import models.hms.{JobResult, Source, Transcode}
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
-import play.api.libs.ws.{WSResponse, WS, WSRequestHolder}
+import play.api.libs.ws.{WS, WSRequestHolder, WSResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -154,9 +154,16 @@ object HMSApi {
     }
   }
 
-  def transcode(show: Show): Future[Option[List[JobResult]]] = {
+  /**
+    * Creates an encoding job with HMS and returns a list of job results. The caller may create records in collection
+    * "hmsTranscode" base on these job results.
+    *
+    * @param meta encoding job is created for this show
+    * @return None if we encountered an error (errors are logged)
+    */
+  def transcode(meta: ShowMetaData): Future[Option[JobResult]] = {
 
-    val encodedChannelId: String = java.net.URLEncoder.encode(show.channelId, "UTF-8")
+    val encodedChannelId: String = java.net.URLEncoder.encode(meta.channelId, "UTF-8")
     val apiUrl = Config.hmsTranscodeUrl + "/transcode" + encodedChannelId
     Logger.debug(s"HMSApi.transcode apiURL: $apiUrl")
 
@@ -164,7 +171,7 @@ object HMSApi {
       wsAuthRequest(apiUrl).flatMap {
 
         case Some(reqHolder) =>
-          callTranscode(reqHolder, show) // TODO caller should create new documents in collection "hmsTranscode" (TranscodeCallback(id, "created transcode job", "queued", None, None, None)
+          callTranscode(reqHolder, meta)
 
         case None =>
           Logger.error("HMSApi.transcode: authorization failed")
@@ -179,9 +186,9 @@ object HMSApi {
 
   }
 
-  private def callTranscode(requestHolder: WSRequestHolder, show: Show): Future[Option[List[JobResult]]] = {
+  private def callTranscode(requestHolder: WSRequestHolder, meta: ShowMetaData): Future[Option[JobResult]] = {
 
-    val transcode = createTranscode(show)
+    val transcode = createTranscode(meta)
     val json = Json.toJson(transcode)
 
     val f = requestHolder.post(json)
@@ -206,11 +213,11 @@ object HMSApi {
 
   }
 
-  private def createTranscode(show: Show): Transcode = {
+  private def createTranscode(meta: ShowMetaData): Transcode = {
 
     val profile = Config.hmsEncodingProfile
-    val destinationName: String = s"${show.showId}-${show.showSourceTitle}.mp4"
-    val sources = List(Source(show.showId, None, None, None, destinationName, None, profile))
+    val destinationName: String = s"${meta.showId}-${meta.showSourceTitle}.mp4"
+    val sources = List(Source(meta.showId.get, None, None, None, destinationName, None, profile))
 
     val sourceType = "Show"
     val notificationFinished = Config.hmsEncodingNotificationFinished
@@ -221,14 +228,17 @@ object HMSApi {
 
   }
 
-  private def extractJobResults(response: WSResponse): Option[List[JobResult]] = {
+  private def extractJobResults(response: WSResponse): Option[JobResult] = {
 
     response.json \ "Job" match {
+
       case errorResult: JsUndefined =>
         Logger.error(s"failed to parse transcode response: response=$response")
         None
+
       case result: JsValue =>
-        Some(result.validate[List[JobResult]].get)
+        val jobResults = result.validate[List[JobResult]]
+        Some(jobResults.get.head)
     }
 
   }

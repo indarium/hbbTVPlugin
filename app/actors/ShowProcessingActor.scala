@@ -4,6 +4,10 @@ import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
 import models.Show
+import models.dto._
+import models.hms.TranscodeCallback
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Process a show, fill in information, download video, upload it and update
@@ -30,7 +34,11 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
   def receive = {
     case meta: ShowMetaData =>
       log.info("process %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))
-      videoDownloadActor ! meta
+      HMSApi.transcode(meta).map {
+        case Some(jobResult) =>
+          // TODO add meta to jobResult
+          TranscodeCallback.insert(jobResult)
+      }
 
     case VideoDownloadSuccess(meta) =>
       log.info("downloaded %s".format(meta.localVideoFile.getOrElse("???")))

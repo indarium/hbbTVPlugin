@@ -1,7 +1,8 @@
 package models
 
 import constants.VimeoEncodingStatusSystem._
-import helper.{Config, ShowMetaData}
+import helper.Config
+import models.dto.ShowMetaData
 import play.Logger
 import play.api.Play.current
 import play.api.libs.json._

@@ -6,6 +6,7 @@ import java.net.URL
 import akka.actor.Actor
 import akka.event.Logging
 import helper._
+import models.dto.{VideoDownloadFailure, VideoDownloadSuccess, ShowMetaData}
 import play.api.Play
 
 import scala.concurrent.ExecutionContext.Implicits.global

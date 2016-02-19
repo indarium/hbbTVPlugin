@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, Props, Terminated}
 import akka.routing.{Router, ActorRefRoutee, RoundRobinRoutingLogic}
-import helper.ShowMetaData
+import models.dto.ShowMetaData
 
 /**
  * A simple round robin router.

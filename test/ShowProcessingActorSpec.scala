@@ -4,7 +4,8 @@ import actors.ShowProcessingActor
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import com.amazonaws.auth.BasicAWSCredentials
-import helper.{Config, S3Backend, ShowMetaData}
+import helper.{Config, S3Backend}
+import models.dto.ShowMetaData
 import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable.SpecificationLike
 import play.api.test.FakeApplication

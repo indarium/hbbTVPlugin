@@ -4,7 +4,7 @@ import java.net.URL
 import actors.VideoDownloadActor
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
-import helper.{VideoDownloadFailure, VideoDownloadSuccess, ShowMetaData}
+import models.dto.{VideoDownloadFailure, VideoDownloadSuccess, ShowMetaData}
 import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable.SpecificationLike
 

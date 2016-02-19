@@ -3,6 +3,7 @@ package actors
 import akka.actor.Actor
 import akka.event.Logging
 import helper._
+import models.dto.{VideoUploadFailure, VideoDownloadSuccess, VideoUploadSuccess, ShowMetaData}
 
 /**
  * Upload video to storage backend

@@ -5,6 +5,7 @@ import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import helper._
+import models.dto.ShowMetaData
 import org.junit.runner.RunWith
 import org.specs2.matcher.ThrownMessages
 import org.specs2.runner.JUnitRunner

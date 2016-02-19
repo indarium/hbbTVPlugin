@@ -6,6 +6,8 @@ import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 import reactivemongo.core.commands.LastError
 
+import play.api.Play.current
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
@@ -27,14 +29,10 @@ object TranscodeCallback {
   implicit val reads = Json.reads[TranscodeCallback]
   implicit val writes = Json.writes[TranscodeCallback]
 
-  def insert(jobResults: List[JobResult]) = {
+  def insert(jobResult: JobResult) = {
 
-    jobResults.foreach(
-      (jobResult: JobResult) => {
-        val transcodeCallback = TranscodeCallback(None, jobResult.ID, jobResult.VerboseResult, "queued", None, None, None)
-        transcodeCallCollection.insert(transcodeCallback) // TODO add error logging/handling
-      }
-    )
+    val transcodeCallback = TranscodeCallback(None, jobResult.ID, jobResult.VerboseResult, "queued", None, None, None)
+    transcodeCallCollection.insert(transcodeCallback) // TODO add error logging/handling
 
   }
 
