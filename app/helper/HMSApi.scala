@@ -6,7 +6,7 @@ import models.hms.{JobResult, Source, Transcode}
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
-import play.api.libs.ws.{WS, WSRequestHolder}
+import play.api.libs.ws.{WSResponse, WS, WSRequestHolder}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -182,14 +182,16 @@ object HMSApi {
 
   private def callTranscode(requestHolder: WSRequestHolder, show: Show): Future[Option[List[JobResult]]] = {
 
-    val sourceType = "Show" // TODO determine dynamically?
+    val sourceType = "Show"
     val notificationFinished = Config.hmsEncodingNotificationFinished
     val notificationError = Config.hmsEncodingNotificationError
     val notificationStatus = Config.hmsEncodingNotificationStatus
     val callbackUrl = Config.hmsEncodingCallbackUrl
 
     val profile = Config.hmsEncodingProfile
-    val sources = List(Source(show.showId, None, None, None, show.showSourceTitle, None, profile))
+    val destinationName: String = s"${show.showId}-${show.showSourceTitle}.mp4"
+    val sources = List(Source(show.showId, None, None, None, destinationName, None, profile))
+
     val transcode = Transcode(sourceType, sources, None, None, "HTTP", notificationFinished, notificationError, notificationStatus, callbackUrl)
     val json = Json.toJson(transcode)
 
@@ -203,14 +205,7 @@ object HMSApi {
       response.status match {
 
         case s if s < 400 =>
-
-          response.json \ "Job" match {
-            case errorResult: JsUndefined =>
-              Logger.error(s"failed to parse transcode response: response=$response")
-              None
-            case result: JsValue =>
-              Some(result.validate[List[JobResult]].get)
-          }
+          extractJobResults(response)
 
         case _ =>
           Logger.error(s"HMSApi.transcode returned error: $response")
@@ -218,6 +213,18 @@ object HMSApi {
 
       }
 
+    }
+
+  }
+
+  private def extractJobResults(response: WSResponse): Option[List[JobResult]] = {
+
+    response.json \ "Job" match {
+      case errorResult: JsUndefined =>
+        Logger.error(s"failed to parse transcode response: response=$response")
+        None
+      case result: JsValue =>
+        Some(result.validate[List[JobResult]].get)
     }
 
   }
