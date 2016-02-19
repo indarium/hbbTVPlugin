@@ -34,7 +34,7 @@ object Config {
 
   def hmsLocalDownload(source: URL): String = Play.configuration.getString("hms.localDownload").getOrElse(source.toString)
 
-  def hmsEncodingProfile: String = Play.configuration.getString("hms.encoding.profiles").get
+  def hmsEncodingProfile: String = Play.configuration.getString("hms.encoding.profile").get
 
   def hmsEncodingCallbackUrl: String = Play.configuration.getString("hms.encoding.callbackUrl").get
 
