@@ -90,7 +90,8 @@ object Show {
         "showTitle" -> JsString(s.showTitle),
         "showSourceTitle" -> JsString(s.showSourceTitle),
         "showSubtitle" -> JsString(s.showSubtitle),
-        "showLogoUrl" -> JsString(s.showLogoUrl))
+        "showLogoUrl" -> JsString(s.showLogoUrl)
+      )
 
       if (s.showVideoHDUrl.isDefined) {
         seq ++= Seq("showVideoHDUrl" -> JsString(s.showVideoHDUrl.get))
