@@ -164,7 +164,7 @@ object HMSApi {
   def transcode(meta: ShowMetaData): Future[Option[JobResult]] = {
 
     val encodedChannelId: String = java.net.URLEncoder.encode(meta.channelId, "UTF-8")
-    val apiUrl = Config.hmsTranscodeUrl + "/transcode" + encodedChannelId
+    val apiUrl = Config.hmsTranscodeUrl + "/transcode/" + encodedChannelId
     Logger.debug(s"HMSApi.transcode apiURL: $apiUrl")
 
     try {
