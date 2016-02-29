@@ -165,7 +165,7 @@ object HMSApi {
 
     val encodedChannelId: String = java.net.URLEncoder.encode(meta.channelId, "UTF-8")
     val apiUrl = Config.hmsTranscodeUrl + "/transcode/" + encodedChannelId
-    Logger.debug(s"HMSApi.transcode apiURL: $apiUrl")
+    Logger.debug(s"HMSApi.transcode apiUrl: $apiUrl")
 
     try {
       wsAuthRequest(apiUrl).flatMap {
