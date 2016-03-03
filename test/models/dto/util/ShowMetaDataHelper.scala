@@ -35,7 +35,7 @@ object ShowMetaDataHelper {
     meta.isHD = true
     meta.sourceFilename = Some(s"sourceFilename-$showId")
     meta.sourceVideoUrl = Some(new URL(s"http://station.com/show/$showId.mp4"))
-    meta.localVideoFile = Some(new File("$HOME" + s"/$channelId/$stationId/$showId.mp4"))
+    meta.localVideoFile = Some(new File(s"$channelId/$stationId/$showId.mp4"))
     meta.sourceVideoUrl = Some(new URL(s"http://station.com/show/$showId.mp4"))
 
     meta.currentAccessToken = Some("accessToken")
