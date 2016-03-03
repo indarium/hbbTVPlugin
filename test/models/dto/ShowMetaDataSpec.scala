@@ -1,9 +1,6 @@
 package models.dto
 
-import java.io.File
-import java.net.URL
-
-import constants.VimeoEncodingStatusSystem.VimeoEncodingStatus
+import constants.VimeoEncodingStatusSystem.{IN_PROGRESS, VimeoEncodingStatus}
 import models.dto.util.ShowMetaDataHelper
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
@@ -116,6 +113,108 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         (json \ "vimeoDone").asOpt[Boolean] mustEqual None
         (json \ "vimeoId").asOpt[Long] mustEqual None
         (json \ "vimeoEncodingStatus").asOpt[VimeoEncodingStatus] mustEqual None
+
+      }
+    }
+
+    "convert json (all fields set) to object" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val stationId = "MV1"
+        val channelId = "SAT"
+        val hmsStationId = "hmsStationId"
+        val stationName = "stationName"
+        val stationLogoUrl = "http://station.com/logo.png"
+        val stationLogoShow = false
+        val stationMainColor = "red"
+        val channelName = "channelName-SAT"
+        val showTitle = "showTitle--123"
+        val showId = -123L
+        val showSubTitle = "showSubTitle--123"
+        val showSourceTitle = "showSourceTitle--123"
+        val showLogoUrl = "http://station.com/show/logo--123.png"
+        val showLength = 124L
+        val showEndInfo = "showEndInfo--123"
+        val rootPortalUrl = "http://station.com"
+        val isHd = true
+        val sourceFilename = "sourceFilename--123"
+        val sourceVideoUrl = "http://station.com/show/-123-source.mp4"
+        val localVideoFile = "/Users/cvandrei/git/hbbTVPlugin/SAT/MV1/-123.mp4"
+        val publicVideoUrl = "http://station.com/show/-123-public.mp4"
+        val currentAccessToken = "accessToken"
+        val vimeo = true
+        val vimeoDone = false
+        val vimeoId = -1000L
+        val vimeoEncodingStatus = IN_PROGRESS
+        val variant = "$variant"
+
+        val json = Json.parse(s"""{
+                                |  "stationId": "$stationId",
+                                |  "channelId": "$channelId",
+                                |  "hmsStationId": "$hmsStationId",
+                                |  "stationName": "$stationName",
+                                |  "stationLogoUrl": "$stationLogoUrl",
+                                |  "stationLogoShow": $stationLogoShow,
+                                |  "stationMainColor": "$stationMainColor",
+                                |  "channelName": "$channelName",
+                                |  "showTitle": "$showTitle",
+                                |  "showId": $showId,
+                                |  "showSubtitle": "$showSubTitle",
+                                |  "showSourceTitle": "$showSourceTitle",
+                                |  "showLogoUrl": "$showLogoUrl",
+                                |  "showLength": $showLength,
+                                |  "showEndInfo": "$showEndInfo",
+                                |  "rootPortalUrl": "$rootPortalUrl",
+                                |  "isHD": $isHd,
+                                |  "sourceFilename": "$sourceFilename",
+                                |  "sourceVideoUrl": "$sourceVideoUrl",
+                                |  "localVideoFile": "$localVideoFile",
+                                |  "publicVideoUrl": $publicVideoUrl,
+                                |  "currentAccessToken": "$currentAccessToken",
+                                |  "vimeo": $vimeo,
+                                |  "vimeoDone": $vimeoDone,
+                                |  "vimeoId": $vimeoId,
+                                |  "vimeoEncodingStatus": {
+                                |    "name": "${vimeoEncodingStatus.name}",
+                                |    "$variant": "${vimeoEncodingStatus.name}"
+                                |  }
+                                |}""")
+
+        // test
+        val meta = json.validate[ShowMetaData].get
+
+        // verify
+        meta.stationId mustEqual stationId
+        meta.channelId mustEqual channelId
+        meta.hmsStationId mustEqual hmsStationId
+        meta.stationName mustEqual stationName
+        meta.stationLogoUrl mustEqual stationLogoUrl
+        meta.stationLogoShow mustEqual stationLogoShow
+        meta.stationMainColor mustEqual stationMainColor
+
+        meta.channelName mustEqual channelName
+        meta.showTitle mustEqual showTitle
+        meta.showId mustEqual showId
+        meta.showSubtitle mustEqual showSubTitle
+        meta.showSourceTitle mustEqual showSourceTitle
+        meta.showLogoUrl mustEqual showLogoUrl
+        meta.showLength mustEqual showLength
+        meta.showEndInfo mustEqual showEndInfo
+        meta.rootPortalUrl mustEqual rootPortalUrl
+
+        meta.isHD mustEqual isHd
+        meta.sourceFilename mustEqual sourceFilename
+        meta.sourceVideoUrl mustEqual sourceVideoUrl
+        meta.localVideoFile.get.getAbsolutePath mustEqual localVideoFile
+        meta.publicVideoUrl mustEqual publicVideoUrl
+
+        meta.currentAccessToken mustEqual currentAccessToken
+
+        meta.vimeo mustEqual vimeo
+        meta.vimeoDone mustEqual vimeoDone
+        meta.vimeoId mustEqual vimeoId
+        meta.vimeoEncodingStatus mustEqual vimeoEncodingStatus
 
       }
     }
