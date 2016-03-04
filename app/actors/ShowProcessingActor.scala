@@ -36,8 +36,8 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
       log.info("process %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))
       HMSApi.transcode(meta).map {
         case Some(jobResult) =>
-          // TODO add meta to jobResult
-          TranscodeCallback.insert(jobResult)
+          val jobResultWithMeta = jobResult.copy(meta = Some(meta))
+          TranscodeCallback.insert(jobResultWithMeta)
       }
 
     case VideoDownloadSuccess(meta) =>

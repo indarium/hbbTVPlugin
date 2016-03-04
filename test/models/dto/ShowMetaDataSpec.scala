@@ -1,9 +1,6 @@
 package models.dto
 
-import java.io.File
-import java.net.URL
-
-import constants.VimeoEncodingStatusSystem.{IN_PROGRESS, VimeoEncodingStatus}
+import constants.VimeoEncodingStatusSystem.VimeoEncodingStatus
 import models.dto.util.ShowMetaDataHelper
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
@@ -65,22 +62,7 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val meta = ShowMetaDataHelper.defaultObject("SAT", "MV1", -123L)
-        meta.hmsStationId = None
-        meta.stationName = None
-        meta.stationMainColor = None
-        meta.channelName = None
-        meta.showTitle = None
-        meta.showId = None
-        meta.showSubtitle = None
-        meta.showSourceTitle = None
-        meta.showEndInfo = None
-        meta.sourceFilename = None
-        meta.vimeo = None
-        meta.currentAccessToken = None
-        meta.vimeoDone = None
-        meta.vimeoId = None
-        meta.vimeoEncodingStatus = None
+        val meta = ShowMetaDataHelper.defaultMinimumObject("SAT", "MV1")
 
         // test
         val json = Json.toJson(meta)
@@ -90,7 +72,7 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         (json \ "channelId").as[String] mustEqual meta.channelId
         (json \ "hmsStationId").asOpt[String] mustEqual None
         (json \ "stationName").asOpt[String] mustEqual None
-        ShowMetaData.parseOptUrl(json, "stationLogoUrl") mustEqual meta.stationLogoUrl
+        ShowMetaData.parseOptUrl(json, "stationLogoUrl") mustEqual None
         (json \ "stationLogoShow").as[Boolean] mustEqual meta.stationLogoShow
         (json \ "stationMainColor").asOpt[String] mustEqual None
 
@@ -99,16 +81,16 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         (json \ "showId").asOpt[Long] mustEqual None
         (json \ "showSubtitle").asOpt[String] mustEqual None
         (json \ "showSourceTitle").asOpt[String] mustEqual None
-        ShowMetaData.parseOptUrl(json, "showLogoUrl") mustEqual meta.showLogoUrl
+        ShowMetaData.parseOptUrl(json, "showLogoUrl") mustEqual None
         (json \ "showLength").as[Long] mustEqual meta.showLength
         (json \ "showEndInfo").asOpt[String] mustEqual None
-        ShowMetaData.parseOptUrl(json, "rootPortalUrl") mustEqual meta.rootPortalUrl
+        ShowMetaData.parseOptUrl(json, "rootPortalUrl") mustEqual None
 
         (json \ "isHD").as[Boolean] mustEqual meta.isHD
         (json \ "sourceFilename").asOpt[String] mustEqual None
-        ShowMetaData.parseOptUrl(json, "sourceVideoUrl") mustEqual meta.sourceVideoUrl
-        ShowMetaData.parseOptFile(json, "localVideoFile").get.getAbsolutePath mustEqual meta.localVideoFile.get.getAbsolutePath
-        ShowMetaData.parseOptUrl(json, "publicVideoUrl") mustEqual meta.publicVideoUrl
+        ShowMetaData.parseOptUrl(json, "sourceVideoUrl") mustEqual None
+        ShowMetaData.parseOptFile(json, "localVideoFile") mustEqual None
+        ShowMetaData.parseOptUrl(json, "publicVideoUrl") mustEqual None
 
         (json \ "currentAccessToken").asOpt[String] mustEqual None
 
@@ -124,96 +106,42 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val stationId = "MV1"
-        val channelId = "SAT"
-        val hmsStationId = Some("hmsStationId")
-        val stationName = Some("stationName")
-        val stationLogoUrl = Some(new URL("http://station.com/logo.png"))
-        val stationLogoShow = false
-        val stationMainColor = Some("red")
-        val channelName = Some("channelName-SAT")
-        val showTitle = Some("showTitle--123")
-        val showId = Some(-123L)
-        val showSubTitle = Some("showSubTitle--123")
-        val showSourceTitle = Some("showSourceTitle--123")
-        val showLogoUrl = Some(new URL("http://station.com/show/logo--123.png"))
-        val showLength = 124L
-        val showEndInfo = Some("showEndInfo--123")
-        val rootPortalUrl = Some(new URL("http://station.com"))
-        val isHd = true
-        val sourceFilename = Some("sourceFilename--123")
-        val sourceVideoUrl = Some(new URL("http://station.com/show/-123-source.mp4"))
-        val localVideoFile = Some(new File("/Users/cvandrei/git/hbbTVPlugin/SAT/MV1/-123.mp4"))
-        val publicVideoUrl = Some(new URL("http://station.com/show/-123-public.mp4"))
-        val currentAccessToken = Some("accessToken")
-        val vimeo = Some(true)
-        val vimeoDone = Some(false)
-        val vimeoId = Some(-1000L)
-        val vimeoEncodingStatus = Some(IN_PROGRESS)
-
-        val json = Json.parse(s"""{
-                                |  "stationId": "$stationId",
-                                |  "channelId": "$channelId",
-                                |  "hmsStationId": "${hmsStationId.get}",
-                                |  "stationName": "${stationName.get}",
-                                |  "stationLogoUrl": "${stationLogoUrl.get.toString}",
-                                |  "stationLogoShow": $stationLogoShow,
-                                |  "stationMainColor": "${stationMainColor.get}",
-                                |  "channelName": "${channelName.get}",
-                                |  "showTitle": "${showTitle.get}",
-                                |  "showId": ${showId.get},
-                                |  "showSubtitle": "${showSubTitle.get}",
-                                |  "showSourceTitle": "${showSourceTitle.get}",
-                                |  "showLogoUrl": "${showLogoUrl.get.toString}",
-                                |  "showLength": $showLength,
-                                |  "showEndInfo": "${showEndInfo.get}",
-                                |  "rootPortalUrl": "${rootPortalUrl.get.toString}",
-                                |  "isHD": $isHd,
-                                |  "sourceFilename": "${sourceFilename.get}",
-                                |  "sourceVideoUrl": "${sourceVideoUrl.get.toString}",
-                                |  "localVideoFile": "${localVideoFile.get.getAbsolutePath}",
-                                |  "publicVideoUrl": "${publicVideoUrl.get.toString}",
-                                |  "currentAccessToken": "${currentAccessToken.get}",
-                                |  "vimeo": ${vimeo.get},
-                                |  "vimeoDone": ${vimeoDone.get},
-                                |  "vimeoId": ${vimeoId.get},
-                                |  "vimeoEncodingStatus": "${vimeoEncodingStatus.get.name}"
-                                |}""".stripMargin)
+        val json = Json.parse(ShowMetaDataHelper.defaultJson)
 
         // test
         val meta = json.validate[ShowMetaData].get
 
         // verify
-        meta.stationId mustEqual stationId
-        meta.channelId mustEqual channelId
-        meta.hmsStationId mustEqual hmsStationId
-        meta.stationName mustEqual stationName
-        meta.stationLogoUrl mustEqual stationLogoUrl
-        meta.stationLogoShow mustEqual stationLogoShow
-        meta.stationMainColor mustEqual stationMainColor
+        meta.stationId mustEqual (json \ "stationId").as[String]
+        meta.channelId mustEqual (json \ "channelId").as[String]
+        meta.hmsStationId mustEqual (json \ "hmsStationId").asOpt[String]
+        meta.stationName mustEqual (json \ "stationName").asOpt[String]
+        meta.stationLogoUrl.get.toString mustEqual (json \ "stationLogoUrl").as[String]
+        meta.stationLogoShow mustEqual (json \ "stationLogoShow").as[Boolean]
+        meta.stationMainColor mustEqual (json \ "stationMainColor").asOpt[String]
 
-        meta.channelName mustEqual channelName
-        meta.showTitle mustEqual showTitle
-        meta.showId mustEqual showId
-        meta.showSubtitle mustEqual showSubTitle
-        meta.showSourceTitle mustEqual showSourceTitle
-        meta.showLogoUrl mustEqual showLogoUrl
-        meta.showLength mustEqual showLength
-        meta.showEndInfo mustEqual showEndInfo
-        meta.rootPortalUrl mustEqual rootPortalUrl
+        meta.channelName mustEqual (json \ "channelName").asOpt[String]
+        meta.showTitle mustEqual (json \ "showTitle").asOpt[String]
+        meta.showId mustEqual (json \ "showId").asOpt[Long]
+        meta.showSubtitle mustEqual (json \ "showSubtitle").asOpt[String]
+        meta.showSourceTitle mustEqual (json \ "showSourceTitle").asOpt[String]
+        meta.showLogoUrl.get.toString mustEqual (json \ "showLogoUrl").as[String]
+        meta.showLength mustEqual (json \ "showLength").as[Long]
+        meta.showEndInfo mustEqual (json \ "showEndInfo").asOpt[String]
+        meta.rootPortalUrl.get.toString mustEqual (json \ "rootPortalUrl").as[String]
 
-        meta.isHD mustEqual isHd
-        meta.sourceFilename mustEqual sourceFilename
-        meta.sourceVideoUrl mustEqual sourceVideoUrl
-        meta.localVideoFile mustEqual localVideoFile
-        meta.publicVideoUrl mustEqual publicVideoUrl
+        meta.isHD mustEqual (json \ "isHD").as[Boolean]
+        meta.sourceFilename mustEqual (json \ "sourceFilename").asOpt[String]
+        meta.sourceVideoUrl.get.toString mustEqual (json \ "sourceVideoUrl").as[String]
+        meta.localVideoFile.get.getAbsolutePath mustEqual (json \ "localVideoFile").as[String]
+        meta.publicVideoUrl.get.toString mustEqual (json \ "publicVideoUrl").as[String]
 
-        meta.currentAccessToken mustEqual currentAccessToken
+        meta.currentAccessToken mustEqual (json \ "currentAccessToken").asOpt[String]
 
-        meta.vimeo mustEqual vimeo
-        meta.vimeoDone mustEqual vimeoDone
-        meta.vimeoId mustEqual vimeoId
-        meta.vimeoEncodingStatus mustEqual vimeoEncodingStatus
+        meta.vimeo mustEqual (json \ "vimeo").asOpt[Boolean]
+        meta.vimeoDone mustEqual (json \ "vimeoDone").asOpt[Boolean]
+        meta.vimeoId mustEqual (json \ "vimeoId").asOpt[Long]
+        meta.vimeoEncodingStatus.get.name mustEqual (json \ "vimeoEncodingStatus").as[String]
 
       }
     }
@@ -222,30 +150,18 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val stationId = "MV1"
-        val channelId = "SAT"
-        val stationLogoShow = false
-        val showLength = 124L
-        val isHd = true
-
-        val json = Json.parse(s"""{
-                                |  "stationId": "$stationId",
-                                |  "channelId": "$channelId",
-                                |  "stationLogoShow": $stationLogoShow,
-                                |  "showLength": $showLength,
-                                |  "isHD": $isHd
-                                |}""".stripMargin)
+        val json = Json.parse(ShowMetaDataHelper.defaultMinimumJson)
 
         // test
         val meta = json.validate[ShowMetaData].get
 
         // verify
-        meta.stationId mustEqual stationId
-        meta.channelId mustEqual channelId
+        meta.stationId mustEqual (json\ "stationId").as[String]
+        meta.channelId mustEqual (json\ "channelId").as[String]
         meta.hmsStationId mustEqual None
         meta.stationName mustEqual None
         meta.stationLogoUrl mustEqual None
-        meta.stationLogoShow mustEqual stationLogoShow
+        meta.stationLogoShow mustEqual (json\ "stationLogoShow").as[Boolean]
         meta.stationMainColor mustEqual None
 
         meta.channelName mustEqual None
@@ -254,11 +170,11 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         meta.showSubtitle mustEqual None
         meta.showSourceTitle mustEqual None
         meta.showLogoUrl mustEqual None
-        meta.showLength mustEqual showLength
+        meta.showLength mustEqual (json\ "showLength").as[Long]
         meta.showEndInfo mustEqual None
         meta.rootPortalUrl mustEqual None
 
-        meta.isHD mustEqual isHd
+        meta.isHD mustEqual (json \ "isHD").as[Boolean]
         meta.sourceFilename mustEqual None
         meta.sourceVideoUrl mustEqual None
         meta.localVideoFile mustEqual None

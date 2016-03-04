@@ -53,8 +53,8 @@ object TranscodeHelper {
         |  "PushErrorNotification": $DEFAULT_PUSH_ERROR_NOTIFICATION,
         |  "PushStatusNotification": $DEFAULT_PUSH_STATUS_NOTIFICATION,
         |  "PushNotificationCallback": "$DEFAULT_PUSH_NOTIFICATION_CALLBACK"
-        |}""".
-      stripMargin
+        |}"""
+      .stripMargin
 
   }
 
@@ -70,8 +70,8 @@ object TranscodeHelper {
         |  "PushErrorNotification": $DEFAULT_PUSH_ERROR_NOTIFICATION,
         |  "PushStatusNotification": $DEFAULT_PUSH_STATUS_NOTIFICATION,
         |  "PushNotificationCallback": "$DEFAULT_PUSH_NOTIFICATION_CALLBACK"
-        |}""".
-      stripMargin
+        |}"""
+      .stripMargin
 
   }
 
