@@ -1,5 +1,8 @@
 package models.dto
 
+import java.io.File
+import java.net.URL
+
 import constants.VimeoEncodingStatusSystem.{IN_PROGRESS, VimeoEncodingStatus}
 import models.dto.util.ShowMetaDataHelper
 import org.specs2.mutable.Specification
@@ -53,7 +56,7 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         (json \ "vimeo").asOpt[Boolean] mustEqual meta.vimeo
         (json \ "vimeoDone").asOpt[Boolean] mustEqual meta.vimeoDone
         (json \ "vimeoId").asOpt[Long] mustEqual meta.vimeoId
-        (json \ "vimeoEncodingStatus").asOpt[VimeoEncodingStatus] mustEqual meta.vimeoEncodingStatus
+        (json \ "vimeoEncodingStatus").asOpt[String] mustEqual Some(meta.vimeoEncodingStatus.get.name)
 
       }
     }
@@ -123,63 +126,59 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         // prepare
         val stationId = "MV1"
         val channelId = "SAT"
-        val hmsStationId = "hmsStationId"
-        val stationName = "stationName"
-        val stationLogoUrl = "http://station.com/logo.png"
+        val hmsStationId = Some("hmsStationId")
+        val stationName = Some("stationName")
+        val stationLogoUrl = Some(new URL("http://station.com/logo.png"))
         val stationLogoShow = false
-        val stationMainColor = "red"
-        val channelName = "channelName-SAT"
-        val showTitle = "showTitle--123"
-        val showId = -123L
-        val showSubTitle = "showSubTitle--123"
-        val showSourceTitle = "showSourceTitle--123"
-        val showLogoUrl = "http://station.com/show/logo--123.png"
+        val stationMainColor = Some("red")
+        val channelName = Some("channelName-SAT")
+        val showTitle = Some("showTitle--123")
+        val showId = Some(-123L)
+        val showSubTitle = Some("showSubTitle--123")
+        val showSourceTitle = Some("showSourceTitle--123")
+        val showLogoUrl = Some(new URL("http://station.com/show/logo--123.png"))
         val showLength = 124L
-        val showEndInfo = "showEndInfo--123"
-        val rootPortalUrl = "http://station.com"
+        val showEndInfo = Some("showEndInfo--123")
+        val rootPortalUrl = Some(new URL("http://station.com"))
         val isHd = true
-        val sourceFilename = "sourceFilename--123"
-        val sourceVideoUrl = "http://station.com/show/-123-source.mp4"
-        val localVideoFile = "/Users/cvandrei/git/hbbTVPlugin/SAT/MV1/-123.mp4"
-        val publicVideoUrl = "http://station.com/show/-123-public.mp4"
-        val currentAccessToken = "accessToken"
-        val vimeo = true
-        val vimeoDone = false
-        val vimeoId = -1000L
-        val vimeoEncodingStatus = IN_PROGRESS
-        val variant = "$variant"
+        val sourceFilename = Some("sourceFilename--123")
+        val sourceVideoUrl = Some(new URL("http://station.com/show/-123-source.mp4"))
+        val localVideoFile = Some(new File("/Users/cvandrei/git/hbbTVPlugin/SAT/MV1/-123.mp4"))
+        val publicVideoUrl = Some(new URL("http://station.com/show/-123-public.mp4"))
+        val currentAccessToken = Some("accessToken")
+        val vimeo = Some(true)
+        val vimeoDone = Some(false)
+        val vimeoId = Some(-1000L)
+        val vimeoEncodingStatus = Some(IN_PROGRESS)
 
         val json = Json.parse(s"""{
                                 |  "stationId": "$stationId",
                                 |  "channelId": "$channelId",
-                                |  "hmsStationId": "$hmsStationId",
-                                |  "stationName": "$stationName",
-                                |  "stationLogoUrl": "$stationLogoUrl",
+                                |  "hmsStationId": "${hmsStationId.get}",
+                                |  "stationName": "${stationName.get}",
+                                |  "stationLogoUrl": "${stationLogoUrl.get.toString}",
                                 |  "stationLogoShow": $stationLogoShow,
-                                |  "stationMainColor": "$stationMainColor",
-                                |  "channelName": "$channelName",
-                                |  "showTitle": "$showTitle",
-                                |  "showId": $showId,
-                                |  "showSubtitle": "$showSubTitle",
-                                |  "showSourceTitle": "$showSourceTitle",
-                                |  "showLogoUrl": "$showLogoUrl",
+                                |  "stationMainColor": "${stationMainColor.get}",
+                                |  "channelName": "${channelName.get}",
+                                |  "showTitle": "${showTitle.get}",
+                                |  "showId": ${showId.get},
+                                |  "showSubtitle": "${showSubTitle.get}",
+                                |  "showSourceTitle": "${showSourceTitle.get}",
+                                |  "showLogoUrl": "${showLogoUrl.get.toString}",
                                 |  "showLength": $showLength,
-                                |  "showEndInfo": "$showEndInfo",
-                                |  "rootPortalUrl": "$rootPortalUrl",
+                                |  "showEndInfo": "${showEndInfo.get}",
+                                |  "rootPortalUrl": "${rootPortalUrl.get.toString}",
                                 |  "isHD": $isHd,
-                                |  "sourceFilename": "$sourceFilename",
-                                |  "sourceVideoUrl": "$sourceVideoUrl",
-                                |  "localVideoFile": "$localVideoFile",
-                                |  "publicVideoUrl": $publicVideoUrl,
-                                |  "currentAccessToken": "$currentAccessToken",
-                                |  "vimeo": $vimeo,
-                                |  "vimeoDone": $vimeoDone,
-                                |  "vimeoId": $vimeoId,
-                                |  "vimeoEncodingStatus": {
-                                |    "name": "${vimeoEncodingStatus.name}",
-                                |    "$variant": "${vimeoEncodingStatus.name}"
-                                |  }
-                                |}""")
+                                |  "sourceFilename": "${sourceFilename.get}",
+                                |  "sourceVideoUrl": "${sourceVideoUrl.get.toString}",
+                                |  "localVideoFile": "${localVideoFile.get.getAbsolutePath}",
+                                |  "publicVideoUrl": "${publicVideoUrl.get.toString}",
+                                |  "currentAccessToken": "${currentAccessToken.get}",
+                                |  "vimeo": ${vimeo.get},
+                                |  "vimeoDone": ${vimeoDone.get},
+                                |  "vimeoId": ${vimeoId.get},
+                                |  "vimeoEncodingStatus": "${vimeoEncodingStatus.get.name}"
+                                |}""".stripMargin)
 
         // test
         val meta = json.validate[ShowMetaData].get
@@ -206,7 +205,7 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         meta.isHD mustEqual isHd
         meta.sourceFilename mustEqual sourceFilename
         meta.sourceVideoUrl mustEqual sourceVideoUrl
-        meta.localVideoFile.get.getAbsolutePath mustEqual localVideoFile
+        meta.localVideoFile mustEqual localVideoFile
         meta.publicVideoUrl mustEqual publicVideoUrl
 
         meta.currentAccessToken mustEqual currentAccessToken
@@ -215,6 +214,62 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         meta.vimeoDone mustEqual vimeoDone
         meta.vimeoId mustEqual vimeoId
         meta.vimeoEncodingStatus mustEqual vimeoEncodingStatus
+
+      }
+    }
+
+    "convert json (only mandatory fields set) to object" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val stationId = "MV1"
+        val channelId = "SAT"
+        val stationLogoShow = false
+        val showLength = 124L
+        val isHd = true
+
+        val json = Json.parse(s"""{
+                                |  "stationId": "$stationId",
+                                |  "channelId": "$channelId",
+                                |  "stationLogoShow": $stationLogoShow,
+                                |  "showLength": $showLength,
+                                |  "isHD": $isHd
+                                |}""".stripMargin)
+
+        // test
+        val meta = json.validate[ShowMetaData].get
+
+        // verify
+        meta.stationId mustEqual stationId
+        meta.channelId mustEqual channelId
+        meta.hmsStationId mustEqual None
+        meta.stationName mustEqual None
+        meta.stationLogoUrl mustEqual None
+        meta.stationLogoShow mustEqual stationLogoShow
+        meta.stationMainColor mustEqual None
+
+        meta.channelName mustEqual None
+        meta.showTitle mustEqual None
+        meta.showId mustEqual None
+        meta.showSubtitle mustEqual None
+        meta.showSourceTitle mustEqual None
+        meta.showLogoUrl mustEqual None
+        meta.showLength mustEqual showLength
+        meta.showEndInfo mustEqual None
+        meta.rootPortalUrl mustEqual None
+
+        meta.isHD mustEqual isHd
+        meta.sourceFilename mustEqual None
+        meta.sourceVideoUrl mustEqual None
+        meta.localVideoFile mustEqual None
+        meta.publicVideoUrl mustEqual None
+
+        meta.currentAccessToken mustEqual None
+
+        meta.vimeo mustEqual None
+        meta.vimeoDone mustEqual None
+        meta.vimeoId mustEqual None
+        meta.vimeoEncodingStatus mustEqual None
 
       }
     }

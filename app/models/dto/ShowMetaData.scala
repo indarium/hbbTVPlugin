@@ -47,7 +47,6 @@ case class ShowMetaData(val stationId: String, val channelId: String) {
 
 object ShowMetaData {
 
-  // TODO unit test
   implicit object ShowMetaDataReads extends Format[ShowMetaData] {
 
     override def reads(json: JsValue): JsResult[ShowMetaData] = {
@@ -119,11 +118,7 @@ object ShowMetaData {
       val vimeo = if (meta.vimeo.isDefined) JsBoolean(meta.vimeo.get) else JsNull
       val vimeoDone = if (meta.vimeoDone.isDefined) JsBoolean(meta.vimeoDone.get) else JsNull
       val vimeoId = if (meta.vimeoId.isDefined) JsNumber(meta.vimeoId.get) else JsNull
-
-      val vimeoEncodingStatus = if (meta.vimeoEncodingStatus.isDefined) {
-        val name = meta.vimeoEncodingStatus.get.name
-        Json.obj("name" -> name, "$variant" -> Some(name))
-      } else JsNull
+      val vimeoEncodingStatus = if (meta.vimeoEncodingStatus.isDefined) JsString(meta.vimeoEncodingStatus.get.name) else JsNull
 
       val seq = Seq(
         "stationId" -> JsString(meta.stationId),
