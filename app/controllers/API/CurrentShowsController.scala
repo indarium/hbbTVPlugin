@@ -45,7 +45,7 @@ object CurrentShowsController extends Controller {
 
       val transcodeCallback = request.body.validate[TranscodeCallback].get
       Logger.debug(s"converted to TranscodeCallback: $transcodeCallback")
-      TranscodeCallback.save(transcodeCallback)
+      TranscodeCallback.save(transcodeCallback) // TODO don't overwrite meta
       // TODO trigger further processing: download video, upload to Vimeo, etc
 
       Ok(Json.obj("status" -> "OK"))

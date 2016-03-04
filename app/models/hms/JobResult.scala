@@ -9,11 +9,10 @@ import play.api.libs.json.Json
   */
 case class JobResult(ID: Long,
                      Result: String,
-                     VerboseResult: String,
-                     meta: Option[ShowMetaData])
+                     VerboseResult: String
+                     )
 
 object JobResult {
-  // TODO update tests to account for ShowMetaData which we just added
   implicit val reads = Json.reads[JobResult]
   implicit val writes = Json.writes[JobResult]
 }

@@ -1,6 +1,7 @@
 package models.hms
 
 import models.MongoId
+import models.dto.ShowMetaData
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
@@ -20,7 +21,9 @@ case class TranscodeCallback(_id: Option[MongoId],
                              Status: String,
                              StatusValue: Option[Int],
                              StatusUnit: Option[String],
-                             DownloadSource: Option[String])
+                             DownloadSource: Option[String],
+                             meta: Option[ShowMetaData]
+                            )
 
 object TranscodeCallback {
 
@@ -29,9 +32,9 @@ object TranscodeCallback {
   implicit val reads = Json.reads[TranscodeCallback]
   implicit val writes = Json.writes[TranscodeCallback]
 
-  def insert(jobResult: JobResult) = {
+  def insert(jobResult: JobResult, meta: ShowMetaData) = {
 
-    val transcodeCallback = TranscodeCallback(None, jobResult.ID, jobResult.VerboseResult, "queued", None, None, None)
+    val transcodeCallback = TranscodeCallback(None, jobResult.ID, jobResult.VerboseResult, "queued", None, None, None, Some(meta))
     transcodeCallCollection.insert(transcodeCallback) // TODO add error logging/handling
 
   }

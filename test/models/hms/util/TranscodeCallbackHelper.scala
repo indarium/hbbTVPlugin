@@ -1,5 +1,6 @@
 package models.hms.util
 
+import models.dto.util.ShowMetaDataHelper
 import models.hms.TranscodeCallback
 
 /**
@@ -8,13 +9,21 @@ import models.hms.TranscodeCallback
   */
 object TranscodeCallbackHelper {
 
-  def queuedObject(id: Long): TranscodeCallback = TranscodeCallback(None, id, "created transcode job", "queued", None, None, None)
+  val DEFAULT_META = Some(ShowMetaDataHelper.defaultObject("MV1", "SAT", -1001L))
 
-  def processingObject(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "processing", Some(80), Some("percentage"), None)
+  def queuedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, "created transcode job", "queued", None, None, None, None)
 
-  def finishedObject(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "finished", None, None, downloadSource(id))
+  def queuedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, "created transcode job", "queued", None, None, None, DEFAULT_META)
 
-  def queuedJson(id: Long): String =
+  def processingObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "processing", Some(80), Some("percentage"), None, None)
+
+  def processingObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "processing", Some(80), Some("percentage"), None, DEFAULT_META)
+
+  def finishedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "finished", None, None, downloadSource(id), None)
+
+  def finishedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "finished", None, None, downloadSource(id), DEFAULT_META)
+
+  def queuedJsonWithoutMeta(id: Long): String =
     s"""
        |{
        |  "ID":  $id,
@@ -23,7 +32,17 @@ object TranscodeCallbackHelper {
        |}
      """.stripMargin
 
-  def processingJson(id: Long): String =
+  def queuedJsonWithMeta(id: Long): String =
+    s"""
+       |{
+       |  "ID":  $id,
+       |  "VerboseMessage": "created transcode job",
+       |  "Status": "queued",
+       |  "meta": ${ShowMetaDataHelper.defaultJson}
+       |}
+     """.stripMargin
+
+  def processingJsonWithoutMeta(id: Long): String =
     s"""
        |{
        |  "ID":  $id,
@@ -34,13 +53,36 @@ object TranscodeCallbackHelper {
        |}
      """.stripMargin
 
-  def finishedJson(id: Long): String =
+  def processingJsonWithMeta(id: Long): String =
+    s"""
+       |{
+       |  "ID":  $id,
+       |  "VerboseMessage": "${verboseMessage(id)}",
+       |  "Status": "processing",
+       |  "StatusValue": 80,
+       |  "StatusUnit": "percentage",
+       |  "meta": ${ShowMetaDataHelper.defaultJson}
+       |}
+     """.stripMargin
+
+  def finishedJsonWithoutMeta(id: Long): String =
     s"""
        |{
        |  "ID":  $id,
        |  "VerboseMessage": "{verboseMessage(id)}",
        |  "Status": "finished",
        |  "DownloadSource": "${downloadSource(id)}"
+       |}
+     """.stripMargin
+
+  def finishedJsonWithMeta(id: Long): String =
+    s"""
+       |{
+       |  "ID":  $id,
+       |  "VerboseMessage": "{verboseMessage(id)}",
+       |  "Status": "finished",
+       |  "DownloadSource": "${downloadSource(id)}",
+       |  "meta": ${ShowMetaDataHelper.defaultJson}
        |}
      """.stripMargin
 

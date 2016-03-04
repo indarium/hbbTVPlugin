@@ -12,9 +12,9 @@ object JobResultHelper {
   val DEFAULT_RESULT = resultValue(DEFAULT_ID)
   val DEFAULT_VERBOSE_RESULT = verboseResultValue(DEFAULT_ID)
 
-  def defaultObject: JobResult = JobResult(DEFAULT_ID, DEFAULT_RESULT, DEFAULT_VERBOSE_RESULT, None)
+  def defaultObject: JobResult = JobResult(DEFAULT_ID, DEFAULT_RESULT, DEFAULT_VERBOSE_RESULT)
 
-  def defaultObject(id: Long): JobResult = JobResult(id, resultValue(id), verboseResultValue(id), None)
+  def defaultObject(id: Long): JobResult = JobResult(id, resultValue(id), verboseResultValue(id))
 
   def defaultJson: String =
     s"""
