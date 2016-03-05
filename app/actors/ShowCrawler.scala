@@ -1,12 +1,12 @@
 package actors
 
-import java.net.URL
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
-import models.dto.ShowMetaData
+import models.dto.{ProcessHmsCallback, ShowMetaData}
+import models.hms.TranscodeCallback
 import models.{Show, Station}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -50,7 +50,7 @@ class ShowCrawler extends Actor {
       meta.hmsStationId = Some(processStationData.hmsStationId)
       meta.showId = Some(hmsShow.ID)
       meta.showTitle = hmsShow.Name
-      meta.sourceVideoUrl = Some(new URL(hmsShow.DownloadURL.get))
+      meta.showSourceTitle = meta.showTitle
 
       log.info("check for vimeo exception stuff!!")
       if (mmv.contains(meta.stationId.toLowerCase)) {
@@ -59,6 +59,10 @@ class ShowCrawler extends Actor {
       }
 
       log.info("collected meta: " + meta.showTitle + " / " + meta.sourceVideoUrl)
+      createTranscodeJob(meta)
+
+    case ProcessHmsCallback(meta) =>
+      log.info("process after HMS callback %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))
       showProcessingActor ! meta
 
     case processStation: ProcessStation =>
@@ -96,6 +100,15 @@ class ShowCrawler extends Actor {
         Duration.create(crawlerPeriod, TimeUnit.MINUTES),
         self,
         ProcessStation(scheduleProcess.processStationData))
+  }
+
+  private def createTranscodeJob(meta: ShowMetaData) = {
+
+    HMSApi.transcode(meta).map {
+      case Some(jobResult) =>
+        TranscodeCallback.insert(jobResult, meta)
+    }
+
   }
 
   private def processAllStations = {

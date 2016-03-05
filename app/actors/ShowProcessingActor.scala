@@ -5,9 +5,6 @@ import akka.event.Logging
 import helper._
 import models.Show
 import models.dto._
-import models.hms.TranscodeCallback
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Process a show, fill in information, download video, upload it and update
@@ -30,12 +27,10 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
   val crawlerPeriod = Config.hmsCrawlerPeriod
 
   def receive = {
+
     case meta: ShowMetaData =>
       log.info("process %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))
-      HMSApi.transcode(meta).map {
-        case Some(jobResult) =>
-          TranscodeCallback.insert(jobResult, meta)
-      }
+      videoDownloadActor ! meta
 
     case VideoDownloadSuccess(meta) =>
       log.info("downloaded %s".format(meta.localVideoFile.getOrElse("???")))

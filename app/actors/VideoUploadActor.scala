@@ -24,7 +24,6 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
       meta.localVideoFile.map(_.delete)
       meta.localVideoFile = None
 
-      meta.showSourceTitle = meta.showTitle
       meta.publicVideoUrl = Some(url)
 
       if (meta.vimeo.isDefined && meta.vimeo.get && meta.vimeoDone.isEmpty) {

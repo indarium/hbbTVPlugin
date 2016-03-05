@@ -1,17 +1,23 @@
 package controllers.API
 
+import java.net.URL
+
+import actors.ShowCrawler
+import akka.actor.Props
+import models.dto.ProcessHmsCallback
 import models.hms.TranscodeCallback
 import models.{ApiKey, Show}
 import play.api._
 import play.api.libs.json._
 import play.api.mvc._
+import play.libs.Akka
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
- * Created by dermicha on 17/06/14.
- */
+  * Created by dermicha on 17/06/14.
+  */
 
 case class ShowApiCall(apiKey: String, stationId: String, channelId: String)
 
@@ -20,6 +26,8 @@ object ShowApiCall {
 }
 
 object CurrentShowsController extends Controller {
+
+  val showCrawler = Akka.system.actorOf(Props(new ShowCrawler))
 
   //def current = WithCors("POST") {
   def current = Action.async(BodyParsers.parse.json) { request =>
@@ -45,10 +53,49 @@ object CurrentShowsController extends Controller {
 
       val transcodeCallback = request.body.validate[TranscodeCallback].get
       Logger.debug(s"converted to TranscodeCallback: $transcodeCallback")
-      TranscodeCallback.save(transcodeCallback) // TODO don't overwrite meta
-      // TODO trigger further processing: download video, upload to Vimeo, etc
+
+      transcodeCallback.Status match {
+
+        case "finished" => handleEncoderFinished(transcodeCallback)
+        case _ => Logger.info(s"received unfinished transcoder callback: $transcodeCallback")
+
+      }
+
+      // TODO update transcoCdeCallback in db
+//      TranscodeCallback.save(transcodeCallback)
 
       Ok(Json.obj("status" -> "OK"))
+
+  }
+
+  private def handleEncoderFinished(transcodeCallback: TranscodeCallback) = {
+
+    TranscodeCallback.findByHmsId(transcodeCallback.ID).map {
+
+      dbRecord => {
+
+        dbRecord match {
+
+          case Some(persistedCallback) =>
+
+            persistedCallback.meta match {
+
+              case Some(meta) =>
+                val downloadSource: String = persistedCallback.DownloadSource.get
+                meta.sourceVideoUrl = Some(new URL(downloadSource))
+                showCrawler ! new ProcessHmsCallback(meta)
+
+              case None => Logger.error(s"can't process callback for which no meta exists: $transcodeCallback")
+
+            }
+
+          case None => Logger.error(s"failed to find db record for transcodeCallback=$transcodeCallback") // TODO respond w/ http status 500?
+
+        }
+
+      }
+
+    }
 
   }
 

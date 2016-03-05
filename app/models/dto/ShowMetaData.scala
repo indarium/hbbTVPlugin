@@ -180,3 +180,5 @@ case class VideoDownloadSuccess(meta: ShowMetaData)
 
 case class VideoDownloadFailure(meta: ShowMetaData, e: Throwable)
 case class VideoUploadFailure(meta: ShowMetaData, e: Throwable)
+
+case class ProcessHmsCallback(meta:ShowMetaData)
