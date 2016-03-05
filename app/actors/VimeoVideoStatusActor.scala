@@ -4,8 +4,8 @@ import akka.actor.Actor
 import constants.VimeoEncodingStatusSystem.DONE
 import external.vimeo.VideoStatusUtil
 import external.webjazz.WebjazzRest
+import helper.VimeoUtil
 import helper.model.ShowUtil
-import helper.{Config, VimeoBackend}
 import models.Show
 import play.api.Logger
 
@@ -20,8 +20,7 @@ case class QueryVimeoVideoStatus()
 
 class VimeoVideoStatusActor() extends Actor {
 
-  val accessToken = Config.vimeoAccessToken
-  val vimeoBackend = new VimeoBackend(accessToken)
+  val vimeoBackend = VimeoUtil.backend
 
   override def receive = {
 

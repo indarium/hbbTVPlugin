@@ -214,8 +214,7 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
     var videoUrl: URL = null
 
     Config.vimeoAccessToken mustNotEqual "NO-ACCESS-TOKEN"
-    val accessToken = Config.vimeoAccessToken
-    val backend = new VimeoBackend(accessToken)
+    val backend = VimeoUtil.backend
 
     "Authenticate to vimeo API" in {
       backend.ping must beTrue

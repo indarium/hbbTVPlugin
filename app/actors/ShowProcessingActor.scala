@@ -20,13 +20,11 @@ case class ScheduleNextStep(meta: ShowMetaData)
 
 class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
-  val accessToken = Config.vimeoAccessToken
-  val vimeoBackend = new VimeoBackend(accessToken)
-
   val log = Logging(context.system, this)
 
   val videoDownloadActor = context.actorOf(Props[VideoDownloadActor])
   val videoUploadActor = context.actorOf(Props(new VideoUploadActor(backend)))
+  val vimeoBackend = VimeoUtil.backend
   val videoVimeoUploadActor = context.actorOf(Props(new VideoUploadActor(vimeoBackend)))
 
   val crawlerPeriod = Config.hmsCrawlerPeriod

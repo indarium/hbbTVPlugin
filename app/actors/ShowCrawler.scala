@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, Props}
 import akka.event.Logging
-import com.amazonaws.auth.BasicAWSCredentials
 import helper._
 import models.dto.ShowMetaData
 import models.{Show, Station}
@@ -35,16 +34,9 @@ class ShowCrawler extends Actor {
 
   val crawlerPeriod = Config.hmsCrawlerPeriod
 
-  val awsAccessKeyId: String = Config.awsAccessKeyId
-  val awsSecretKey: String = Config.awsSecretKey
-  val credentials = new BasicAWSCredentials(awsAccessKeyId, awsSecretKey)
-  val s3Backend: S3Backend = new S3Backend(credentials, Config.awsBucket)
-
-  val vimeoAccessToken: String = Config.vimeoAccessToken
-  val vimeoBackend: VimeoBackend = new VimeoBackend(vimeoAccessToken)
-
   val mmv = List("mv1", "wis") //TODO refactor to make this list configurable
 
+  private val s3Backend: S3Backend = S3Util.backend
   val showProcessingActor = context.actorOf(Props(new ShowProcessingActor(s3Backend)))
 
   def receive = {
