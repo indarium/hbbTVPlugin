@@ -4,6 +4,7 @@ import java.net.URL
 
 import actors.ShowCrawler
 import akka.actor.Props
+import constants.HmsCallbackStatus
 import models.dto.ProcessHmsCallback
 import models.hms.TranscodeCallback
 import models.{ApiKey, Show}
@@ -56,44 +57,42 @@ object CurrentShowsController extends Controller {
 
       transcodeCallback.Status match {
 
-        case "finished" => handleEncoderFinished(transcodeCallback)
+        case HmsCallbackStatus.FINISHED => handleEncoderFinished(transcodeCallback)
         case _ => Logger.info(s"received unfinished transcoder callback: $transcodeCallback")
 
       }
 
       // TODO update transcoCdeCallback in db
-//      TranscodeCallback.save(transcodeCallback)
+      //      TranscodeCallback.save(transcodeCallback)
 
       Ok(Json.obj("status" -> "OK"))
 
   }
 
-  private def handleEncoderFinished(transcodeCallback: TranscodeCallback) = {
+  private def handleEncoderFinished(callback: TranscodeCallback) = {
 
-    TranscodeCallback.findByHmsId(transcodeCallback.ID).map {
+    TranscodeCallback.findByHmsId(callback.ID).map {
 
-      dbRecord => {
+      case Some(dbRecord) => dbRecord.Status match {
 
-        dbRecord match {
+        case HmsCallbackStatus.FINISHED =>
+          Logger.info(s"the show this callback relates to has been processed successfully already: callback=$callback")
 
-          case Some(persistedCallback) =>
+        case _ => dbRecord.meta match {
 
-            persistedCallback.meta match {
+          case Some(meta) =>
+            val downloadSource: String = dbRecord.DownloadSource.get
+            meta.sourceVideoUrl = Some(new URL(downloadSource))
+            Logger.info(s"transcoder job has finished (transcodeCallbackId=${callback.ID}). notify ShowCrawler (showId=${meta.showId}).")
+            showCrawler ! new ProcessHmsCallback(meta)
 
-              case Some(meta) =>
-                val downloadSource: String = persistedCallback.DownloadSource.get
-                meta.sourceVideoUrl = Some(new URL(downloadSource))
-                showCrawler ! new ProcessHmsCallback(meta)
-
-              case None => Logger.error(s"can't process callback for which no meta exists: $transcodeCallback")
-
-            }
-
-          case None => Logger.error(s"failed to find db record for transcodeCallback=$transcodeCallback") // TODO respond w/ http status 500?
+          case None => Logger.error(s"unable to find meta for callback: $callback") // TODO respond w/ http status 500?
 
         }
 
       }
+
+      case None => Logger.error(s"failed to find db record for transcodeCallback=$callback") // TODO respond w/ http status 500?
 
     }
 
