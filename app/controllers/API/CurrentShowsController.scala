@@ -58,7 +58,7 @@ object CurrentShowsController extends Controller {
       callback.Status match {
 
         case HmsCallbackStatus.FINISHED =>
-          handleEncoderFinished(callback).map {
+          handleEncoderFinished(callback).collect {
             case false => Unsuccessful404
           }
 
@@ -92,7 +92,7 @@ object CurrentShowsController extends Controller {
         case _ => dbRecord.meta match {
 
           case Some(meta) =>
-            val downloadSource = dbRecord.DownloadSource.get
+            val downloadSource = callback.DownloadSource.get
             meta.sourceVideoUrl = Some(new URL(downloadSource))
             Logger.info(s"transcoder job has finished (transcodeCallbackId=${callback.ID}). notify ShowCrawler (showId=${meta.showId}).")
             showCrawler ! new ProcessHmsCallback(meta)
