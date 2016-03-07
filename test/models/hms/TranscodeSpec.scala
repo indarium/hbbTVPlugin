@@ -25,12 +25,12 @@ class TranscodeSpec extends Specification with PlayRunners {
         // verify
         (json \ "SourceType").as[String] mustEqual transcode.SourceType
         (json \ "Sources").as[List[Source]] mustEqual transcode.Sources
-        (json \ "Collapsed").asOpt[Boolean] mustEqual transcode.Collapsed
+        (json \ "Collapsed").asOpt[String].get mustEqual transcode.Collapsed.get.toString
         (json \ "CollapsedName").asOpt[String] mustEqual transcode.CollapsedName
         (json \ "DownloadProvision").as[String] mustEqual transcode.DownloadProvision
-        (json \ "PushFinishedNotification").as[Boolean] mustEqual transcode.PushFinishedNotification
-        (json \ "PushErrorNotification").as[Boolean] mustEqual transcode.PushErrorNotification
-        (json \ "PushStatusNotification").as[Boolean] mustEqual transcode.PushStatusNotification
+        (json \ "PushFinishedNotification").as[String] mustEqual transcode.PushFinishedNotification.toString
+        (json \ "PushErrorNotification").as[String] mustEqual transcode.PushErrorNotification.toString
+        (json \ "PushStatusNotification").as[String] mustEqual transcode.PushStatusNotification.toString
         (json \ "PushNotificationCallback").as[String] mustEqual transcode.PushNotificationCallback
 
       }
@@ -48,12 +48,12 @@ class TranscodeSpec extends Specification with PlayRunners {
         // verify
         (json \ "SourceType").as[String] mustEqual transcode.SourceType
         (json \ "Sources").as[List[Source]] mustEqual transcode.Sources
-        (json \ "Collapsed").asOpt[Boolean] mustEqual None
+        (json \ "Collapsed").asOpt[String] mustEqual None
         (json \ "CollapsedName").asOpt[String] mustEqual None
         (json \ "DownloadProvision").as[String] mustEqual transcode.DownloadProvision
-        (json \ "PushFinishedNotification").as[Boolean] mustEqual transcode.PushFinishedNotification
-        (json \ "PushErrorNotification").as[Boolean] mustEqual transcode.PushErrorNotification
-        (json \ "PushStatusNotification").as[Boolean] mustEqual transcode.PushStatusNotification
+        (json \ "PushFinishedNotification").as[String] mustEqual transcode.PushFinishedNotification.toString
+        (json \ "PushErrorNotification").as[String] mustEqual transcode.PushErrorNotification.toString
+        (json \ "PushStatusNotification").as[String] mustEqual transcode.PushStatusNotification.toString
         (json \ "PushNotificationCallback").as[String] mustEqual transcode.PushNotificationCallback
 
       }
@@ -71,12 +71,12 @@ class TranscodeSpec extends Specification with PlayRunners {
         // verify
         transcode.SourceType mustEqual (json \ "SourceType").as[String]
         transcode.Sources mustEqual (json \ "Sources").as[List[Source]]
-        transcode.Collapsed mustEqual Some((json \ "Collapsed").as[Boolean])
+        transcode.Collapsed mustEqual Some((json \ "Collapsed").as[String].toBoolean)
         transcode.CollapsedName mustEqual Some((json \ "CollapsedName").as[String])
         transcode.DownloadProvision mustEqual (json \ "DownloadProvision").as[String]
-        transcode.PushFinishedNotification mustEqual (json \ "PushFinishedNotification").as[Boolean]
-        transcode.PushErrorNotification mustEqual (json \ "PushErrorNotification").as[Boolean]
-        transcode.PushStatusNotification mustEqual (json \ "PushStatusNotification").as[Boolean]
+        transcode.PushFinishedNotification mustEqual (json \ "PushFinishedNotification").as[String].toBoolean
+        transcode.PushErrorNotification mustEqual (json \ "PushErrorNotification").as[String].toBoolean
+        transcode.PushStatusNotification mustEqual (json \ "PushStatusNotification").as[String].toBoolean
         transcode.PushNotificationCallback mustEqual (json \ "PushNotificationCallback").as[String]
 
       }
@@ -97,9 +97,9 @@ class TranscodeSpec extends Specification with PlayRunners {
         transcode.Collapsed mustEqual None
         transcode.CollapsedName mustEqual None
         transcode.DownloadProvision mustEqual (json \ "DownloadProvision").as[String]
-        transcode.PushFinishedNotification mustEqual (json \ "PushFinishedNotification").as[Boolean]
-        transcode.PushErrorNotification mustEqual (json \ "PushErrorNotification").as[Boolean]
-        transcode.PushStatusNotification mustEqual (json \ "PushStatusNotification").as[Boolean]
+        transcode.PushFinishedNotification mustEqual (json \ "PushFinishedNotification").as[String].toBoolean
+        transcode.PushErrorNotification mustEqual (json \ "PushErrorNotification").as[String].toBoolean
+        transcode.PushStatusNotification mustEqual (json \ "PushStatusNotification").as[String].toBoolean
         transcode.PushNotificationCallback mustEqual (json \ "PushNotificationCallback").as[String]
 
       }

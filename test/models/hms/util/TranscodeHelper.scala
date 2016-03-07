@@ -15,7 +15,7 @@ object TranscodeHelper {
   val DEFAULT_COLLAPSED_NAME = "collapsedName"
   val DEFAULT_DOWNLOAD_PROVISION = "HTTP"
   val DEFAULT_PUSH_FINISHED_NOTIFICATION = true
-  val DEFAULT_PUSH_ERROR_NOTIFICATION = true
+  val DEFAULT_PUSH_ERROR_NOTIFICATION = false
   val DEFAULT_PUSH_STATUS_NOTIFICATION = true
   val DEFAULT_PUSH_NOTIFICATION_CALLBACK = "http://server/path"
 
@@ -46,12 +46,12 @@ object TranscodeHelper {
     s"""{
         |  "SourceType": "$DEFAULT_SOURCE_TYPE",
         |  "Sources": $sources,
-        |  "Collapsed": $DEFAULT_COLLAPSED,
+        |  "Collapsed": "$DEFAULT_COLLAPSED",
         |  "CollapsedName": "$DEFAULT_COLLAPSED_NAME",
         |  "DownloadProvision": "$DEFAULT_DOWNLOAD_PROVISION",
-        |  "PushFinishedNotification": $DEFAULT_PUSH_FINISHED_NOTIFICATION,
-        |  "PushErrorNotification": $DEFAULT_PUSH_ERROR_NOTIFICATION,
-        |  "PushStatusNotification": $DEFAULT_PUSH_STATUS_NOTIFICATION,
+        |  "PushFinishedNotification": "$DEFAULT_PUSH_FINISHED_NOTIFICATION",
+        |  "PushErrorNotification": "$DEFAULT_PUSH_ERROR_NOTIFICATION",
+        |  "PushStatusNotification": "$DEFAULT_PUSH_STATUS_NOTIFICATION",
         |  "PushNotificationCallback": "$DEFAULT_PUSH_NOTIFICATION_CALLBACK"
         |}"""
       .stripMargin
@@ -66,9 +66,9 @@ object TranscodeHelper {
         |  "SourceType": "$DEFAULT_SOURCE_TYPE",
         |  "Sources": $sources,
         |  "DownloadProvision": "$DEFAULT_DOWNLOAD_PROVISION",
-        |  "PushFinishedNotification": $DEFAULT_PUSH_FINISHED_NOTIFICATION,
-        |  "PushErrorNotification": $DEFAULT_PUSH_ERROR_NOTIFICATION,
-        |  "PushStatusNotification": $DEFAULT_PUSH_STATUS_NOTIFICATION,
+        |  "PushFinishedNotification": "$DEFAULT_PUSH_FINISHED_NOTIFICATION",
+        |  "PushErrorNotification": "$DEFAULT_PUSH_ERROR_NOTIFICATION",
+        |  "PushStatusNotification": "$DEFAULT_PUSH_STATUS_NOTIFICATION",
         |  "PushNotificationCallback": "$DEFAULT_PUSH_NOTIFICATION_CALLBACK"
         |}"""
       .stripMargin
