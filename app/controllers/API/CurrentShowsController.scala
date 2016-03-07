@@ -52,18 +52,17 @@ object CurrentShowsController extends Controller {
       Logger.debug("HMS CallBack-Body:")
       Logger.debug(Json.prettyPrint(request.body))
 
-      val transcodeCallback = request.body.validate[TranscodeCallback].get
-      Logger.debug(s"converted to TranscodeCallback: $transcodeCallback")
+      val callback = request.body.validate[TranscodeCallback].get
+      Logger.debug(s"converted to TranscodeCallback: $callback")
 
-      transcodeCallback.Status match {
+      callback.Status match {
 
-        case HmsCallbackStatus.FINISHED => handleEncoderFinished(transcodeCallback)
-        case _ => Logger.info(s"received unfinished transcoder callback: $transcodeCallback")
+        case HmsCallbackStatus.FINISHED => handleEncoderFinished(callback)
+        case _ => Logger.info(s"transcoder job is not finished: $callback")
 
       }
 
-      // TODO update transcoCdeCallback in db
-      //      TranscodeCallback.save(transcodeCallback)
+      TranscodeCallback.updateRecord(callback)
 
       Ok(Json.obj("status" -> "OK"))
 
@@ -75,13 +74,12 @@ object CurrentShowsController extends Controller {
 
       case Some(dbRecord) => dbRecord.Status match {
 
-        case HmsCallbackStatus.FINISHED =>
-          Logger.info(s"the show this callback relates to has been processed successfully already: callback=$callback")
+        case HmsCallbackStatus.FINISHED => Logger.info(s"the show this callback relates to has been processed successfully already: callback=$callback")
 
         case _ => dbRecord.meta match {
 
           case Some(meta) =>
-            val downloadSource: String = dbRecord.DownloadSource.get
+            val downloadSource = dbRecord.DownloadSource.get
             meta.sourceVideoUrl = Some(new URL(downloadSource))
             Logger.info(s"transcoder job has finished (transcodeCallbackId=${callback.ID}). notify ShowCrawler (showId=${meta.showId}).")
             showCrawler ! new ProcessHmsCallback(meta)

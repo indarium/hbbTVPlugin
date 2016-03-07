@@ -58,6 +58,18 @@ object TranscodeCallback {
 
   }
 
+  def updateRecord(callback: TranscodeCallback) = {
+
+    TranscodeCallback.findByHmsId(callback.ID).map {
+
+      case Some(dbRecord) =>
+        val updatedRecord = callback.copy(_id = dbRecord._id, meta = dbRecord.meta)
+        TranscodeCallback.save(updatedRecord)
+
+    }
+
+  }
+
   def save(transcodeCallback: TranscodeCallback): Future[LastError] = transcodeCallCollection.save(transcodeCallback)
 
 }
