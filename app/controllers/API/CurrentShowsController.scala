@@ -57,7 +57,11 @@ object CurrentShowsController extends Controller {
 
       callback.Status match {
 
-        case HmsCallbackStatus.FINISHED => handleEncoderFinished(callback)
+        case HmsCallbackStatus.FINISHED =>
+          handleEncoderFinished(callback).map {
+            case false => Unsuccessful404
+          }
+
         case _ => Logger.info(s"transcoder job is not finished: $callback")
 
       }
@@ -68,13 +72,22 @@ object CurrentShowsController extends Controller {
 
   }
 
-  private def handleEncoderFinished(callback: TranscodeCallback) = {
+  /**
+    * This method takes callback with status=finished and relates to a show for which further processing is triggered
+    * (download, upload to video provider, create record in collection show, etc).
+    *
+    * @param callback callback with status="finished"
+    * @return true if everything is ok, false otherwise
+    */
+  private def handleEncoderFinished(callback: TranscodeCallback): Future[Boolean] = {
 
     TranscodeCallback.findByHmsId(callback.ID).map {
 
       case Some(dbRecord) => dbRecord.Status match {
 
-        case HmsCallbackStatus.FINISHED => Logger.info(s"the show this callback relates to has been processed successfully already: callback=$callback")
+        case HmsCallbackStatus.FINISHED =>
+          Logger.info(s"the show this callback relates to has been processed successfully already: callback=$callback")
+          return Future(true)
 
         case _ => dbRecord.meta match {
 
@@ -83,14 +96,19 @@ object CurrentShowsController extends Controller {
             meta.sourceVideoUrl = Some(new URL(downloadSource))
             Logger.info(s"transcoder job has finished (transcodeCallbackId=${callback.ID}). notify ShowCrawler (showId=${meta.showId}).")
             showCrawler ! new ProcessHmsCallback(meta)
+            true
 
-          case None => Logger.error(s"unable to find meta for callback: $callback") // TODO respond w/ http status 500?
+          case None =>
+            Logger.error(s"unable to find meta for callback: $callback")
+            false
 
         }
 
       }
 
-      case None => Logger.error(s"failed to find db record for transcodeCallback=$callback") // TODO respond w/ http status 500?
+      case None =>
+        Logger.error(s"failed to find db record for transcodeCallback=$callback")
+        false
 
     }
 
@@ -99,6 +117,8 @@ object CurrentShowsController extends Controller {
   private def KO = {
     BadRequest(Json.obj("status" -> false)).withHeaders(CONTENT_TYPE -> "application/json")
   }
+
+  private def Unsuccessful404 = NotFound(Json.obj("status" -> "unsuccessful")).withHeaders(CONTENT_TYPE -> "application/json")
 
   case class WithCors(httpVerbs: String*)(action: EssentialAction) extends EssentialAction with Results {
     def apply(request: RequestHeader) = {
