@@ -100,9 +100,12 @@ object Show {
       seq ++= Seq(
         "showVideoSDUrl" -> JsString(s.showVideoSDUrl),
         "channelBroadcastInfo" -> JsString(s.channelBroadcastInfo),
-        "rootPortalURL" -> JsString(s.rootPortalURL),
-        "vimeoId" -> JsNumber(s.vimeoId.get)
+        "rootPortalURL" -> JsString(s.rootPortalURL)
       )
+
+      if (s.vimeoId.isDefined) {
+        seq ++= Seq("vimeoId" -> JsNumber(s.vimeoId.get))
+      }
 
       if (s.vimeoEncodingStatus.isDefined) {
         seq ++= Seq("vimeoEncodingStatus" -> JsString(s.vimeoEncodingStatus.get.name))
