@@ -60,6 +60,7 @@ class ShowCrawler extends Actor {
 
       log.info("collected meta: " + meta.showTitle + " / " + meta.sourceVideoUrl)
       createTranscodeJob(meta)
+      log.info(s"created transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
 
     case ProcessHmsCallback(meta) =>
       log.info("process after HMS callback %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))
