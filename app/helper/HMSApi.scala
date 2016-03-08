@@ -193,7 +193,8 @@ object HMSApi {
 
     val f = requestHolder.post(json)
     f.onFailure {
-      case e => Logger.error("could not call hms transcoder!", e)
+      case e =>
+        Logger.error("callTranscode() - could not call hms transcoder!", e)
         None
     }
     f.map { response =>
@@ -201,10 +202,11 @@ object HMSApi {
       response.status match {
 
         case s if s < 400 =>
+          Logger.debug(s"callTranscode() - transcoder job creation call successful: show=${meta.showId}, status=$s, body=${response.body}")
           extractJobResults(response)
 
         case _ =>
-          Logger.error(s"HMSApi.transcode returned error: $response")
+          Logger.error(s"callTranscode() - HMSApi.transcode returned error: $response")
           None
 
       }

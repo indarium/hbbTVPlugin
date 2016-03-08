@@ -8,6 +8,7 @@ import helper._
 import models.dto.{ProcessHmsCallback, ShowMetaData}
 import models.hms.TranscodeCallback
 import models.{Show, Station}
+import reactivemongo.core.commands.LastError
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
@@ -105,9 +106,15 @@ class ShowCrawler extends Actor {
 
   private def createTranscodeJob(meta: ShowMetaData) = {
 
-    HMSApi.transcode(meta).map {
+    val futureJobResult = HMSApi.transcode(meta)
+    futureJobResult.map {
       case Some(jobResult) =>
-        TranscodeCallback.insert(jobResult, meta)
+        log.debug(s"createTranscodeJob() - case Some(jobResult) - jobResult=$jobResult")
+        TranscodeCallback.insert(jobResult, meta).map {
+          case le: LastError => log.debug(s"createTranscodeJob() - tried to insert jobResult: lastError=$le")
+        }
+      case None => log.error(s"createTranscodeJob() - case None - unable to persist missing JobResult: meta=$meta")
+      case _ => log.error("createTranscodeJob() - case _ - failed to persist jobResult: unknown error")
     }
 
   }
