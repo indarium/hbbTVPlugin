@@ -230,15 +230,14 @@ object HMSApi {
 
   private def extractJobResults(response: WSResponse): Option[JobResult] = {
 
-    response.json \ "Job" match {
+    response.json.as[JobResult] match {
 
-      case errorResult: JsUndefined =>
-        Logger.error(s"failed to parse transcode response: response=$response")
+      case jobResult: JobResult => Some(jobResult)
+
+      case _ =>
+        Logger.error(s"failed to parse transcode response: response=${response.body}")
         None
 
-      case result: JsValue =>
-        val jobResults = result.validate[List[JobResult]]
-        Some(jobResults.get.head)
     }
 
   }
