@@ -26,7 +26,7 @@ object Transcode {
       val collapsed = (json \ "Collapsed").asOpt[String] match {
         case Some("true") => Some(true)
         case Some("false") => Some(false)
-        case None => None
+        case _ => None
       }
 
       val transcode = Transcode(
