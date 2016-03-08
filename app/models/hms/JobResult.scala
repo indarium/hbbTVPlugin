@@ -1,7 +1,6 @@
 package models.hms
 
-import models.dto.ShowMetaData
-import play.api.libs.json.Json
+import play.api.libs.json._
 
 /**
   * author: cvandrei
@@ -13,6 +12,33 @@ case class JobResult(ID: Long,
                      )
 
 object JobResult {
-  implicit val reads = Json.reads[JobResult]
-  implicit val writes = Json.writes[JobResult]
+
+  implicit object JobResultReads extends Format[JobResult] {
+
+    override def reads(json: JsValue): JsResult[JobResult] = {
+
+      val result = (json \ "Result").as[String]
+      val id = result.toLong
+
+      val jobResult = JobResult(
+        id,
+        (json \ "Result").as[String],
+        (json \ "VerboseResult").as[String]
+      )
+
+      JsSuccess(jobResult)
+
+    }
+
+    override def writes(jr: JobResult): JsValue = {
+
+      Json.obj(
+        "Result" -> jr.Result,
+        "VerboseResult" -> jr.VerboseResult
+      )
+
+    }
+
+  }
+
 }

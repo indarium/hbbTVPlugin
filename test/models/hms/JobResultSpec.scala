@@ -54,10 +54,12 @@ class JobResultSpec extends Specification with PlayRunners {
         val json = Json.parse("""{"Result":"5551664286079069325","VerboseResult":"Transcode job request successfully created"}""")
 
         // test
-        val jsError = json.validate[JobResult]
+        val jobResult = json.validate[JobResult].get
 
         // verify
-        jsError.isError mustEqual true
+        jobResult.ID mustEqual (json \ "Result").as[String].toLong
+        jobResult.Result mustEqual (json \ "Result").as[String]
+        jobResult.VerboseResult mustEqual (json \ "VerboseResult").as[String]
 
       }
     }
