@@ -47,6 +47,21 @@ class JobResultSpec extends Specification with PlayRunners {
       }
     }
 
+    "convert current response json to object" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val json = Json.parse("""{"Result":"5551664286079069325","VerboseResult":"Transcode job request successfully created"}""")
+
+        // test
+        val jsError = json.validate[JobResult]
+
+        // verify
+        jsError.isError mustEqual true
+
+      }
+    }
+
   }
 
 }

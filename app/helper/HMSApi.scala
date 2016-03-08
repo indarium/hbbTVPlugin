@@ -232,7 +232,7 @@ object HMSApi {
 
   private def extractJobResults(response: WSResponse): Option[JobResult] = {
 
-    response.json.as[JobResult] match {
+    response.json.validate[JobResult] match {
 
       case jobResult: JobResult => Some(jobResult)
 

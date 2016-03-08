@@ -113,8 +113,7 @@ class ShowCrawler extends Actor {
         TranscodeCallback.insert(jobResult, meta).map {
           case le: LastError => log.debug(s"createTranscodeJob() - tried to insert jobResult: lastError=$le")
         }
-      case None => log.error(s"createTranscodeJob() - case None - unable to persist missing JobResult: meta=$meta")
-      case _ => log.error("createTranscodeJob() - case _ - failed to persist jobResult: unknown error")
+      case _ => log.error(s"createTranscodeJob() - unable to persist missing JobResult: meta=$meta")
     }
 
   }
