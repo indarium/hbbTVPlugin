@@ -234,7 +234,7 @@ object HMSApi {
 
     response.json.validate[JobResult] match {
 
-      case jobResult: JobResult => Some(jobResult)
+      case jsResult: JsResult[JobResult] => Some(jsResult.get)
 
       case _ =>
         Logger.error(s"failed to parse transcode response: response=${response.body}")
