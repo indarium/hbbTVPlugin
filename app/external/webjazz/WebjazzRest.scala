@@ -63,7 +63,17 @@ class WebjazzRest {
     } yield {
       result = Some(response)
     }
-    Logger.info(s"notified Webjazz: response=${result.get}")
+
+    result match {
+
+      case None => Logger.error(s"failed to notify Webjazz: notification=$notification")
+
+      case Some(r) =>
+        val vimeoId = (notification \ "vimeoId").as[Long]
+        val hmsId = (notification \ "hmsId").as[Long]
+        Logger.info(s"notified Webjazz: hmsId=$hmsId, vimeoId=$vimeoId, response=$r")
+    }
+
     result.get
     // TODO handle errors by sending notifications again --> remember notification in a new collection for later sending
 

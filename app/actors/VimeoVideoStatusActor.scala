@@ -1,9 +1,7 @@
 package actors
 
-import akka.actor.Actor
-import constants.VimeoEncodingStatusSystem.DONE
+import akka.actor.{Actor, Props}
 import external.vimeo.VideoStatusUtil
-import external.webjazz.WebjazzRest
 import helper.model.ShowUtil
 import helper.{Config, VimeoBackend}
 import models.Show
@@ -22,6 +20,7 @@ class VimeoVideoStatusActor() extends Actor {
 
   val accessToken = Config.vimeoAccessToken
   val vimeoBackend = new VimeoBackend(accessToken)
+  val webjazzNotifyActor = context.actorOf(Props(new WebjazzNotifyActor))
 
   override def receive = {
 
@@ -56,16 +55,9 @@ class VimeoVideoStatusActor() extends Actor {
                 downloadSource match {
 
                   case Some(source) =>
-
                     val newShow = ShowUtil.updateEncodingStatus(showWithSdAndHdUrl, sdFile, hdFile, source)
                     Show.update(newShow)
-
-                    // TODO refactor Webjazz notification into separate actor
-                    if (newShow.vimeoEncodingStatus.get == DONE) {
-                      Logger.debug(s"changed vimeoEncoding to DONE for vimeoId=$vimeoId")
-                      val response = (new WebjazzRest).notifyWebjazz(newShow, videoStatus)
-                      Logger.info(s"notified Webjazz: vimeoId=$vimeoId")
-                    }
+                    webjazzNotifyActor ! WebjazzNotification(newShow, videoStatus)
 
                   case None => Logger.error(s"unable to update vimeo encoding status: found no download/file with quality " +
                     s"source in vimeo response: vimeoId=$vimeoId")
