@@ -48,6 +48,8 @@ object CurrentShowsController extends Controller {
 
   def callBack = Action(BodyParsers.parse.tolerantJson) {
 
+    var status = true
+
     request =>
       Logger.debug("HMS CallBack-Body:")
       Logger.debug(Json.prettyPrint(request.body))
@@ -57,18 +59,17 @@ object CurrentShowsController extends Controller {
 
       callback.Status match {
 
-        case HmsCallbackStatus.FINISHED =>
-          handleEncoderFinished(callback).collect {
-            case false => Unsuccessful404
-          }
-
+        case HmsCallbackStatus.FINISHED => status = handleEncoderFinished(callback)
         case _ => Logger.info(s"transcoder job is not finished: $callback")
 
       }
 
       TranscodeCallback.updateRecord(callback)
 
-      Ok(Json.obj("status" -> "OK"))
+      status match {
+        case true => Ok(Json.obj("status" -> "OK"))
+        case false => Unsuccessful404
+      }
 
   }
 
@@ -79,7 +80,7 @@ object CurrentShowsController extends Controller {
     * @param callback callback with status="finished"
     * @return true if everything is ok, false otherwise
     */
-  private def handleEncoderFinished(callback: TranscodeCallback): Future[Boolean] = {
+  private def handleEncoderFinished(callback: TranscodeCallback): Boolean = {
 
     TranscodeCallback.findByHmsId(callback.ID).map {
 
@@ -87,7 +88,7 @@ object CurrentShowsController extends Controller {
 
         case HmsCallbackStatus.FINISHED =>
           Logger.info(s"the show this callback relates to has been processed successfully already: callback=$callback")
-          return Future(true)
+          true
 
         case _ => dbRecord.meta match {
 
@@ -111,6 +112,8 @@ object CurrentShowsController extends Controller {
         false
 
     }
+
+    false
 
   }
 
