@@ -58,6 +58,12 @@ object TranscodeCallback {
 
   }
 
+  /**
+    * Update an existing record or do nothing otherwise.
+    *
+    * @param callback
+    * @return
+    */
   def updateRecord(callback: TranscodeCallback) = {
 
     TranscodeCallback.findByHmsId(callback.ID).map {
