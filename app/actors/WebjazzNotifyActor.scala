@@ -1,11 +1,13 @@
 package actors
 
 import akka.actor.Actor
-import constants.VimeoEncodingStatusSystem.DONE
+import constants.VimeoEncodingStatusSystem.{DONE, IN_PROGRESS}
 import external.webjazz.WebjazzRest
 import models.Show
 import play.api.Logger
 import play.api.libs.json.JsValue
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Created by cvandrei on 2016-03-09.
@@ -23,8 +25,19 @@ class WebjazzNotifyActor extends Actor {
       val vimeoId: Long = show.vimeoId.get
 
       if (show.vimeoEncodingStatus.get == DONE) {
-        Logger.debug(s"changed vimeoEncoding to DONE for vimeoId=$vimeoId")
-        val response = (new WebjazzRest).notifyWebjazz(show, videoStatus)
+
+        Logger.debug(s"vimeoEncoding is DONE for vimeoId=$vimeoId; notify Webjazz next")
+        (new WebjazzRest).notifyWebjazz(show, videoStatus).map {
+
+          case true => Logger.info(s"notified Webjazz: showId=${show.showId}, vimeoId=${show.vimeoId}")
+
+          case false =>
+            Logger.error(s"failed to notify Webjazz: showId=${show.showId}, vimeoId=${show.vimeoId}")
+            val showInProgress = show.copy(vimeoEncodingStatus = Some(IN_PROGRESS))
+            Show.update(showInProgress)
+
+        }
+
       }
 
   }
