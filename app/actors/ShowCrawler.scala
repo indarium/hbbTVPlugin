@@ -42,12 +42,10 @@ class ShowCrawler extends Actor {
   val vimeoAccessToken: String = Config.vimeoAccessToken
   val vimeoBackend: VimeoBackend = new VimeoBackend(vimeoAccessToken)
 
+  //@TODO add control which stations: see new vimeo functions: Config.vimeoActivateGlobal, Config.vimeoActivateChannel and Config.vimeoDeactivateChannel
   val mmv = List("mv1", "wis")
 
   val showProcessingActor = context.actorOf(Props(new ShowProcessingActor(s3Backend)))
-
-  //@TODO add control which stations
-
 
   def receive = {
     case processShow: ProcessShow =>
