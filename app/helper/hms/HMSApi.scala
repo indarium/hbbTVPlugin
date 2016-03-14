@@ -1,6 +1,6 @@
-package helper
+package helper.hms
 
-
+import helper.Config
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
@@ -58,7 +58,7 @@ object HMSApi {
 
     val username = Config.hmsUserName
     val password = Config.hmsPassword
-    val apiUrl = Config.hmsApiUrl + ("/login/")
+    val apiUrl = Config.hmsApiUrl + "/login/"
 
     Logger.debug("apiURL: " + apiUrl)
     Logger.debug("username: " + username)
@@ -92,6 +92,7 @@ object HMSApi {
   def getShows(stationId: String, channelId: String): Future[Option[JsObject]] = {
     Logger.info("HMSApi.getShows: " + stationId)
 
+    // TODO choose api url based on station (see related Trello ticket: "Query HMS Shows")
     val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
     val apiUrl = Config.hmsBroadcastUrl + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=25"
     Logger.debug("HMSApi.getShows apiURL: %s".format(apiUrl))

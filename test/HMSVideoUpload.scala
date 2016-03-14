@@ -2,7 +2,7 @@
 import java.io.File
 
 import com.ning.http.client.AsyncHttpClientConfig
-import helper.HMSApi
+import helper.hms.HMSApi
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import play.api.libs.json.{JsObject, JsArray, Json}
