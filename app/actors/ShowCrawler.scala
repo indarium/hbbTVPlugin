@@ -7,6 +7,7 @@ import akka.actor.{Actor, Props}
 import akka.event.Logging
 import com.amazonaws.auth.BasicAWSCredentials
 import helper._
+import helper.vimeo.VimeoUtil
 import models.{Show, Station}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,9 +43,6 @@ class ShowCrawler extends Actor {
   val vimeoAccessToken: String = Config.vimeoAccessToken
   val vimeoBackend: VimeoBackend = new VimeoBackend(vimeoAccessToken)
 
-  //@TODO add control which stations: see new vimeo functions: Config.vimeoActivateGlobal, Config.vimeoActivateChannel and Config.vimeoDeactivateChannel
-  val mmv = List("mv1", "wis")
-
   val showProcessingActor = context.actorOf(Props(new ShowProcessingActor(s3Backend)))
 
   def receive = {
@@ -57,7 +55,7 @@ class ShowCrawler extends Actor {
       meta.sourceVideoUrl = Some(new URL(processShow.processShowData.show.DownloadURL.get))
 
       log.info("check for vimeo exception stuff!!")
-      if (mmv.contains(meta.stationId.toLowerCase)) {
+      if (VimeoUtil.uploadActivated(meta.stationId)) {
         log.info(s"found mvv tv station ${meta.hmsStationId}")
         meta.vimeo = Some(true)
       }
