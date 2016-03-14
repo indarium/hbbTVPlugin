@@ -2,7 +2,6 @@ package actors
 
 import akka.actor.{Actor, Props}
 import external.vimeo.VideoStatusUtil
-import external.webjazz.WebjazzRest
 import helper.VimeoUtil
 import helper.model.ShowUtil
 import models.Show

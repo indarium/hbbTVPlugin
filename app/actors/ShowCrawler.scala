@@ -47,7 +47,7 @@ class ShowCrawler extends Actor {
 
       val hmsShow: HMSShow = processShow.processShowData.show
       val processStationData: ProcessStationData = processShow.processShowData.processStationData
-      log.info("starting show processing for: %d / %s".format(hmsShow.ID, hmsShow.Name))
+      log.info(s"starting show processing for: ${hmsShow.ID} / ${hmsShow.Name}")
 
       val meta = new ShowMetaData(processStationData.stationId, processStationData.channelId)
       meta.hmsStationId = Some(processStationData.hmsStationId)
@@ -70,27 +70,28 @@ class ShowCrawler extends Actor {
       showProcessingActor ! meta
 
     case processStation: ProcessStation =>
-      log.info("try to start station processing for: %s (%s)".format(processStation.processStationData.stationId, processStation.processStationData.hmsStationId))
+      val processingStation: ProcessStationData = processStation.processStationData
+      log.info("try to start station processing for: %s (%s)".format(processingStation.stationId, processingStation.hmsStationId))
 
-      val f = HMSApi.getCurrentShow(processStation.processStationData.hmsStationId, processStation.processStationData.channelId)
+      val f = HMSApi.getCurrentShow(processingStation.hmsStationId, processingStation.channelId)
       f.onFailure {
         case e: Exception =>
           log.error(e, "could not start process")
-          self ! ScheduleProcess(processStation.processStationData)
+          self ! ScheduleProcess(processingStation)
       }
       f.map {
         case Some(show) =>
           Show.findShowById(show.ID).map {
             case Some(existingShow) =>
               log.info("nothing to do for: %s / %s ".format(show.ID, show.Name))
-              self ! ScheduleProcess(processStation.processStationData)
+              self ! ScheduleProcess(processingStation)
             case None =>
-              log.info("starting station processing for: %s (%s)".format(processStation.processStationData.stationId, processStation.processStationData.hmsStationId))
-              self ! ProcessShow(ProcessShowData(show, processStation.processStationData))
+              log.info("starting station processing for: %s (%s)".format(processingStation.stationId, processingStation.hmsStationId))
+              self ! ProcessShow(ProcessShowData(show, processingStation))
           }
         case None =>
           log.error("could not start process")
-          self ! ScheduleProcess(processStation.processStationData)
+          self ! ScheduleProcess(processingStation)
       }
 
     case startProcess: StartProcess =>
