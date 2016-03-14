@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
+import helper.vimeo.VimeoUtil
 import models.dto.{ProcessHmsCallback, ShowMetaData}
 import models.hms.TranscodeCallback
 import models.{Show, Station}
@@ -35,7 +36,8 @@ class ShowCrawler extends Actor {
 
   val crawlerPeriod = Config.hmsCrawlerPeriod
 
-  val mmv = List("mv1", "wis") //TODO refactor to make this list configurable
+  val vimeoAccessToken: String = Config.vimeoAccessToken
+  val vimeoBackend: VimeoBackend = new VimeoBackend(vimeoAccessToken)
 
   private val s3Backend: S3Backend = S3Util.backend
   val showProcessingActor = context.actorOf(Props(new ShowProcessingActor(s3Backend)))
@@ -54,7 +56,7 @@ class ShowCrawler extends Actor {
       meta.showSourceTitle = meta.showTitle
 
       log.info("check for vimeo exception stuff!!")
-      if (mmv.contains(meta.stationId.toLowerCase)) {
+      if (VimeoUtil.uploadActivated(meta.stationId)) {
         log.info(s"found mvv tv station ${meta.hmsStationId}")
         meta.vimeo = Some(true)
       }

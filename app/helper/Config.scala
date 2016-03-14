@@ -50,6 +50,12 @@ object Config {
 
   def webjazzUrl: String = Play.configuration.getString("webjazz.url").getOrElse("http://mmv-mediathek.de/import/vimeo.php")
 
+  def webjazzNotifyActivateGlobal: Boolean = Play.configuration.getBoolean("webjazz.notify.activate.global").getOrElse(false)
+
+  def webjazzNotifyActivateChannels: Array[String] = stringArray("webjazz.notify.activate.channels")
+
+  def webjazzNotifyDeactivateChannels: Array[String] = stringArray("webjazz.notify.deactivate.channels")
+
   /* AWS CONFIG *******************************************************************************************************/
 
   def awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
@@ -75,5 +81,28 @@ object Config {
   def vimeoAccessToken: String = Play.configuration.getString("vimeo.accessToken").getOrElse("NO-ACCESS-TOKEN")
 
   def vimeoEncodingBatchSize: Int = Play.configuration.getInt("vimeo.encoding.batch.size").getOrElse(10)
+
+  def vimeoActivateGlobal: Boolean = Play.configuration.getBoolean("vimeo.activate.global").getOrElse(false)
+
+  def vimeoActivateChannels: Array[String] = stringArray("vimeo.activate.channels")
+
+  def vimeoDeactivateChannels: Array[String] = stringArray("vimeo.deactivate.channels")
+
+  /**
+    *
+    * @param key configuration key
+    * @return empty array if nothing is found
+    */
+  private def stringArray(key: String): Array[String] = {
+
+    val config: Option[String] = Play.configuration.getString(key)
+
+    config match {
+      case None => Array.empty
+      case Some(value:String) if value == "" => Array.empty
+      case Some(value: String) => value.split(",").map(_.trim.toLowerCase)
+    }
+
+  }
 
 }

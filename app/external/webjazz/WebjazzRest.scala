@@ -7,9 +7,10 @@ import models.Show
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
-import play.api.libs.ws.{WS, WSResponse}
+import play.api.libs.ws.WS
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * author: cvandrei
@@ -17,11 +18,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
   */
 class WebjazzRest {
 
-  def notifyWebjazz(show: Show, videoStatusJson: JsValue): WSResponse = {
+  def notifyWebjazz(show: Show, videoStatusJson: JsValue): Future[Boolean] = {
 
     val notification = prepare(show, videoStatusJson)
-    Logger.debug(s"about to send webjazz notification: $notification")
-
     execute(notification)
 
   }
@@ -49,23 +48,21 @@ class WebjazzRest {
 
   }
 
-  private def execute(notification: JsValue): WSResponse = {
+  private def execute(notification: JsValue): Future[Boolean] = {
 
     val webjazzUrl = Config.webjazzUrl
+    Logger.debug(s"about to send webjazz notification: $notification")
 
-    var result: Option[WSResponse] = None
-    for {
+    WS.url(webjazzUrl)
+      .withHeaders(("Content-Type", "application/json"))
+      .put(notification)
+      .map {
 
-      response <- WS.url(webjazzUrl)
-        .withHeaders(("Content-Type", "application/json"))
-        .put(notification)
+      response =>
+        Logger.debug(s"webjazz response: ${response.status}")
+        response.status < 400
 
-    } yield {
-      result = Some(response)
     }
-    Logger.info(s"notified Webjazz: response=${result.get}")
-    result.get
-    // TODO handle errors by sending notifications again --> remember notification in a new collection for later sending
 
   }
 
