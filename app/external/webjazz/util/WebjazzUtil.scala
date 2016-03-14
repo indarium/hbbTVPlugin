@@ -1,5 +1,6 @@
 package external.webjazz.util
 
+import helper.Config
 import models.rest.{Thumbnail, WebjazzNotification}
 import models.vimeo.video.Size
 import play.api.libs.json.{JsValue, Json}
@@ -36,6 +37,16 @@ object WebjazzUtil {
     val webjazzNotification = WebjazzNotification(webjazzToken, vimeoId, hmsId, width, height, thumbnails)
 
     Json.toJson(webjazzNotification)
+
+  }
+
+  def isNotificationEnabled(stationId: String): Boolean = {
+
+    val stationIdLowerCase = stationId.toLowerCase
+    Config.webjazzNotifyActivateGlobal match {
+      case true => !Config.webjazzNotifyDeactivateChannels.contains(stationIdLowerCase)
+      case false => Config.webjazzNotifyActivateChannels.contains(stationIdLowerCase)
+    }
 
   }
 

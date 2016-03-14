@@ -39,6 +39,12 @@ object Config {
 
   def webjazzUrl: String = Play.configuration.getString("webjazz.url").getOrElse("http://mmv-mediathek.de/import/vimeo.php")
 
+  def webjazzNotifyActivateGlobal: Boolean = Play.configuration.getBoolean("webjazz.notify.activate.global").getOrElse(false)
+
+  def webjazzNotifyActivateChannels: Array[String] = stringArray("webjazz.notify.activate.channels")
+
+  def webjazzNotifyDeactivateChannels: Array[String] = stringArray("webjazz.notify.deactivate.channels")
+
   /* AWS CONFIG *******************************************************************************************************/
 
   def awsAccessKeyId: String = Play.configuration.getString("aws.accessKeyId").getOrElse("NO-ACCESS-KEY")
