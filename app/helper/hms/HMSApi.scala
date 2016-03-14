@@ -10,8 +10,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
- * Created by dermicha on 21/06/14.
- */
+  * Created by dermicha on 21/06/14.
+  */
 
 case class HMSShow(ID: Int, Name: Option[String], DownloadURL: Option[String], ChannelID: Long, ParentID: Long)
 
@@ -31,14 +31,9 @@ object AccessToken {
 
 object HMSApi {
 
-  //var accessToken: Option[AccessToken] = None
-  //var timestamp: Long = 0
-
   def wsRequest(apiUrl: String) = {
-    //WS.synchronized {
     WS.url(apiUrl)
       .withHeaders("x-api-version" -> "1.0")
-    //}
   }
 
   def wsAuthRequest(apiUrl: String): Future[Option[WSRequestHolder]] = {
@@ -90,44 +85,50 @@ object HMSApi {
   }
 
   def getShows(stationId: String, channelId: String): Future[Option[JsObject]] = {
-    Logger.info("HMSApi.getShows: " + stationId)
 
-    // TODO choose api url based on station (see related Trello ticket: "Query HMS Shows")
-    val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
-    val apiUrl = Config.hmsBroadcastUrl + "/Show/" + channelId + "?Category=" + encStationID + "&Order=DESC&Count=25"
-    Logger.debug("HMSApi.getShows apiURL: %s".format(apiUrl))
-    try {
-      wsAuthRequest(apiUrl).flatMap {
-        case Some(reqHolder) =>
-          val f = reqHolder.get()
-          f.onFailure {
-            case e => Logger.error("could not fetch shows!", e)
-              None
-          }
-          f.map { response =>
-            response.status match {
-              case s if s < 400 =>
-                response.json \ "sources" match {
-                  case errorResult: JsUndefined =>
-                    Logger.error("empty result for stationId %s / channelId %s".format(stationId, channelId))
+    Logger.info("HMSApi.getShows: " + stationId)
+    HmsUtil.getShowsUrl(stationId, channelId) match {
+
+      case None => Future(None)
+
+      case Some(apiUrl) =>
+
+        Logger.debug(s"HMSApi.getShows apiURL: $apiUrl")
+        try {
+          wsAuthRequest(apiUrl).flatMap {
+            case Some(reqHolder) =>
+              val f = reqHolder.get()
+              f.onFailure {
+                case e => Logger.error("could not fetch shows!", e)
+                  None
+              }
+              f.map { response =>
+                response.status match {
+                  case s if s < 400 =>
+                    response.json \ "sources" match {
+                      case errorResult: JsUndefined =>
+                        Logger.error(s"empty result for stationId $stationId / channelId $channelId")
+                        None
+                      case result: JsValue =>
+                        Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
+                    }
+                  case _ =>
+                    Logger.error(s"HMSApi result code: ${response.status}")
                     None
-                  case result: JsValue =>
-                    Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
                 }
-              case _ =>
-                Logger.error("HMSApi result code: %d".format(response.status))
-                None
-            }
+              }
+            case None =>
+              Logger.error("HMSApi.getCurrentShows: None")
+              Future(None)
           }
-        case None =>
-          Logger.error("HMSApi.getCurrentShows: None")
-          Future(None)
-      }
-    } catch {
-      case e: Exception =>
-        Logger.error("Error while fetching data", e)
-        Future(None)
+        } catch {
+          case e: Exception =>
+            Logger.error("Error while fetching data", e)
+            Future(None)
+        }
+
     }
+
   }
 
   def getCurrentShow(stationId: String, channelId: String): Future[Option[HMSShow]] = {

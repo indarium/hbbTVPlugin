@@ -1,9 +1,13 @@
 package helper.hms
 
+import java.util.concurrent.TimeUnit
+
+import helper.Config
 import models.Station
 
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 
 /**
   * author: cvandrei
@@ -11,21 +15,28 @@ import scala.concurrent.Future
   */
 object HmsUtil {
 
-  def getShowsPath(stationId: String, channelId: String): Future[Option[String]] = {
+  def getShowsUrl(stationId: String, channelId: String): Option[String] = {
 
-    Station.findStation(stationId, channelId).map {
+    val stationFuture = for {
+      s <- Station.findStation(stationId, channelId)
+    } yield s
+
+    val stationOpt = Await.result(stationFuture, Duration(5, TimeUnit.SECONDS))
+    stationOpt match {
 
       case None => None
 
       case Some(station) =>
 
+        val baseUrl = Config.hmsBroadcastUrl
         val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
-        Some(
-          station
-          .getShowUrlPattern
+        val path = station
+          .getShowUrlPattern.getOrElse("/Show/{CHANNEL-ID}?Category={STATION-ID}&Order=DESC&Count=25")
           .replace("{CHANNEL-ID}", channelId)
           .replace("{STATION-ID}", encStationID)
-        )
+        val url = baseUrl + path
+
+        Some(url)
 
     }
 
