@@ -3,6 +3,7 @@ package helper.hms
 import models.Station
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * author: cvandrei
@@ -10,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   */
 object HmsUtil {
 
-  def getShowsPath(stationId: String, channelId: String): Option[String] = {
+  def getShowsPath(stationId: String, channelId: String): Future[Option[String]] = {
 
     Station.findStation(stationId, channelId).map {
 
