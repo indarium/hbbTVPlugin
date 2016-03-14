@@ -71,12 +71,18 @@ object Config {
 
   def vimeoDeactivateChannels: Array[String] = stringArray("vimeo.deactivate.channels")
 
+  /**
+    *
+    * @param key configuration key
+    * @return empty array if nothing is found
+    */
   private def stringArray(key: String): Array[String] = {
 
     val config: Option[String] = Play.configuration.getString(key)
 
     config match {
       case None => Array.empty
+      case Some(value:String) if value == "" => Array.empty
       case Some(value: String) => value.split(",").map(_.trim.toLowerCase)
     }
 
