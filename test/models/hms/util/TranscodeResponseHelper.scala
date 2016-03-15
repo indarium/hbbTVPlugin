@@ -22,7 +22,7 @@ object TranscodeResponseHelper {
 
     s"""
        |{
-       |  "Job": [
+       |  "Jobs": [
        |    $jobResult1Json,
        |    $jobResult2Json
        |  ]

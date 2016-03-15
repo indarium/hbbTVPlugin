@@ -23,7 +23,7 @@ class TranscodeResponseSpec extends Specification with PlayRunners {
         val json = Json.toJson(transcodeResponse)
 
         // verify
-        (json \ "Job").as[List[JobResult]] mustEqual transcodeResponse.Job
+        (json \ "Job").as[List[JobResult]] mustEqual transcodeResponse.Jobs
 
       }
     }
@@ -38,7 +38,7 @@ class TranscodeResponseSpec extends Specification with PlayRunners {
         val transcodeResponse = json.validate[TranscodeResponse].get
 
         // verify
-        transcodeResponse.Job mustEqual (json \ "Job").as[List[JobResult]]
+        transcodeResponse.Jobs mustEqual (json \ "Job").as[List[JobResult]]
 
       }
     }
