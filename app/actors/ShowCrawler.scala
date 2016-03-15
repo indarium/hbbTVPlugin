@@ -113,7 +113,6 @@ class ShowCrawler extends Actor {
     val futureJobResult = HMSApi.transcode(meta)
     futureJobResult.map {
       case Some(jobResult) =>
-        log.debug(s"createTranscodeJob() - case Some(jobResult) - jobResult=$jobResult")
         TranscodeCallback.insert(jobResult, meta).map {
           case le: LastError if le.inError => log.error(s"createTranscodeJob() - tried to insert jobResult: lastError=$le")
         }
