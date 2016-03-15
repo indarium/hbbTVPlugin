@@ -11,7 +11,7 @@ object HmsCallbackStatus {
   val QUEUED = "queued"
   val PREPARE = "prepared"
   val PROCESSING = "processing"
-  val FINISHED = "finished"
+  val FINISHED = "Finished"
   val FAULTY = "faulty"
 
 }
