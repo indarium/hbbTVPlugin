@@ -166,10 +166,7 @@ object HMSApi {
     */
   def transcode(meta: ShowMetaData): Future[Option[JobResult]] = {
 
-    val encodedChannelId: String = java.net.URLEncoder.encode(meta.channelId, "UTF-8")
-    val apiUrl = Config.hmsTranscodeUrl + "/transcode/" + encodedChannelId
-    Logger.debug(s"HMSApi.transcode apiUrl: $apiUrl")
-
+    val apiUrl = transcodeUrlPath(meta.channelId)
     try {
       wsAuthRequest(apiUrl).flatMap {
 
@@ -186,6 +183,16 @@ object HMSApi {
         Logger.error("Error while fetching data", e)
         Future(None)
     }
+
+  }
+
+  private def transcodeUrlPath(channelId: String): String = {
+
+    val encodedChannelId: String = java.net.URLEncoder.encode(channelId, "UTF-8")
+    val apiUrl = Config.hmsTranscodeUrl + "/transcode/" + encodedChannelId
+    Logger.debug(s"HMSApi.transcode apiUrl: $apiUrl")
+
+    apiUrl
 
   }
 
