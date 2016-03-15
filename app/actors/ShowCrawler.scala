@@ -7,6 +7,7 @@ import akka.actor.{Actor, Props}
 import akka.event.Logging
 import com.amazonaws.auth.BasicAWSCredentials
 import helper._
+import helper.hms.{HMSApi, HMSShow}
 import helper.vimeo.VimeoUtil
 import models.{Show, Station}
 

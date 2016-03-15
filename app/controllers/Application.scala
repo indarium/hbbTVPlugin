@@ -3,7 +3,7 @@ package controllers
 import actors.{ShowCrawler, StartProcess}
 import akka.actor.Props
 import akka.util.Timeout
-import helper._
+import helper.hms.HMSApi
 import play.Logger
 import play.api.Play.current
 import play.api.libs.json.Json
