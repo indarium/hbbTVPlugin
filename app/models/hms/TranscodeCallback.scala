@@ -33,10 +33,10 @@ object TranscodeCallback {
   implicit val reads = Json.reads[TranscodeCallback]
   implicit val writes = Json.writes[TranscodeCallback]
 
-  def insert(jobResult: JobResult, meta: ShowMetaData) = {
+  def insert(jobResult: JobResult, meta: ShowMetaData): Future[LastError] = {
 
     val transcodeCallback = TranscodeCallback(None, jobResult.ID, jobResult.VerboseResult, "queued", None, None, None, Some(meta))
-    transcodeCallCollection.insert(transcodeCallback) // TODO add error logging/handling
+    transcodeCallCollection.insert(transcodeCallback)
 
   }
 
