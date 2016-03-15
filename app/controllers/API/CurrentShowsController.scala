@@ -107,9 +107,7 @@ object CurrentShowsController extends Controller {
 
       }
 
-      case None =>
-        Logger.error(s"failed to find db record for transcodeCallback=$callback")
-        false
+      case None => false
 
     }
 
