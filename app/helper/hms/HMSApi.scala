@@ -205,8 +205,8 @@ object HMSApi {
       response.status match {
 
         case s if s < 400 =>
-          Logger.info(s"callTranscode() - transcoder job creation call successful: ${meta.channelId}/${meta.stationId}, show=${meta.showId}, status=$s, body=${response.body}")
-          Logger.debug(s"body=${response.body}")
+          Logger.info(s"callTranscode() - transcoder job creation call successful: ${meta.channelId}/${meta.stationId}, show=${meta.showId}")
+          Logger.debug(s", status=$s, body=${response.body}")
           extractJobResult(response)
 
         case _ =>
