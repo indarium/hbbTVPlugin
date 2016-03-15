@@ -2,6 +2,7 @@ package models.hms
 
 import models.MongoId
 import models.dto.ShowMetaData
+import play.Logger
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
@@ -71,6 +72,8 @@ object TranscodeCallback {
       case Some(dbRecord) =>
         val updatedRecord = callback.copy(_id = dbRecord._id, meta = dbRecord.meta)
         TranscodeCallback.save(updatedRecord)
+
+      case None => Logger.error(s"found no transcode record to update: update=$callback")
 
     }
 
