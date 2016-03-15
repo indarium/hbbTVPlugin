@@ -2,18 +2,17 @@ package helper
 
 import java.io.{File, FileOutputStream}
 
+import helper.hms.HMSApi
 import play.api.Logger
-import play.api.libs.ws.{WSResponseHeaders, WS, WSRequestHolder}
+import play.api.libs.ws.{WSRequestHolder, WSResponseHeaders}
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * Created by dermicha on 23/08/15.
  **/
 object AuthDownloader {
-
-  private var testMode: Boolean = play.api.Play.isDev(play.api.Play.current)
 
   def downloadFile(source: String, outputFile: File): Future[Option[File]] = {
 

@@ -22,7 +22,8 @@ case class Station(stationId: String,
                    defaultShowSubtitle: String,
                    defaultShowLogoUrl: String,
                    defaultChannelBroadcastInfo: String,
-                   defaultRootPortalURL: String
+                   defaultRootPortalURL: String,
+                   getShowUrlPattern: Option[String]
                    )
 
 object Station {

@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
+import helper.hms.{HMSApi, HMSShow}
 import helper.vimeo.VimeoUtil
 import models.dto.{ProcessHmsCallback, ShowMetaData}
 import models.hms.TranscodeCallback
