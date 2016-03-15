@@ -17,7 +17,7 @@ import scala.concurrent.Future
   * since: 2016-02-19
   */
 case class TranscodeCallback(_id: Option[MongoId],
-                             ID: Long,
+                             ID: Double,
                              VerboseMessage: Option[String],
                              Status: String,
                              StatusValue: Option[Int],
@@ -40,7 +40,7 @@ object TranscodeCallback {
 
   }
 
-  def findByHmsId(hmsId: Long): Future[Option[TranscodeCallback]] = {
+  def findByHmsId(hmsId: Double): Future[Option[TranscodeCallback]] = {
 
     val selector = Json.obj("ID" -> hmsId)
 
