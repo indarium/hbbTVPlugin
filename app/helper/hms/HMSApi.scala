@@ -205,11 +205,12 @@ object HMSApi {
       response.status match {
 
         case s if s < 400 =>
-          Logger.debug(s"callTranscode() - transcoder job creation call successful: show=${meta.showId}, status=$s, body=${response.body}")
+          Logger.info(s"callTranscode() - transcoder job creation call successful: ${meta.channelId}/${meta.stationId}, show=${meta.showId}, status=$s, body=${response.body}")
+          Logger.debug(s"body=${response.body}")
           extractJobResult(response)
 
         case _ =>
-          Logger.error(s"callTranscode() - HMSApi.transcode returned error: $response")
+          Logger.error(s"callTranscode() - HMSApi.transcode returned error: ${meta.channelId}/${meta.stationId}, show=${meta.showId}, response=[status=${response.status}, body=${response.body}]")
           None
 
       }
@@ -221,7 +222,7 @@ object HMSApi {
   private def createTranscode(meta: ShowMetaData): Transcode = {
 
     val profile = Config.hmsEncodingProfile
-    val destinationName: String = s"${meta.showId}-${meta.showSourceTitle}.mp4"
+    val destinationName: String = s"${meta.showId.get}-${meta.showSourceTitle.get}"
     val sources = List(Source(meta.showId.get, None, None, None, destinationName, None, profile))
 
     val sourceType = "Show"
