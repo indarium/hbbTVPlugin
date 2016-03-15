@@ -11,9 +11,9 @@ object TranscodeCallbackHelper {
 
   val DEFAULT_META = Some(ShowMetaDataHelper.defaultObject("MV1", "SAT", -1001L))
 
-  def queuedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, "created transcode job", "queued", None, None, None, None)
+  def queuedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, Some("created transcode job"), "queued", None, None, None, None)
 
-  def queuedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, "created transcode job", "queued", None, None, None, DEFAULT_META)
+  def queuedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, Some("created transcode job"), "queued", None, None, None, DEFAULT_META)
 
   def processingObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "processing", Some(80), Some("percentage"), None, None)
 
@@ -86,7 +86,7 @@ object TranscodeCallbackHelper {
        |}
      """.stripMargin
 
-  private def verboseMessage(id: Long): String = s"verboseMessage-$id"
+  private def verboseMessage(id: Long): Option[String] = Some(s"verboseMessage-$id")
 
   private def downloadSource(id: Long): Option[String] = Some(s"http://hmsservicefarm/hmsWSTranscode/api/customers/download/result-$id.mp4")
 

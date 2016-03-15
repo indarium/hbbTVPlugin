@@ -8,37 +8,10 @@ import play.api.libs.json._
   */
 case class JobResult(ID: Long,
                      Result: String,
-                     VerboseResult: String
-                     )
+                     VerboseResult: Option[String]
+                    )
 
 object JobResult {
-
-  implicit object JobResultReads extends Format[JobResult] {
-
-    override def reads(json: JsValue): JsResult[JobResult] = {
-
-      val result = (json \ "Result").as[String]
-      val id = result.toLong
-
-      val jobResult = JobResult(
-        id,
-        (json \ "Result").as[String],
-        (json \ "VerboseResult").as[String]
-      )
-
-      JsSuccess(jobResult)
-
-    }
-
-    override def writes(jr: JobResult): JsValue = {
-
-      Json.obj(
-        "Result" -> jr.Result,
-        "VerboseResult" -> jr.VerboseResult
-      )
-
-    }
-
-  }
-
+  implicit val reads = Json.reads[JobResult]
+  implicit val writes = Json.writes[JobResult]
 }

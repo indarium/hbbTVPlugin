@@ -25,7 +25,24 @@ class JobResultSpec extends Specification with PlayRunners {
         // verify
         (json \ "ID").as[Long] mustEqual jobResult.ID
         (json \ "Result").as[String] mustEqual jobResult.Result
-        (json \ "VerboseResult").as[String] mustEqual jobResult.VerboseResult
+        (json \ "VerboseResult").asOpt[String] mustEqual jobResult.VerboseResult
+
+      }
+    }
+
+    "convert minimum object to json" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val jobResult = JobResultHelper.defaultMinimumObject
+
+        // test
+        val json = Json.toJson(jobResult)
+
+        // verify
+        (json \ "ID").as[Long] mustEqual jobResult.ID
+        (json \ "Result").as[String] mustEqual jobResult.Result
+        (json \ "VerboseResult").asOpt[String] mustEqual None
 
       }
     }
@@ -42,24 +59,24 @@ class JobResultSpec extends Specification with PlayRunners {
         // verify
         jobResult.ID mustEqual (json \ "ID").as[Long]
         jobResult.Result mustEqual (json \ "Result").as[String]
-        jobResult.VerboseResult mustEqual (json \ "VerboseResult").as[String]
+        jobResult.VerboseResult mustEqual (json \ "VerboseResult").asOpt[String]
 
       }
     }
 
-    "convert current response json to object" in {
+    "convert minimum json to object" in {
       running(FakeApplication()) {
 
         // prepare
-        val json = Json.parse("""{"Result":"5551664286079069325","VerboseResult":"Transcode job request successfully created"}""")
+        val json = Json.parse(JobResultHelper.defaultMinimumJson)
 
         // test
         val jobResult = json.validate[JobResult].get
 
         // verify
-        jobResult.ID mustEqual (json \ "Result").as[String].toLong
+        jobResult.ID mustEqual (json \ "ID").as[Long]
         jobResult.Result mustEqual (json \ "Result").as[String]
-        jobResult.VerboseResult mustEqual (json \ "VerboseResult").as[String]
+        jobResult.VerboseResult mustEqual None
 
       }
     }

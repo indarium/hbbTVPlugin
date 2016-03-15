@@ -2,7 +2,7 @@ package helper.hms
 
 
 import models.dto.ShowMetaData
-import models.hms.{JobResult, Source, Transcode}
+import models.hms._
 import helper.Config
 import play.api.Logger
 import play.api.Play.current
@@ -206,7 +206,7 @@ object HMSApi {
 
         case s if s < 400 =>
           Logger.debug(s"callTranscode() - transcoder job creation call successful: show=${meta.showId}, status=$s, body=${response.body}")
-          extractJobResults(response)
+          extractJobResult(response)
 
         case _ =>
           Logger.error(s"callTranscode() - HMSApi.transcode returned error: $response")
@@ -233,11 +233,11 @@ object HMSApi {
 
   }
 
-  private def extractJobResults(response: WSResponse): Option[JobResult] = {
+  private def extractJobResult(response: WSResponse): Option[JobResult] = {
 
-    response.json.validate[JobResult] match {
+    response.json.validate[TranscodeResponse] match {
 
-      case jsResult: JsResult[JobResult] => Some(jsResult.get)
+      case jsResult: JsResult[TranscodeResponse] => Some(jsResult.get.Job.head)
 
       case _ =>
         Logger.error(s"failed to parse transcode response: response=${response.body}")

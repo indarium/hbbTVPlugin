@@ -18,7 +18,7 @@ import scala.concurrent.Future
   */
 case class TranscodeCallback(_id: Option[MongoId],
                              ID: Long,
-                             VerboseMessage: String,
+                             VerboseMessage: Option[String],
                              Status: String,
                              StatusValue: Option[Int],
                              StatusUnit: Option[String],
@@ -62,7 +62,7 @@ object TranscodeCallback {
   /**
     * Update an existing record or do nothing otherwise.
     *
-    * @param callback
+    * @param callback record with new values (as received from HMS)
     * @return
     */
   def updateRecord(callback: TranscodeCallback) = {
