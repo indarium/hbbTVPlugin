@@ -6,6 +6,7 @@ import models.hms.util.TranscodeCallbackHelper
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
 import play.api.test.{FakeApplication, PlayRunners}
+import reactivemongo.bson.BSON
 
 /**
   * author: cvandrei
@@ -154,14 +155,15 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val json = Json.parse(TranscodeCallbackHelper.queuedJsonWithoutMeta(-1L))
+        val id = 4945260944371534587L
+        val json = Json.parse(TranscodeCallbackHelper.queuedJsonWithoutMeta(id))
 
         // test
         val transcodeCallback = json.validate[TranscodeCallback].get
 
         // verify
         transcodeCallback._id mustEqual None
-        transcodeCallback.ID mustEqual (json \ "ID").as[Long]
+        transcodeCallback.ID mustEqual id
         transcodeCallback.VerboseMessage mustEqual (json \ "VerboseMessage").asOpt[String]
         transcodeCallback.Status mustEqual (json \ "Status").as[String]
         transcodeCallback.StatusValue mustEqual None
@@ -264,7 +266,8 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val json = Json.parse(TranscodeCallbackHelper.finishedJsonWithMeta(-1L))
+        val id = 5508256850023639342L
+        val json = Json.parse(TranscodeCallbackHelper.finishedJsonWithMeta(id))
 
         // test
         val transcodeCallback = json.validate[TranscodeCallback].get
@@ -278,6 +281,24 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.StatusUnit mustEqual None
         transcodeCallback.DownloadSource mustEqual (json \ "DownloadSource").asOpt[String]
         transcodeCallback.meta.get mustEqual (json \ "meta").asOpt[ShowMetaData].get
+
+      }
+    }
+
+    "convert object (queued and w/ ShowMetaData) to bson" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val processing = TranscodeCallbackHelper.queuedObjectWithMeta(5678010794297290347L)
+
+        // test
+        val bson = BSON.writeDocument[TranscodeCallback](processing)
+
+        // verify
+        val o = BSON.readDocument[TranscodeCallback](bson)
+        o mustEqual processing
+        o.ID mustEqual processing.ID
+        o.meta mustEqual processing.meta
 
       }
     }
