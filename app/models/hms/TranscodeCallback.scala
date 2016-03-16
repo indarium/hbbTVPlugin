@@ -29,7 +29,7 @@ case class TranscodeCallback(_id: Option[MongoId],
 
 object TranscodeCallback {
 
-  val transcodeCallCollection = ReactiveMongoPlugin.db.collection[BSONCollection]("hmsTranscode")
+  private val transcodeCallCollection = ReactiveMongoPlugin.db.collection[BSONCollection]("hmsTranscode")
 
   implicit val reads = Json.reads[TranscodeCallback]
   implicit val writes = Json.writes[TranscodeCallback]
