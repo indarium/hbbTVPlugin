@@ -5,6 +5,7 @@ import models.dto.util.ShowMetaDataHelper
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
 import play.api.test.{FakeApplication, PlayRunners}
+import reactivemongo.bson.BSON
 
 /**
   * author: cvandrei
@@ -186,6 +187,187 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         meta.vimeoDone mustEqual None
         meta.vimeoId mustEqual None
         meta.vimeoEncodingStatus mustEqual None
+
+      }
+    }
+
+    "convert object (all fields set) to bson" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val meta = ShowMetaDataHelper.defaultObject("SAT", "MV1", 5678010794297290347L)
+
+        // test
+        val bson = BSON.writeDocument(meta)
+
+        // verify
+        bson.getAs[String]("stationId").get mustEqual meta.stationId
+        bson.getAs[String]("channelId").get mustEqual meta.channelId
+        bson.getAs[String]("hmsStationId") mustEqual meta.hmsStationId
+        bson.getAs[String]("stationName") mustEqual meta.stationName
+        bson.getAs[String]("stationLogoUrl").get mustEqual meta.stationLogoUrl.get.toString
+        bson.getAs[Boolean]("stationLogoShow").get mustEqual meta.stationLogoShow
+        bson.getAs[String]("stationMainColor") mustEqual meta.stationMainColor
+
+        bson.getAs[String]("channelName") mustEqual meta.channelName
+        bson.getAs[String]("showTitle") mustEqual meta.showTitle
+        bson.getAs[Long]("showId") mustEqual meta.showId
+        bson.getAs[String]("showSubtitle") mustEqual meta.showSubtitle
+        bson.getAs[String]("showSourceTitle") mustEqual meta.showSourceTitle
+        bson.getAs[String]("showLogoUrl").get mustEqual meta.showLogoUrl.get.toString
+        bson.getAs[Long]("showLength").get mustEqual meta.showLength
+        bson.getAs[String]("showEndInfo") mustEqual meta.showEndInfo
+        bson.getAs[String]("rootPortalUrl").get mustEqual meta.rootPortalUrl.get.toString
+
+        bson.getAs[Boolean]("isHD").get mustEqual meta.isHD
+        bson.getAs[String]("sourceFilename") mustEqual meta.sourceFilename
+        bson.getAs[String]("sourceVideoUrl").get mustEqual meta.sourceVideoUrl.get.toString
+        bson.getAs[String]("localVideoFile").get mustEqual meta.localVideoFile.get.getAbsolutePath
+        bson.getAs[String]("publicVideoUrl").get mustEqual meta.publicVideoUrl.get.toString
+
+        bson.getAs[String]("currentAccessToken") mustEqual meta.currentAccessToken
+
+        bson.getAs[Boolean]("vimeo") mustEqual meta.vimeo
+        bson.getAs[Boolean]("vimeoDone") mustEqual meta.vimeoDone
+        bson.getAs[Long]("vimeoId") mustEqual meta.vimeoId
+        bson.getAs[String]("vimeoEncodingStatus").get mustEqual meta.vimeoEncodingStatus.get.name
+
+      }
+    }
+
+    "convert object (only mandatory fields set) to bson" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val meta = ShowMetaDataHelper.defaultMinimumObject("SAT", "MV1")
+
+        // test
+        val json = Json.toJson(meta)
+
+        // verify
+        val bson = BSON.writeDocument(meta)
+
+        // verify
+        bson.getAs[String]("stationId").get mustEqual meta.stationId
+        bson.getAs[String]("channelId").get mustEqual meta.channelId
+        bson.getAs[String]("hmsStationId").isEmpty mustEqual true
+        bson.getAs[String]("stationName").isEmpty mustEqual true
+        bson.getAs[String]("stationLogoUrl").isEmpty mustEqual true
+        bson.getAs[Boolean]("stationLogoShow").get mustEqual meta.stationLogoShow
+        bson.getAs[String]("stationMainColor").isEmpty mustEqual true
+
+        bson.getAs[String]("channelName").isEmpty mustEqual true
+        bson.getAs[String]("showTitle").isEmpty mustEqual true
+        bson.getAs[Long]("showId").isEmpty mustEqual true
+        bson.getAs[String]("showSubtitle").isEmpty mustEqual true
+        bson.getAs[String]("showSourceTitle").isEmpty mustEqual true
+        bson.getAs[String]("showLogoUrl").isEmpty mustEqual true
+        bson.getAs[Long]("showLength").get mustEqual meta.showLength
+        bson.getAs[String]("showEndInfo").isEmpty mustEqual true
+        bson.getAs[String]("rootPortalUrl").isEmpty mustEqual true
+
+        bson.getAs[Boolean]("isHD").get mustEqual meta.isHD
+        bson.getAs[String]("sourceFilename").isEmpty mustEqual true
+        bson.getAs[String]("sourceVideoUrl").isEmpty mustEqual true
+        bson.getAs[String]("localVideoFile").isEmpty mustEqual true
+        bson.getAs[String]("publicVideoUrl").isEmpty mustEqual true
+
+        bson.getAs[String]("currentAccessToken").isEmpty mustEqual true
+
+        bson.getAs[Boolean]("vimeo").isEmpty mustEqual true
+        bson.getAs[Boolean]("vimeoDone").isEmpty mustEqual true
+        bson.getAs[Long]("vimeoId").isEmpty mustEqual true
+        bson.getAs[String]("vimeoEncodingStatus").isEmpty mustEqual true
+
+      }
+    }
+
+    "convert bson (all fields set) to object" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val meta = ShowMetaDataHelper.defaultObject("SAT", "MV1", 5678010794297290347L)
+        val bson = BSON.write(meta)
+
+        // test
+        val o = BSON.readDocument[ShowMetaData](bson)
+
+        // verify
+        o.stationId mustEqual meta.stationId
+        o.channelId mustEqual meta.channelId
+        o.hmsStationId mustEqual meta.hmsStationId
+        o.stationName mustEqual meta.stationName
+        o.stationLogoUrl mustEqual meta.stationLogoUrl
+        o.stationLogoShow mustEqual meta.stationLogoShow
+        o.stationMainColor mustEqual meta.stationMainColor
+
+        o.channelName mustEqual meta.channelName
+        o.showTitle mustEqual meta.showTitle
+        o.showId mustEqual meta.showId
+        o.showSubtitle mustEqual meta.showSubtitle
+        o.showSourceTitle mustEqual meta.showSourceTitle
+        o.showLogoUrl mustEqual meta.showLogoUrl
+        o.showLength mustEqual meta.showLength
+        o.showEndInfo mustEqual meta.showEndInfo
+        o.rootPortalUrl mustEqual meta.rootPortalUrl
+
+        o.isHD mustEqual meta.isHD
+        o.sourceFilename mustEqual meta.sourceFilename
+        o.sourceVideoUrl mustEqual meta.sourceVideoUrl
+        o.localVideoFile mustEqual meta.localVideoFile
+        o.publicVideoUrl mustEqual meta.publicVideoUrl
+
+        o.currentAccessToken mustEqual meta.currentAccessToken
+
+        o.vimeo mustEqual meta.vimeo
+        o.vimeoDone mustEqual meta.vimeoDone
+        o.vimeoId mustEqual meta.vimeoId
+        o.vimeoEncodingStatus mustEqual meta.vimeoEncodingStatus
+
+      }
+    }
+
+    "convert bson (only mandatory fields set) to bson" in {
+      running(FakeApplication()) {
+
+        // prepare
+        val meta = ShowMetaDataHelper.defaultMinimumObject("SAT", "MV1")
+        val bson = BSON.write(meta)
+
+        // test
+        val o = BSON.readDocument[ShowMetaData](bson)
+
+        // verify
+        o.stationId mustEqual meta.stationId
+        o.channelId mustEqual meta.channelId
+        o.hmsStationId.isEmpty mustEqual true
+        o.stationName.isEmpty mustEqual true
+        o.stationLogoUrl.isEmpty mustEqual true
+        o.stationLogoShow mustEqual meta.stationLogoShow
+        o.stationMainColor.isEmpty mustEqual true
+
+        o.channelName.isEmpty mustEqual true
+        o.showTitle.isEmpty mustEqual true
+        o.showId.isEmpty mustEqual true
+        o.showSubtitle.isEmpty mustEqual true
+        o.showSourceTitle.isEmpty mustEqual true
+        o.showLogoUrl.isEmpty mustEqual true
+        o.showLength mustEqual meta.showLength
+        o.showEndInfo.isEmpty mustEqual true
+        o.rootPortalUrl.isEmpty mustEqual true
+
+        o.isHD mustEqual meta.isHD
+        o.sourceFilename.isEmpty mustEqual true
+        o.sourceVideoUrl.isEmpty mustEqual true
+        o.localVideoFile.isEmpty mustEqual true
+        o.publicVideoUrl.isEmpty mustEqual true
+
+        o.currentAccessToken.isEmpty mustEqual true
+
+        o.vimeo.isEmpty mustEqual true
+        o.vimeoDone.isEmpty mustEqual true
+        o.vimeoId.isEmpty mustEqual true
+        o.vimeoEncodingStatus.isEmpty mustEqual true
 
       }
     }

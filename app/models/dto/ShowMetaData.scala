@@ -5,6 +5,7 @@ import java.net.URL
 
 import constants.VimeoEncodingStatusSystem.VimeoEncodingStatus
 import play.api.libs.json._
+import reactivemongo.bson._
 
 /**
   * Data object for handing over data.
@@ -168,6 +169,111 @@ object ShowMetaData {
 
   def parseOptFile(json: JsValue, key: String): Option[File] = {
     (json \ key).asOpt[String] match {
+      case Some(urlString) => Some(new File(urlString))
+      case None => None
+    }
+  }
+
+  implicit object ShowMetaDataHandler extends BSONDocumentReader[ShowMetaData] with BSONDocumentWriter[ShowMetaData] {
+
+    def read(doc: BSONDocument) = {
+
+      val vimeoEncodingStatus = doc.getAs[String]("vimeoEncodingStatus")
+      val vimeoJson = Json.obj("name" -> vimeoEncodingStatus, "$variant" -> vimeoEncodingStatus)
+
+      val meta = ShowMetaData(
+        doc.getAs[String]("stationId").get,
+        doc.getAs[String]("channelId").get
+      )
+
+      meta.hmsStationId = doc.getAs[String]("hmsStationId")
+      meta.stationName = doc.getAs[String]("stationName")
+      meta.stationLogoUrl = parseOptUrl(doc, "stationLogoUrl")
+      meta.stationLogoShow = doc.getAs[Boolean]("stationLogoShow").get
+      meta.stationMainColor = doc.getAs[String]("stationMainColor")
+
+      meta.channelName = doc.getAs[String]("channelName")
+      meta.showTitle = doc.getAs[String]("showTitle")
+      meta.showId = doc.getAs[Long]("showId")
+      meta.showSubtitle = doc.getAs[String]("showSubtitle")
+      meta.showSourceTitle = doc.getAs[String]("showSourceTitle")
+      meta.showLogoUrl = parseOptUrl(doc, "showLogoUrl")
+      meta.showLength = doc.getAs[Long]("showLength").get
+      meta.showEndInfo = doc.getAs[String]("showEndInfo")
+      meta.rootPortalUrl = parseOptUrl(doc, "rootPortalUrl")
+
+      meta.isHD = doc.getAs[Boolean]("isHD").get
+      meta.sourceFilename = doc.getAs[String]("sourceFilename")
+      meta.sourceVideoUrl = parseOptUrl(doc, "sourceVideoUrl")
+      meta.localVideoFile = parseOptFile(doc, "localVideoFile")
+      meta.publicVideoUrl = parseOptUrl(doc, "publicVideoUrl")
+
+      meta.currentAccessToken = doc.getAs[String]("currentAccessToken")
+
+      meta.vimeo = doc.getAs[Boolean]("vimeo")
+      meta.vimeoDone = doc.getAs[Boolean]("vimeoDone")
+      meta.vimeoId = doc.getAs[Long]("vimeoId")
+      meta.vimeoEncodingStatus = vimeoJson.asOpt[VimeoEncodingStatus]
+
+      meta
+
+    }
+
+    def write(meta: ShowMetaData) = {
+
+      val stationLogoUrl: Option[String] = if (meta.stationLogoUrl.isEmpty) None else Some(meta.stationLogoUrl.get.toString)
+      val showLogoUrl: Option[String] = if (meta.showLogoUrl.isEmpty) None else Some(meta.showLogoUrl.get.toString)
+      val rootPortalUrl: Option[String] = if (meta.rootPortalUrl.isEmpty) None else Some(meta.rootPortalUrl.get.toString)
+      val sourceVideoUrl: Option[String] = if (meta.sourceVideoUrl.isEmpty) None else Some(meta.sourceVideoUrl.get.toString)
+      val localVideoFile: Option[String] = if (meta.localVideoFile.isEmpty) None else Some(meta.localVideoFile.get.getCanonicalPath)
+      val publicVideoUrl: Option[String] = if (meta.publicVideoUrl.isEmpty) None else Some(meta.publicVideoUrl.get.toString)
+      val vimeoEncodingStatus: Option[String] = if (meta.vimeoEncodingStatus.isEmpty) None else Some(meta.vimeoEncodingStatus.get.name)
+
+      BSONDocument(
+        "stationId" -> meta.stationId,
+        "channelId" -> meta.channelId,
+        "hmsStationId" -> meta.hmsStationId,
+        "stationName" -> meta.stationName,
+        "stationLogoUrl" -> stationLogoUrl,
+        "stationLogoShow" -> meta.stationLogoShow,
+        "stationMainColor" -> meta.stationMainColor,
+
+        "channelName" -> meta.channelName,
+        "showTitle" -> meta.showTitle,
+        "showId" -> meta.showId,
+        "showSubtitle" -> meta.showSubtitle,
+        "showSourceTitle" -> meta.showSourceTitle,
+        "showLogoUrl" -> showLogoUrl,
+        "showLength" -> meta.showLength,
+        "showEndInfo" -> meta.showEndInfo,
+        "rootPortalUrl" -> rootPortalUrl,
+
+        "isHD" -> meta.isHD,
+        "sourceFilename" -> meta.sourceFilename,
+        "sourceVideoUrl" -> sourceVideoUrl,
+        "localVideoFile" -> localVideoFile,
+        "publicVideoUrl" -> publicVideoUrl,
+
+        "currentAccessToken" -> meta.currentAccessToken,
+
+        "vimeo" -> meta.vimeo,
+        "vimeoDone" -> meta.vimeoDone,
+        "vimeoId" -> meta.vimeoId,
+        "vimeoEncodingStatus" -> vimeoEncodingStatus
+      )
+    }
+
+  }
+
+  def parseOptUrl(doc: BSONDocument, key: String): Option[URL] = {
+    doc.getAs[String](key) match {
+      case Some(urlString) => Some(new URL(urlString))
+      case None => None
+    }
+  }
+
+  def parseOptFile(doc: BSONDocument, key: String): Option[File] = {
+    doc.getAs[String](key) match {
       case Some(urlString) => Some(new File(urlString))
       case None => None
     }

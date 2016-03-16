@@ -3,12 +3,13 @@ package models.hms
 import models.MongoId
 import models.dto.ShowMetaData
 import play.Logger
-import play.api.libs.json.{JsObject, Json}
+import play.api.Play.current
+import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoPlugin
-import play.modules.reactivemongo.json.collection.JSONCollection
+import reactivemongo.api.collections.default.BSONCollection
+import reactivemongo.bson.{BSON, BSONDocument, Macros}
 import reactivemongo.core.commands.LastError
 
-import play.api.Play.current
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -17,7 +18,7 @@ import scala.concurrent.Future
   * since: 2016-02-19
   */
 case class TranscodeCallback(_id: Option[MongoId],
-                             ID: Double,
+                             ID: Long,
                              VerboseMessage: Option[String],
                              Status: String,
                              StatusValue: Option[Int],
@@ -28,10 +29,12 @@ case class TranscodeCallback(_id: Option[MongoId],
 
 object TranscodeCallback {
 
-  val transcodeCallCollection = ReactiveMongoPlugin.db.collection[JSONCollection]("hmsTranscode")
+  private val transcodeCallCollection = ReactiveMongoPlugin.db.collection[BSONCollection]("hmsTranscode")
 
   implicit val reads = Json.reads[TranscodeCallback]
   implicit val writes = Json.writes[TranscodeCallback]
+
+  implicit val bsonHandler = Macros.handler[TranscodeCallback]
 
   def insert(jobResult: JobResult, meta: ShowMetaData): Future[LastError] = {
 
@@ -40,19 +43,19 @@ object TranscodeCallback {
 
   }
 
-  def findByHmsId(hmsId: Double): Future[Option[TranscodeCallback]] = {
+  def findByHmsId(hmsId: Long): Future[Option[TranscodeCallback]] = {
 
-    val selector = Json.obj("ID" -> hmsId)
+    val selector = BSONDocument("ID" -> hmsId)
 
     transcodeCallCollection
       .find(selector)
-      .cursor[JsObject]
+      .cursor[BSONDocument]
       .collect[Set](1)
       .map {
         set => {
           set.headOption.map {
-            json =>
-              json.as[TranscodeCallback]
+            bson =>
+              BSON.readDocument[TranscodeCallback](bson)
           }
         }
       }
