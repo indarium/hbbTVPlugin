@@ -30,10 +30,13 @@ object HmsUtil {
 
         val baseUrl = Config.hmsBroadcastUrl
         val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
+        val encHmsStationID = java.net.URLEncoder.encode(station.hmsStationId, "UTF-8")
+
         val path = station
           .getShowUrlPattern.getOrElse("/Show/{CHANNEL-ID}?Category={STATION-ID}&Order=DESC&Count=25")
           .replace("{CHANNEL-ID}", channelId)
           .replace("{STATION-ID}", encStationID)
+          .replace("{HMS-STATION-ID}", encHmsStationID)
         val url = baseUrl + path
 
         Some(url)
