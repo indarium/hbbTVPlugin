@@ -48,27 +48,33 @@ object CurrentShowsController extends Controller {
 
   def callBack = Action(BodyParsers.parse.tolerantJson) {
 
-    var status = true
-
     request =>
+
       Logger.debug("HMS CallBack-Body:")
       Logger.debug(Json.prettyPrint(request.body))
-
       val callback = request.body.validate[TranscodeCallback].get
       Logger.debug(s"converted to TranscodeCallback: $callback")
 
-      callback.Status match {
+      val status = callback.Status match {
 
-        case HmsCallbackStatus.FINISHED => status = handleEncoderFinished(callback)
-        case _ => Logger.info(s"transcoder job is not finished: $callback")
+        case HmsCallbackStatus.FINISHED => handleEncoderFinished(callback)
+
+        case _ =>
+          Logger.info(s"transcoder job is not finished: $callback")
+          false
 
       }
 
-      TranscodeCallback.updateRecord(callback)
-
       status match {
-        case true => Ok(Json.obj("status" -> "OK"))
-        case false => Unsuccessful404
+
+        case true =>
+          TranscodeCallback.updateRecord(callback)
+          Ok(Json.obj("status" -> "OK"))
+
+        case false =>
+          TranscodeCallback.updateRecord(callback)
+          Unsuccessful404
+
       }
 
   }
