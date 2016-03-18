@@ -81,25 +81,32 @@ class ShowCrawler extends Actor {
           self ! ScheduleProcess(processingStation)
       }
       f.map {
-        case Some(show) =>
-          Show.findShowById(show.ID).map {
-            case Some(existingShow) =>
-              log.info("nothing to do for: %s / %s ".format(show.ID, show.Name))
-              self ! ScheduleProcess(processingStation)
-            case None =>
-              TranscodeCallback.findByShowId(show.ID).map {
-                case Some(transcodeCallback) =>
-                  // prevent triggering multiple transcode jobs for the same show
-                  log.info("transcoder job already exists for: %s / %s ".format(show.ID, show.Name))
-                  self ! ScheduleProcess(processingStation)
-                case None =>
-                  log.info("starting station processing for: %s (%s)".format(processingStation.stationId, processingStation.hmsStationId))
-                  self ! ProcessShow(ProcessShowData(show, processingStation))
-              }
-          }
+
         case None =>
           log.error("could not start process")
           self ! ScheduleProcess(processingStation)
+
+        case Some(show) =>
+
+          for {
+            existingShow <- Show.findShowById(show.ID)
+            transcodeCallback <- TranscodeCallback.findByShowId(show.ID)
+          } yield {
+
+            existingShow.isEmpty && transcodeCallback.isEmpty match {
+
+              case true =>
+                log.info("starting station processing for: %s (%s)".format(processingStation.stationId, processingStation.hmsStationId))
+                self ! ProcessShow(ProcessShowData(show, processingStation))
+
+              case false =>
+                log.info("nothing to do for: %s / %s ".format(show.ID, show.Name))
+                self ! ScheduleProcess(processingStation)
+
+            }
+
+          }
+
       }
 
     case startProcess: StartProcess =>
