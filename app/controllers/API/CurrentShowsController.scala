@@ -101,8 +101,8 @@ object CurrentShowsController extends Controller {
       case Some(dbRecord) => dbRecord.Status match {
 
         case HmsCallbackStatus.FINISHED =>
-          Logger.info(s"the show this callback relates to has been processed successfully already: callback=$callback")
-          true
+          Logger.error(s"the show this callback relates to has been processed successfully already: callback=$callback")
+          false
 
         case _ => dbRecord.meta match {
 
