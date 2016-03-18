@@ -114,7 +114,7 @@ object CurrentShowsController extends Controller {
             true
 
           case None =>
-            Logger.error(s"unable to find meta for callback: $callback")
+            Logger.error(s"ShowMetaData is missing for the callback: $callback")
             false
 
         }
