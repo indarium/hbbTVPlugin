@@ -60,6 +60,24 @@ object TranscodeCallback {
 
   }
 
+  def findByShowId(showId: Long): Future[Option[TranscodeCallback]] = {
+
+    val selector = BSONDocument("meta.showId" -> showId)
+
+    transcodeCallCollection
+      .find(selector)
+      .cursor[BSONDocument]
+      .collect[Set](1)
+      .map {
+        set => {
+          set.headOption.map {
+            bson => BSON.readDocument[TranscodeCallback](bson)
+          }
+        }
+      }
+
+  }
+
   /**
     * Update an existing record or do nothing otherwise.
     *

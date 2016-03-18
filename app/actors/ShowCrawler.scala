@@ -87,8 +87,15 @@ class ShowCrawler extends Actor {
               log.info("nothing to do for: %s / %s ".format(show.ID, show.Name))
               self ! ScheduleProcess(processingStation)
             case None =>
-              log.info("starting station processing for: %s (%s)".format(processingStation.stationId, processingStation.hmsStationId))
-              self ! ProcessShow(ProcessShowData(show, processingStation))
+              TranscodeCallback.findByShowId(show.ID).map {
+                case Some(transcodeCallback) =>
+                  // prevent triggering multiple transcode jobs for the same show
+                  log.info("transcoder job has been created already for: %s / %s ".format(show.ID, show.Name))
+                  self ! ScheduleProcess(processingStation)
+                case None =>
+                  log.info("starting station processing for: %s (%s)".format(processingStation.stationId, processingStation.hmsStationId))
+                  self ! ProcessShow(ProcessShowData(show, processingStation))
+              }
           }
         case None =>
           log.error("could not start process")
