@@ -93,15 +93,15 @@ class ShowCrawler extends Actor {
             transcodeCallback <- TranscodeCallback.findByShowId(show.ID)
           } yield {
 
-            existingShow.isEmpty && transcodeCallback.isEmpty match {
+            existingShow.isDefined || transcodeCallback.isDefined match {
 
               case true =>
-                log.info("starting station processing for: %s (%s)".format(processingStation.stationId, processingStation.hmsStationId))
-                self ! ProcessShow(ProcessShowData(show, processingStation))
-
-              case false =>
                 log.info("nothing to do for: %s / %s ".format(show.ID, show.Name))
                 self ! ScheduleProcess(processingStation)
+
+              case false =>
+                log.info("starting station processing for: %s (%s)".format(processingStation.stationId, processingStation.hmsStationId))
+                self ! ProcessShow(ProcessShowData(show, processingStation))
 
             }
 
