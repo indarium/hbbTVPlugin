@@ -11,17 +11,17 @@ object TranscodeCallbackHelper {
 
   val DEFAULT_META = Some(ShowMetaDataHelper.defaultObject("MV1", "SAT", -1001L))
 
-  def queuedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, Some("created transcode job"), "queued", None, None, None, None)
+  def queuedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(id, Some("created transcode job"), "queued", None, None, None, None)
 
-  def queuedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, Some("created transcode job"), "queued", None, None, None, DEFAULT_META)
+  def queuedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(id, Some("created transcode job"), "queued", None, None, None, DEFAULT_META)
 
-  def processingObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "processing", Some(80), Some("percentage"), None, None)
+  def processingObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "processing", Some(80), Some("percentage"), None, None)
 
-  def processingObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "processing", Some(80), Some("percentage"), None, DEFAULT_META)
+  def processingObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "processing", Some(80), Some("percentage"), None, DEFAULT_META)
 
-  def finishedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "finished", None, None, downloadSource(id), None)
+  def finishedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "finished", None, None, downloadSource(id), None)
 
-  def finishedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(None, id, verboseMessage(id), "finished", None, None, downloadSource(id), DEFAULT_META)
+  def finishedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "finished", None, None, downloadSource(id), DEFAULT_META)
 
   def queuedJsonWithoutMeta(id: Long): String =
     s"""

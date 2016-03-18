@@ -1,6 +1,5 @@
 package models.hms
 
-import models.MongoId
 import models.dto.ShowMetaData
 import play.Logger
 import play.api.Play.current
@@ -12,13 +11,13 @@ import reactivemongo.core.commands.LastError
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 /**
   * author: cvandrei
   * since: 2016-02-19
   */
-case class TranscodeCallback(_id: Option[MongoId],
-                             ID: Long,
+case class TranscodeCallback(ID: Long,
                              VerboseMessage: Option[String],
                              Status: String,
                              StatusValue: Option[Int],
@@ -38,7 +37,7 @@ object TranscodeCallback {
 
   def insert(jobResult: JobResult, meta: ShowMetaData): Future[LastError] = {
 
-    val transcodeCallback = TranscodeCallback(None, jobResult.ID, jobResult.VerboseResult, "queued", None, None, None, Some(meta))
+    val transcodeCallback = TranscodeCallback(jobResult.ID, jobResult.VerboseResult, "queued", None, None, None, Some(meta))
     transcodeCallCollection.insert(transcodeCallback)
 
   }
@@ -54,8 +53,7 @@ object TranscodeCallback {
       .map {
         set => {
           set.headOption.map {
-            bson =>
-              BSON.readDocument[TranscodeCallback](bson)
+            bson => BSON.readDocument[TranscodeCallback](bson)
           }
         }
       }
@@ -70,11 +68,16 @@ object TranscodeCallback {
     */
   def updateRecord(callback: TranscodeCallback) = {
 
-    TranscodeCallback.findByHmsId(callback.ID).map {
+    findByHmsId(callback.ID).map {
 
       case Some(dbRecord) =>
-        val updatedRecord = callback.copy(_id = dbRecord._id, meta = dbRecord.meta)
-        TranscodeCallback.save(updatedRecord)
+
+        val updatedRecord = callback.copy(meta = dbRecord.meta)
+
+        update(updatedRecord).onComplete {
+          case Failure(e) => Logger.error(s"updateRecord() - failed to update hmsTranscode record: callback=$callback, e=", e)
+          case Success(lastError) => Logger.debug(s"updated hmsTranscode record: $updatedRecord")
+        }
 
       case None => Logger.error(s"found no transcode record to update: update=$callback")
 
@@ -83,5 +86,12 @@ object TranscodeCallback {
   }
 
   def save(transcodeCallback: TranscodeCallback): Future[LastError] = transcodeCallCollection.save(transcodeCallback)
+
+  def update(transcodeCallback: TranscodeCallback): Future[LastError] = {
+
+    val selector = BSONDocument("ID" -> transcodeCallback.ID)
+    transcodeCallCollection.update(selector, transcodeCallback)
+
+  }
 
 }
