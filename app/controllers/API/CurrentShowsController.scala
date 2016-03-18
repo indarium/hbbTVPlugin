@@ -14,7 +14,8 @@ import play.api.mvc._
 import play.libs.Akka
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 /**
   * Created by dermicha on 17/06/14.
@@ -55,27 +56,34 @@ object CurrentShowsController extends Controller {
       val callback = request.body.validate[TranscodeCallback].get
       Logger.debug(s"converted to TranscodeCallback: $callback")
 
-      val status = callback.Status match {
+      val f = handleCallback(callback).map {
 
-        case HmsCallbackStatus.FINISHED => handleEncoderFinished(callback)
+        status =>
 
-        case _ =>
-          Logger.info(s"transcoder job is not finished: $callback")
-          false
+          TranscodeCallback.updateRecord(callback)
+
+          status match {
+            case true => Ok(Json.obj("status" -> "OK"))
+            case false => Unsuccessful404
+          }
 
       }
 
-      status match {
+      Await.result(f, 180 seconds)
 
-        case true =>
-          TranscodeCallback.updateRecord(callback)
-          Ok(Json.obj("status" -> "OK"))
+  }
 
-        case false =>
-          TranscodeCallback.updateRecord(callback)
-          Unsuccessful404
+  private def handleCallback(callback: TranscodeCallback): Future[Boolean] = {
 
-      }
+    callback.Status match {
+
+      case HmsCallbackStatus.FINISHED => handleEncoderFinished(callback)
+
+      case _ =>
+        Logger.info(s"transcoder job is not finished: $callback")
+        Future(false)
+
+    }
 
   }
 
@@ -86,7 +94,7 @@ object CurrentShowsController extends Controller {
     * @param callback callback with status="finished"
     * @return true if everything is ok, false otherwise
     */
-  private def handleEncoderFinished(callback: TranscodeCallback): Boolean = {
+  private def handleEncoderFinished(callback: TranscodeCallback): Future[Boolean] = {
 
     TranscodeCallback.findByHmsId(callback.ID).map {
 
@@ -116,8 +124,6 @@ object CurrentShowsController extends Controller {
       case None => false
 
     }
-
-    false
 
   }
 

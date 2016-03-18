@@ -52,6 +52,7 @@ object TranscodeCallback {
       .collect[Set](1)
       .map {
         set => {
+          // TODO do we return None if set is empty?
           set.headOption.map {
             bson => BSON.readDocument[TranscodeCallback](bson)
           }
@@ -70,6 +71,7 @@ object TranscodeCallback {
       .collect[Set](1)
       .map {
         set => {
+          // TODO do we return None if set is empty?
           set.headOption.map {
             bson => BSON.readDocument[TranscodeCallback](bson)
           }
@@ -84,21 +86,27 @@ object TranscodeCallback {
     * @param callback record with new values (as received from HMS)
     * @return
     */
-  def updateRecord(callback: TranscodeCallback) = {
+  def updateRecord(callback: TranscodeCallback): Unit = {
 
-    findByHmsId(callback.ID).map {
+    try {
 
-      case Some(dbRecord) =>
+      findByHmsId(callback.ID).map {
 
-        val updatedRecord = callback.copy(meta = dbRecord.meta)
+        case Some(dbRecord) =>
 
-        update(updatedRecord).onComplete {
-          case Failure(e) => Logger.error(s"updateRecord() - failed to update hmsTranscode record: callback=$callback, e=", e)
-          case Success(lastError) => Logger.debug(s"updated hmsTranscode record: $updatedRecord")
-        }
+          val updatedRecord = callback.copy(meta = dbRecord.meta)
 
-      case None => Logger.error(s"found no transcode record to update: update=$callback")
+          update(updatedRecord).onComplete {
+            case Failure(e) => Logger.error(s"updateRecord() - failed to update hmsTranscode record: callback=$callback, e=", e)
+            case Success(lastError) => Logger.debug(s"updated hmsTranscode record: $updatedRecord")
+          }
 
+        case None => Logger.error(s"found no transcode record to update: update=$callback")
+
+      }
+
+    } catch {
+      case e: Exception => Logger.error(s"failed to update callback record: $callback, exception=$e")
     }
 
   }
