@@ -58,14 +58,11 @@ object CurrentShowsController extends Controller {
 
       val f = handleCallback(callback).map {
 
-        status =>
-
+        case true =>
           TranscodeCallback.updateRecord(callback)
+          Ok(Json.obj("status" -> "OK"))
 
-          status match {
-            case true => Ok(Json.obj("status" -> "OK"))
-            case false => Unsuccessful404
-          }
+        case false => Unsuccessful404
 
       }
 
