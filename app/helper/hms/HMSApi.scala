@@ -148,7 +148,7 @@ object HMSApi {
             Logger.debug("found a show with download URL: %d / %s, URL: %s".format(hmsShow.ID, hmsShow.Name, hmsShow.DownloadURL))
             Some(hmsShow)
           case None =>
-            Logger.error("HMSApi.getCurrentShow not successfull for %s / %s".format(stationId, channelId))
+            Logger.error("HMSApi.getCurrentShow not successful for %s / %s".format(stationId, channelId))
             None
         }
       case _ =>
