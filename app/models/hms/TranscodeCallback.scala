@@ -1,5 +1,6 @@
 package models.hms
 
+import constants.HmsCallbackStatus
 import models.dto.ShowMetaData
 import play.Logger
 import play.api.Play.current
@@ -37,7 +38,7 @@ object TranscodeCallback {
 
   def insert(jobResult: JobResult, meta: ShowMetaData): Future[LastError] = {
 
-    val transcodeCallback = TranscodeCallback(jobResult.ID, jobResult.VerboseResult, "queued", None, None, None, Some(meta))
+    val transcodeCallback = TranscodeCallback(jobResult.ID, jobResult.VerboseResult, HmsCallbackStatus.QUEUED, None, None, None, Some(meta))
     transcodeCallCollection.insert(transcodeCallback)
 
   }

@@ -1,5 +1,6 @@
 package models.hms.util
 
+import constants.HmsCallbackStatus
 import models.dto.util.ShowMetaDataHelper
 import models.hms.TranscodeCallback
 
@@ -11,24 +12,24 @@ object TranscodeCallbackHelper {
 
   val DEFAULT_META = Some(ShowMetaDataHelper.defaultObject("MV1", "SAT", -1001L))
 
-  def queuedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(id, Some("created transcode job"), "queued", None, None, None, None)
+  def queuedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(id, Some("created transcode job"), HmsCallbackStatus.QUEUED, None, None, None, None)
 
-  def queuedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(id, Some("created transcode job"), "queued", None, None, None, DEFAULT_META)
+  def queuedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(id, Some("created transcode job"), HmsCallbackStatus.QUEUED, None, None, None, DEFAULT_META)
 
-  def processingObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "processing", Some(80), Some("percentage"), None, None)
+  def processingObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), HmsCallbackStatus.PROCESSING, Some(80), Some("percentage"), None, None)
 
-  def processingObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "processing", Some(80), Some("percentage"), None, DEFAULT_META)
+  def processingObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), HmsCallbackStatus.PROCESSING, Some(80), Some("percentage"), None, DEFAULT_META)
 
-  def finishedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "finished", None, None, downloadSource(id), None)
+  def finishedObjectWithoutMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), HmsCallbackStatus.FINISHED, None, None, downloadSource(id), None)
 
-  def finishedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), "finished", None, None, downloadSource(id), DEFAULT_META)
+  def finishedObjectWithMeta(id: Long): TranscodeCallback = TranscodeCallback(id, verboseMessage(id), HmsCallbackStatus.FINISHED, None, None, downloadSource(id), DEFAULT_META)
 
   def queuedJsonWithoutMeta(id: Long): String =
     s"""
        |{
        |  "ID":  $id,
        |  "VerboseMessage": "created transcode job",
-       |  "Status": "queued"
+       |  "Status": "${HmsCallbackStatus.QUEUED}"
        |}
      """.stripMargin
 
@@ -37,7 +38,7 @@ object TranscodeCallbackHelper {
        |{
        |  "ID":  $id,
        |  "VerboseMessage": "created transcode job",
-       |  "Status": "queued",
+       |  "Status": "${HmsCallbackStatus.QUEUED}",
        |  "meta": ${ShowMetaDataHelper.defaultJson}
        |}
      """.stripMargin
@@ -47,7 +48,7 @@ object TranscodeCallbackHelper {
        |{
        |  "ID":  $id,
        |  "VerboseMessage": "${verboseMessage(id)}",
-       |  "Status": "processing",
+       |  "Status": "${HmsCallbackStatus.PROCESSING}",
        |  "StatusValue": 80,
        |  "StatusUnit": "percentage"
        |}
@@ -58,7 +59,7 @@ object TranscodeCallbackHelper {
        |{
        |  "ID":  $id,
        |  "VerboseMessage": "${verboseMessage(id)}",
-       |  "Status": "processing",
+       |  "Status": "${HmsCallbackStatus.PROCESSING}",
        |  "StatusValue": 80,
        |  "StatusUnit": "percentage",
        |  "meta": ${ShowMetaDataHelper.defaultJson}
@@ -70,7 +71,7 @@ object TranscodeCallbackHelper {
        |{
        |  "ID":  $id,
        |  "VerboseMessage": "{verboseMessage(id)}",
-       |  "Status": "finished",
+       |  "Status": "${HmsCallbackStatus.FINISHED}",
        |  "DownloadSource": "${downloadSource(id)}"
        |}
      """.stripMargin
@@ -80,7 +81,7 @@ object TranscodeCallbackHelper {
        |{
        |  "ID":  $id,
        |  "VerboseMessage": "{verboseMessage(id)}",
-       |  "Status": "finished",
+       |  "Status": "${HmsCallbackStatus.FINISHED}",
        |  "DownloadSource": "${downloadSource(id)}",
        |  "meta": ${ShowMetaDataHelper.defaultJson}
        |}
