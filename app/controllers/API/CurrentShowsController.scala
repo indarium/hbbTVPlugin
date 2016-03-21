@@ -54,7 +54,6 @@ object CurrentShowsController extends Controller {
       Logger.debug("HMS CallBack-Body:")
       Logger.debug(Json.prettyPrint(request.body))
       val callback = request.body.validate[TranscodeCallback].get
-      Logger.debug(s"converted to TranscodeCallback: $callback")
 
       val f = handleCallback(callback).map {
 
@@ -78,7 +77,7 @@ object CurrentShowsController extends Controller {
 
       case _ =>
         Logger.info(s"transcoder job is not finished: $callback")
-        Future(false)
+        Future(true)
 
     }
 
@@ -118,7 +117,9 @@ object CurrentShowsController extends Controller {
 
       }
 
-      case None => false
+      case None =>
+        Logger.error(s"received callback for unknown transcode job: jobId=${callback.ID}")
+        false
 
     }
 
