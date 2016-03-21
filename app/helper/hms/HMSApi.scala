@@ -108,12 +108,13 @@ object HMSApi {
               f.map { response =>
                 response.status match {
                   case s if s < 400 =>
-                    response.json \ "sources" match {
+                    val sources = response.json \ "sources"
+                    sources match {
                       case errorResult: JsUndefined =>
                         Logger.error(s"empty result for stationId $stationId / channelId $channelId")
                         None
                       case result: JsValue =>
-                        Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
+                        Some(Json.obj("shows" -> sources.as[JsArray]))
                     }
                   case _ =>
                     Logger.error(s"HMSApi result code: ${response.status}")
@@ -141,6 +142,7 @@ object HMSApi {
         Logger.info("HMSApi.getCurrentShow: shows found for %s / %s".format(stationId, channelId))
         (shows \ "shows").as[Seq[HMSShow]](Reads.seq(HMSShow.format)).find {
           aShow =>
+            // TODO return show independent of it having a downloadUrl? we're supposed to create transcode jobs for each show anyway.
             aShow.DownloadURL.isDefined
         }
         match {
