@@ -14,8 +14,7 @@ import play.api.mvc._
 import play.libs.Akka
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 /**
   * Created by dermicha on 17/06/14.
@@ -47,7 +46,7 @@ object CurrentShowsController extends Controller {
     }
   }
 
-  def callBack = Action(BodyParsers.parse.tolerantJson) {
+  def callBack = Action.async(BodyParsers.parse.tolerantJson) {
 
     request =>
 
@@ -55,7 +54,7 @@ object CurrentShowsController extends Controller {
       Logger.debug(Json.prettyPrint(request.body))
       val callback = request.body.validate[TranscodeCallback].get
 
-      val f = handleCallback(callback).map {
+      handleCallback(callback).map {
 
         case true =>
           TranscodeCallback.updateRecord(callback)
@@ -64,8 +63,6 @@ object CurrentShowsController extends Controller {
         case false => Unsuccessful404
 
       }
-
-      Await.result(f, 180 seconds)
 
   }
 
