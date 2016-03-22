@@ -7,7 +7,7 @@ import models.Station
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
+import scala.concurrent.Future
 
 /**
   * author: cvandrei
@@ -15,13 +15,7 @@ import scala.concurrent.duration.Duration
   */
 object HmsUtil {
 
-  def getShowsUrl(stationId: String, channelId: String): Option[String] = {
-
-    val stationFuture = for {
-      s <- Station.findStation(stationId, channelId)
-    } yield s
-
-    val stationOpt = Await.result(stationFuture, Duration(5, TimeUnit.SECONDS))
+  def getShowsUrl(stationOpt: Option[Station]): Option[String] = {
 
     stationOpt match {
 
@@ -30,7 +24,7 @@ object HmsUtil {
       case Some(station) =>
 
         val baseUrl = Config.hmsBroadcastUrl
-        val encStationID = java.net.URLEncoder.encode(stationId, "UTF-8")
+        val encStationID = java.net.URLEncoder.encode(station.stationId, "UTF-8")
         val encHmsStationID = java.net.URLEncoder.encode(station.hmsStationId, "UTF-8")
 
         val path = station
