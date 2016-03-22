@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
-import helper.hms.{HMSApi, HMSShow}
+import helper.hms.{HmsUtil, HMSApi, HMSShow}
 import helper.vimeo.VimeoUtil
 import models.dto.{ProcessHmsCallback, ShowMetaData}
 import models.hms.TranscodeCallback
@@ -64,7 +64,11 @@ class ShowCrawler extends Actor {
 
       log.info("collected meta: " + meta.showTitle + " / " + meta.sourceVideoUrl)
       log.info(s"creating transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
-      createTranscodeJob(meta)
+
+      HmsUtil.isTranscoderEnabled(meta.stationId) match {
+        case true => createTranscodeJob(meta)
+        case false => showProcessingActor ! meta
+      }
 
     case ProcessHmsCallback(meta) =>
       log.info("process after HMS callback %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))

@@ -35,4 +35,14 @@ object HmsUtil {
 
   }
 
+  def isTranscoderEnabled(stationId: String): Boolean = {
+
+    val stationIdLowerCase = stationId.toLowerCase
+    Config.hmsTranscoderActivateGlobal match {
+      case true => !Config.hmsTranscoderDeactivateChannels.contains(stationIdLowerCase)
+      case false => Config.hmsTranscoderActivateChannels.contains(stationIdLowerCase)
+    }
+
+  }
+
 }

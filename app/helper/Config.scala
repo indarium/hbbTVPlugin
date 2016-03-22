@@ -44,6 +44,12 @@ object Config {
 
   def hmsEncodingNotificationStatus: Boolean = Play.configuration.getBoolean("hms.encoding.notification.status").get
 
+  def hmsTranscoderActivateGlobal: Boolean = Play.configuration.getBoolean("hms.transcoder.activate.global").getOrElse(false)
+
+  def hmsTranscoderActivateChannels: Array[String] = stringArray("hms.transcoder.activate.channels")
+
+  def hmsTranscoderDeactivateChannels: Array[String] = stringArray("hms.transcoder.deactivate.channels")
+
   /* WEBJAZZ CONFIGS **************************************************************************************************/
 
   def webjazzToken: String = Play.configuration.getString("webjazz.auth-token").getOrElse("NO-ACCESS-TOKEN")
