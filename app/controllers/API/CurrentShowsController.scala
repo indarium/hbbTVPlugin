@@ -21,7 +21,7 @@ object ShowApiCall {
 object CurrentShowsController extends Controller {
 
   //def current = WithCors("POST") {
-  def current = Action.async((BodyParsers.parse.json)) { request =>
+  def current = Action.async(BodyParsers.parse.json) { request =>
     val showApiCall = request.body.as[ShowApiCall]
     Logger.debug("ShowApiCall: " + showApiCall.toString)
     ApiKey.checkApiKey(showApiCall.apiKey).flatMap {
