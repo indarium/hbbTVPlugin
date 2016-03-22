@@ -1,13 +1,7 @@
 package helper.hms
 
-import java.util.concurrent.TimeUnit
-
 import helper.Config
 import models.Station
-
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 /**
   * author: cvandrei
@@ -24,6 +18,7 @@ object HmsUtil {
       case Some(station) =>
 
         val baseUrl = Config.hmsBroadcastUrl
+        val channelId = station.channelId
         val encStationID = java.net.URLEncoder.encode(station.stationId, "UTF-8")
         val encHmsStationID = java.net.URLEncoder.encode(station.hmsStationId, "UTF-8")
 
