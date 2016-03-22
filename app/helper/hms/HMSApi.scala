@@ -104,7 +104,7 @@ object HMSApi {
               }
               f.map { response =>
                 response.status match {
-                  case s if s < 400 =>
+                  case s if s < 400 && !response.body.isEmpty =>
                     response.json \ "sources" match {
                       case errorResult: JsUndefined =>
                         Logger.error(s"empty result for stationId $stationId / channelId $channelId")

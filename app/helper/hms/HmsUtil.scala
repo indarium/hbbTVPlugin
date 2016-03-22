@@ -22,6 +22,7 @@ object HmsUtil {
     } yield s
 
     val stationOpt = Await.result(stationFuture, Duration(5, TimeUnit.SECONDS))
+
     stationOpt match {
 
       case None => None
@@ -33,7 +34,7 @@ object HmsUtil {
         val encHmsStationID = java.net.URLEncoder.encode(station.hmsStationId, "UTF-8")
 
         val path = station
-          .getShowUrlPattern.getOrElse("/Show/{CHANNEL-ID}?Category={STATION-ID}&Order=DESC&Count=25")
+          .getShowUrlPattern.getOrElse("/Show/{CHANNEL-ID}?Category={HMS-STATION-ID}&Order=DESC&Count=25")
           .replace("{CHANNEL-ID}", channelId)
           .replace("{STATION-ID}", encStationID)
           .replace("{HMS-STATION-ID}", encHmsStationID)
