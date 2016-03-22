@@ -1,5 +1,6 @@
 package actors
 
+import java.net.URL
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, Props}
@@ -63,11 +64,17 @@ class ShowCrawler extends Actor {
       }
 
       log.info("collected meta: " + meta.showTitle + " / " + meta.sourceVideoUrl)
-      log.info(s"creating transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
 
       HmsUtil.isTranscoderEnabled(meta.stationId) match {
-        case true => createTranscodeJob(meta)
-        case false => showProcessingActor ! meta
+
+        case true =>
+          log.info(s"creating transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
+          createTranscodeJob(meta)
+
+        case false =>
+          meta.sourceVideoUrl = Some(new URL(hmsShow.DownloadURL.get))
+          showProcessingActor ! meta
+
       }
 
     case ProcessHmsCallback(meta) =>
