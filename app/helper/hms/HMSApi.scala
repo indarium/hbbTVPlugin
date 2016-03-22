@@ -85,7 +85,6 @@ object HMSApi {
   }
 
   def getShows(stationId: String, channelId: String): Future[Option[JsObject]] = {
-
     Logger.info("HMSApi.getShows: " + stationId)
     HmsUtil.getShowsUrl(stationId, channelId) match {
 
@@ -126,9 +125,7 @@ object HMSApi {
             Logger.error("Error while fetching data", e)
             Future(None)
         }
-
     }
-
   }
 
   def getCurrentShow(stationId: String, channelId: String): Future[Option[HMSShow]] = {
