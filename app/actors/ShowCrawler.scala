@@ -74,7 +74,7 @@ class ShowCrawler extends Actor {
       val processingStation: ProcessStationData = processStation.processStationData
       log.info("try to start station processing for: %s (%s)".format(processingStation.stationId, processingStation.hmsStationId))
 
-      val f = HMSApi.getCurrentShow(processingStation.hmsStationId, processingStation.channelId)
+      val f = HMSApi.getCurrentShow(processStation.processStationData.stationId, processStation.processStationData.channelId)
       f.onFailure {
         case e: Exception =>
           log.error(e, "could not start process")

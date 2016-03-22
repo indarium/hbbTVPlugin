@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import models.dto.ShowMetaData
 import models.hms._
 import helper.Config
+import models.Station
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
@@ -89,55 +90,53 @@ object HMSApi {
   }
 
   def getShows(stationId: String, channelId: String): Future[Option[JsObject]] = {
-
     Logger.info("HMSApi.getShows: " + stationId)
-    HmsUtil.getShowsUrl(stationId, channelId) match {
 
-      case None => Future(None)
+    Station.findStation(stationId, channelId).flatMap { station =>
 
-      case Some(apiUrl) =>
+        HmsUtil.getShowsUrl(station) match {
 
-        Logger.debug(s"HMSApi.getShows apiURL: $apiUrl")
-        try {
-          wsAuthRequest(apiUrl).flatMap {
-            case Some(reqHolder) =>
-              val f = reqHolder.get()
-              f.onFailure {
-                case e => Logger.error("could not fetch shows!", e)
-                  None
-              }
-              f.map { response =>
-                response.status match {
-                  case s if s < 400 =>
-                    try {
-                      val sources = response.json \ "sources"
-                      sources match {
-                        case errorResult: JsUndefined =>
-                          Logger.error(s"empty result for stationId $stationId / channelId $channelId")
-                          None
-                        case result: JsValue =>
-                          Some(Json.obj("shows" -> sources.as[JsArray]))
-                      }
-                    } catch {
-                      case e: JsonMappingException =>
-                        Logger.error(s"failed to parse response.body: ($stationId/$channelId) - '${response.body}'")
+          case None =>
+            Logger.debug(s"HMSApi.getShows apiURL: None ($stationId/$channelId)")
+            Future(None)
+
+          case Some(apiUrl) =>
+
+            Logger.debug(s"HMSApi.getShows apiURL: $apiUrl")
+            try {
+              wsAuthRequest(apiUrl).flatMap {
+                case Some(reqHolder) =>
+                  val f = reqHolder.get()
+                  f.onFailure {
+                    case e => Logger.error(s"could not fetch shows ($stationId/$channelId)!", e)
+                      None
+                  }
+                  f.map { response =>
+                    response.status match {
+                      case s if s < 400 =>
+                        response.json \ "sources" match {
+                          case errorResult: JsUndefined =>
+                            Logger.error(s"empty result for stationId $stationId / channelId $channelId")
+                            None
+                          case result: JsValue =>
+                            Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
+                        }
+                      case _ =>
+                        Logger.error(s"HMSApi result code: ${response.status}")
                         None
                     }
-                  case _ =>
-                    Logger.error(s"HMSApi result code: stationId/channelId=$stationId/$channelId, status=${response.status}")
-                    None
-                }
+                  }
+                case None =>
+                  Logger.error(s"HMSApi.getCurrentShows: None (stationId=$stationId/$channelId)")
+                  Future(None)
               }
-            case None =>
-              Logger.error("HMSApi.getCurrentShows: None")
-              Future(None)
-          }
-        } catch {
-          case e: Exception =>
-            Logger.error("Error while fetching data", e)
-            Future(None)
-        }
+            } catch {
+              case e: Exception =>
+                Logger.error(s"Error while fetching data (stationId=$stationId/$channelId)", e)
+                Future(None)
+            }
 
+        }
     }
 
   }
