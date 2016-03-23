@@ -1,11 +1,10 @@
 package helper.hms
 
 
-import com.fasterxml.jackson.databind.JsonMappingException
-import models.dto.ShowMetaData
-import models.hms._
 import helper.Config
 import models.Station
+import models.dto.ShowMetaData
+import models.hms._
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
@@ -94,49 +93,49 @@ object HMSApi {
 
     Station.findStation(stationId, channelId).flatMap { station =>
 
-        HmsUtil.getShowsUrl(station) match {
+      HmsUtil.getShowsUrl(station) match {
 
-          case None =>
-            Logger.debug(s"HMSApi.getShows apiURL: None ($stationId/$channelId)")
-            Future(None)
+        case None =>
+          Logger.debug(s"HMSApi.getShows apiURL: None ($stationId/$channelId)")
+          Future(None)
 
-          case Some(apiUrl) =>
+        case Some(apiUrl) =>
 
-            Logger.debug(s"HMSApi.getShows apiURL: $apiUrl")
-            try {
-              wsAuthRequest(apiUrl).flatMap {
-                case Some(reqHolder) =>
-                  val f = reqHolder.get()
-                  f.onFailure {
-                    case e => Logger.error(s"could not fetch shows ($stationId/$channelId)!", e)
+          Logger.debug(s"HMSApi.getShows apiURL: $apiUrl")
+          try {
+            wsAuthRequest(apiUrl).flatMap {
+              case Some(reqHolder) =>
+                val f = reqHolder.get()
+                f.onFailure {
+                  case e => Logger.error(s"could not fetch shows ($stationId/$channelId)!", e)
+                    None
+                }
+                f.map { response =>
+                  response.status match {
+                    case s if s < 400 =>
+                      response.json \ "sources" match {
+                        case errorResult: JsUndefined =>
+                          Logger.error(s"empty result for stationId $stationId / channelId $channelId")
+                          None
+                        case result: JsValue =>
+                          Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
+                      }
+                    case _ =>
+                      Logger.error(s"HMSApi result code: ${response.status}")
                       None
                   }
-                  f.map { response =>
-                    response.status match {
-                      case s if s < 400 =>
-                        response.json \ "sources" match {
-                          case errorResult: JsUndefined =>
-                            Logger.error(s"empty result for stationId $stationId / channelId $channelId")
-                            None
-                          case result: JsValue =>
-                            Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
-                        }
-                      case _ =>
-                        Logger.error(s"HMSApi result code: ${response.status}")
-                        None
-                    }
-                  }
-                case None =>
-                  Logger.error(s"HMSApi.getCurrentShows: None (stationId=$stationId/$channelId)")
-                  Future(None)
-              }
-            } catch {
-              case e: Exception =>
-                Logger.error(s"Error while fetching data (stationId=$stationId/$channelId)", e)
+                }
+              case None =>
+                Logger.error(s"HMSApi.getCurrentShows: None (stationId=$stationId/$channelId)")
                 Future(None)
             }
+          } catch {
+            case e: Exception =>
+              Logger.error(s"Error while fetching data (stationId=$stationId/$channelId)", e)
+              Future(None)
+          }
 
-        }
+      }
     }
 
   }
