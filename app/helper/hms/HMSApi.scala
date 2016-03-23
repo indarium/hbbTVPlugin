@@ -17,12 +17,6 @@ import scala.concurrent.Future
   * Created by dermicha on 21/06/14.
   */
 
-case class HMSShow(ID: Int, Name: Option[String], DownloadURL: Option[String], ChannelID: Long, ParentID: Long)
-
-object HMSShow {
-  implicit val format = Json.format[HMSShow]
-}
-
 case class AccessToken(Access_Token: String)
 
 object AccessToken {
@@ -140,23 +134,19 @@ object HMSApi {
 
   }
 
-  def getCurrentShow(stationId: String, channelId: String): Future[Option[HMSShow]] = {
+  def getCurrentShow(stationId: String, channelId: String): Future[Option[HmsShow]] = {
 
     Logger.debug("HMSApi.getCurrentShow tried for %s / %s".format(stationId, channelId))
     HMSApi.getShows(stationId, channelId).map {
 
-      case Some(shows) =>
+      case Some(showsJson) =>
 
         Logger.info("HMSApi.getCurrentShow: shows found for %s / %s".format(stationId, channelId))
-        (shows \ "shows").as[Seq[HMSShow]](Reads.seq(HMSShow.format)).find {
-          aShow =>
-            // TODO return show independent of it having a downloadUrl? we're supposed to create transcode jobs for each show anyway.
-            aShow.DownloadURL.isDefined
-        }
-        match {
+        val shows = (showsJson \ "shows").as[Seq[HmsShow]](Reads.seq(HmsShow.format))
+        HmsUtil.extractCurrentShow(shows, stationId) match {
 
           case Some(hmsShow) =>
-            Logger.debug("found a show with download URL: %d / %s, URL: %s".format(hmsShow.ID, hmsShow.Name, hmsShow.DownloadURL))
+            Logger.debug("HMSApi.getCurrentShow: found current show: %d / %s, URL: %s".format(hmsShow.ID, hmsShow.Name, hmsShow.DownloadURL))
             Some(hmsShow)
 
           case None =>

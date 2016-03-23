@@ -2,6 +2,7 @@ package helper.hms
 
 import helper.Config
 import models.Station
+import models.hms.HmsShow
 
 /**
   * author: cvandrei
@@ -41,6 +42,21 @@ object HmsUtil {
     Config.hmsTranscoderActivateGlobal match {
       case true => !Config.hmsTranscoderDeactivateChannels.contains(stationIdLowerCase)
       case false => Config.hmsTranscoderActivateChannels.contains(stationIdLowerCase)
+    }
+
+  }
+
+  def extractCurrentShow(shows: Seq[HmsShow], stationId: String): Option[HmsShow] = {
+
+    shows.find {
+
+      aShow =>
+
+        HmsUtil.isTranscoderEnabled(stationId) match {
+          case true => aShow.UTCEnd.isBeforeNow
+          case false => aShow.DownloadURL.isDefined
+        }
+
     }
 
   }

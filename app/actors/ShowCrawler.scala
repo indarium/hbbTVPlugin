@@ -6,14 +6,15 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
-import helper.hms.{HmsUtil, HMSApi, HMSShow}
+import helper.hms.{HMSApi, HmsUtil}
 import helper.vimeo.VimeoUtil
 import models.dto.{ProcessHmsCallback, ShowMetaData}
-import models.hms.TranscodeCallback
+import models.hms.{HmsShow, TranscodeCallback}
 import models.{Show, Station}
 import reactivemongo.core.commands.LastError
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
 /**
@@ -23,7 +24,7 @@ import scala.concurrent.duration.Duration
 
 case class ProcessStationData(hmsStationId: String, stationId: String, channelId: String)
 
-case class ProcessShowData(show: HMSShow, processStationData: ProcessStationData)
+case class ProcessShowData(show: HmsShow, processStationData: ProcessStationData)
 
 case class StartProcess()
 
@@ -47,7 +48,7 @@ class ShowCrawler extends Actor {
   def receive = {
     case processShow: ProcessShow =>
 
-      val hmsShow: HMSShow = processShow.processShowData.show
+      val hmsShow: HmsShow = processShow.processShowData.show
       val processStationData: ProcessStationData = processShow.processShowData.processStationData
       log.info(s"starting show processing for: ${hmsShow.ID} / ${hmsShow.Name}")
 
@@ -69,7 +70,10 @@ class ShowCrawler extends Actor {
 
         case true =>
           log.info(s"creating transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
-          createTranscodeJob(meta)
+          createTranscodeJob(meta) map {
+            case false => self ! ScheduleProcess(processStationData)
+            case true => log.info(s"created transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
+          }
 
         case false =>
           meta.sourceVideoUrl = Some(new URL(hmsShow.DownloadURL.get))
@@ -133,15 +137,30 @@ class ShowCrawler extends Actor {
         ProcessStation(scheduleProcess.processStationData))
   }
 
-  private def createTranscodeJob(meta: ShowMetaData) = {
+  /**
+    * @param meta contains all information needed to call HMS's transcode method
+    * @return true if everything worked, false if we had an error
+    */
+  private def createTranscodeJob(meta: ShowMetaData): Future[Boolean] = {
 
-    val futureJobResult = HMSApi.transcode(meta)
-    futureJobResult.map {
+    HMSApi.transcode(meta) flatMap {
+
       case Some(jobResult) =>
+
         TranscodeCallback.insert(jobResult, meta).map {
-          case le: LastError if le.inError => log.error(s"createTranscodeJob() - tried to insert jobResult: lastError=$le")
+
+          case le: LastError if le.inError =>
+            log.error(s"createTranscodeJob() - failed to insert jobResult: lastError=$le")
+            false
+
+          case _ => true
+
         }
-      case _ => log.error(s"createTranscodeJob() - unable to persist missing JobResult: meta=$meta")
+
+      case _ =>
+        log.error(s"createTranscodeJob() - unable to persist missing JobResult: meta=$meta")
+        Future(false)
+
     }
 
   }
