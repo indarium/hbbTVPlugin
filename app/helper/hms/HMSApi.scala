@@ -1,6 +1,7 @@
 package helper.hms
 
 
+import com.fasterxml.jackson.databind.JsonMappingException
 import helper.Config
 import models.Station
 import models.dto.ShowMetaData
@@ -107,12 +108,18 @@ object HMSApi {
                 f.map { response =>
                   response.status match {
                     case s if s < 400 =>
-                      response.json \ "sources" match {
-                        case errorResult: JsUndefined =>
-                          Logger.error(s"empty result for stationId $stationId / channelId $channelId")
+                      try {
+                        response.json \ "sources" match {
+                          case errorResult: JsUndefined =>
+                            Logger.error(s"empty result for stationId $stationId / channelId $channelId")
+                            None
+                          case result: JsValue =>
+                            Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
+                        }
+                      } catch {
+                        case e: JsonMappingException =>
+                          Logger.error(s"HMSApi.getShows() - parsing $stationId sources failed with JsonMappingException", e)
                           None
-                        case result: JsValue =>
-                          Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
                       }
                     case _ =>
                       Logger.error(s"HMSApi result code: ${response.status}")
