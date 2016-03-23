@@ -142,9 +142,12 @@ object HMSApi {
   }
 
   def getCurrentShow(stationId: String, channelId: String): Future[Option[HMSShow]] = {
+
     Logger.debug("HMSApi.getCurrentShow tried for %s / %s".format(stationId, channelId))
     HMSApi.getShows(stationId, channelId).map {
+
       case Some(shows) =>
+
         Logger.info("HMSApi.getCurrentShow: shows found for %s / %s".format(stationId, channelId))
         (shows \ "shows").as[Seq[HMSShow]](Reads.seq(HMSShow.format)).find {
           aShow =>
@@ -152,17 +155,23 @@ object HMSApi {
             aShow.DownloadURL.isDefined
         }
         match {
+
           case Some(hmsShow) =>
             Logger.debug("found a show with download URL: %d / %s, URL: %s".format(hmsShow.ID, hmsShow.Name, hmsShow.DownloadURL))
             Some(hmsShow)
+
           case None =>
             Logger.error("HMSApi.getCurrentShow not successful for %s / %s".format(stationId, channelId))
             None
+
         }
+
       case _ =>
         Logger.error("HMSApi.getCurrentShow got None as result!")
         None
+
     }
+
   }
 
   /**
