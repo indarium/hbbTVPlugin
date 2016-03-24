@@ -44,6 +44,8 @@ object Config {
 
   def hmsEncodingNotificationStatus: Boolean = Play.configuration.getBoolean("hms.encoding.notification.status").get
 
+  def hmsEncodingDownloadDelay: Long = Play.configuration.getLong("hms.encoding.downloadDelay").getOrElse(60L)
+
   def hmsTranscoderActivateGlobal: Boolean = Play.configuration.getBoolean("hms.transcoder.activate.global").getOrElse(false)
 
   def hmsTranscoderActivateChannels: Array[String] = stringArray("hms.transcoder.activate.channels")

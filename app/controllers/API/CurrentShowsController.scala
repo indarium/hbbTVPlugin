@@ -1,13 +1,16 @@
 package controllers.API
 
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 import actors.ShowCrawler
 import akka.actor.Props
 import constants.HmsCallbackStatus
-import models.dto.ProcessHmsCallback
+import helper.Config
+import models.dto.{ShowMetaData, ProcessHmsCallback}
 import models.hms.TranscodeCallback
 import models.{ApiKey, Show}
+import org.joda.time.DateTime
 import play.api._
 import play.api.libs.json._
 import play.api.mvc._
@@ -15,6 +18,7 @@ import play.libs.Akka
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 
 /**
   * Created by dermicha on 17/06/14.
@@ -103,7 +107,7 @@ object CurrentShowsController extends Controller {
             val downloadSource = callback.DownloadSource.get
             meta.sourceVideoUrl = Some(new URL(downloadSource))
             Logger.info(s"transcoder job has finished (transcodeCallbackId=${callback.ID}). notify ShowCrawler (showId=${meta.showId}).")
-            showCrawler ! new ProcessHmsCallback(meta)
+            scheduleDelayedDownload(meta)
             true
 
           case None =>
@@ -119,6 +123,20 @@ object CurrentShowsController extends Controller {
         false
 
     }
+
+  }
+
+  private def scheduleDelayedDownload(meta: ShowMetaData) = {
+
+    val delay = Config.hmsEncodingDownloadDelay
+
+    val now = new DateTime().toString("yyyy-MM-dd HH-mm:ss.SSS")
+    val showId = meta.showId
+    val stationId = meta.stationId
+    val channelId = meta.channelId
+    Logger.info(s"[$now] schedule delayed download to run in $delay seconds: showId=$showId ($stationId/$channelId)")
+
+    Akka.system.scheduler.scheduleOnce(Duration.create(delay, TimeUnit.SECONDS), showCrawler, new ProcessHmsCallback(meta))
 
   }
 
