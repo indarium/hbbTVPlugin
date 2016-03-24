@@ -10,6 +10,7 @@ import helper.hms.{HMSApi, HmsUtil}
 import helper.vimeo.VimeoUtil
 import models.dto.{ProcessHmsCallback, ShowMetaData}
 import models.hms.{HmsShow, TranscodeCallback}
+import models.hms.{JobResult, TranscodeCallback}
 import models.{Show, Station}
 import reactivemongo.core.commands.LastError
 
@@ -130,7 +131,7 @@ class ShowCrawler extends Actor {
       startVimeoEncodingStatusScheduler
 
     case scheduleProcess: ScheduleProcess =>
-      log.info("scheduling show crawler")
+      log.info(s"scheduling show crawler (${scheduleProcess.processStationData.stationId})")
       context.system.scheduler.scheduleOnce(
         Duration.create(crawlerPeriod, TimeUnit.MINUTES),
         self,
@@ -157,9 +158,7 @@ class ShowCrawler extends Actor {
 
         }
 
-      case _ =>
-        log.error(s"createTranscodeJob() - unable to persist missing JobResult: meta=$meta")
-        Future(false)
+      case _ => Future(false)
 
     }
 

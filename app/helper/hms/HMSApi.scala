@@ -186,8 +186,7 @@ object HMSApi {
     try {
       wsAuthRequest(apiUrl).flatMap {
 
-        case Some(reqHolder) =>
-          callTranscode(reqHolder, meta)
+        case Some(reqHolder) => callTranscode(reqHolder, meta)
 
         case None =>
           Logger.error("HMSApi.transcode: authorization failed")
@@ -262,7 +261,7 @@ object HMSApi {
     response.json.validate[TranscodeResponse] match {
 
       case jsError: JsError =>
-        Logger.error(s"failed to parse into TranscodeResponse: ${response.body}")
+        Logger.error(s"failed to parse TranscodeResponse: ${response.body}")
         None
 
       case jsResult: JsResult[TranscodeResponse] => Some(jsResult.get.Jobs.head)
