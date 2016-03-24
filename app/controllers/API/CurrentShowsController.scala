@@ -3,7 +3,7 @@ package controllers.API
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
-import actors.ShowCrawler
+import actors.{ProcessStationData, ScheduleProcess, ShowCrawler}
 import akka.actor.Props
 import constants.HmsCallbackStatus
 import helper.Config
@@ -75,6 +75,25 @@ object CurrentShowsController extends Controller {
     callback.Status match {
 
       case HmsCallbackStatus.FINISHED => handleEncoderFinished(callback)
+
+      case HmsCallbackStatus.FAULTY =>
+
+        TranscodeCallback.findByHmsId(callback.ID) map {
+
+          case Some(transcodeCallback) if transcodeCallback.meta.isDefined =>
+
+            val meta = transcodeCallback.meta.get
+            val processStationData = ProcessStationData(meta.hmsStationId.get, meta.stationId, meta.channelId)
+            Akka.system.scheduler.scheduleOnce(Duration.create(1, TimeUnit.SECONDS), showCrawler, new ScheduleProcess(processStationData))
+            true
+
+          case None => false
+
+          case _ =>
+            Logger.error(s"unable to schedule next getShows call for station related to callback: callback.ID=${callback.ID}")
+            true
+
+        }
 
       case _ =>
         Logger.info(s"transcoder job is not finished: $callback")

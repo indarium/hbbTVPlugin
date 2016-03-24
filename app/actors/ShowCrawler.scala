@@ -9,11 +9,12 @@ import helper._
 import helper.hms.{HmsUtil, HMSApi, HMSShow}
 import helper.vimeo.VimeoUtil
 import models.dto.{ProcessHmsCallback, ShowMetaData}
-import models.hms.TranscodeCallback
+import models.hms.{JobResult, TranscodeCallback}
 import models.{Show, Station}
 import reactivemongo.core.commands.LastError
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 
 /**
@@ -69,7 +70,9 @@ class ShowCrawler extends Actor {
 
         case true =>
           log.info(s"creating transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
-          createTranscodeJob(meta)
+          createTranscodeJob(meta).map {
+            case None => self ! ScheduleProcess(processStationData)
+          }
 
         case false =>
           meta.sourceVideoUrl = Some(new URL(hmsShow.DownloadURL.get))
@@ -126,22 +129,28 @@ class ShowCrawler extends Actor {
       startVimeoEncodingStatusScheduler
 
     case scheduleProcess: ScheduleProcess =>
-      log.info("scheduling show crawler")
+      log.info(s"scheduling show crawler (${scheduleProcess.processStationData.stationId})")
       context.system.scheduler.scheduleOnce(
         Duration.create(crawlerPeriod, TimeUnit.MINUTES),
         self,
         ProcessStation(scheduleProcess.processStationData))
   }
 
-  private def createTranscodeJob(meta: ShowMetaData) = {
+  private def createTranscodeJob(meta: ShowMetaData): Future[Option[JobResult]] = {
 
     val futureJobResult = HMSApi.transcode(meta)
-    futureJobResult.map {
+    futureJobResult.flatMap {
+
       case Some(jobResult) =>
         TranscodeCallback.insert(jobResult, meta).map {
-          case le: LastError if le.inError => log.error(s"createTranscodeJob() - tried to insert jobResult: lastError=$le")
+          case le: LastError if le.inError =>
+            log.error(s"createTranscodeJob() - failed to insert jobResult: lastError=$le")
+            None
+          case _ => Some(jobResult)
         }
-      case _ => log.error(s"createTranscodeJob() - unable to persist missing JobResult: meta=$meta")
+
+      case _ => Future(None)
+
     }
 
   }
