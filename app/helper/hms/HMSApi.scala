@@ -196,8 +196,7 @@ object HMSApi {
     try {
       wsAuthRequest(apiUrl).flatMap {
 
-        case Some(reqHolder) =>
-          callTranscode(reqHolder, meta)
+        case Some(reqHolder) => callTranscode(reqHolder, meta)
 
         case None =>
           Logger.error("HMSApi.transcode: authorization failed")
