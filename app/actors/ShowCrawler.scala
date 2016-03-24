@@ -10,7 +10,6 @@ import helper.hms.{HMSApi, HmsUtil}
 import helper.vimeo.VimeoUtil
 import models.dto.{ProcessHmsCallback, ShowMetaData}
 import models.hms.{HmsShow, TranscodeCallback}
-import models.hms.{JobResult, TranscodeCallback}
 import models.{Show, Station}
 import reactivemongo.core.commands.LastError
 
