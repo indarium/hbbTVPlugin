@@ -62,9 +62,12 @@ object TranscodeCallback {
 
   }
 
-  def findByShowId(showId: Long): Future[Option[TranscodeCallback]] = {
+  def findByShowIdWithStatusNotFaulty(showId: Long): Future[Option[TranscodeCallback]] = {
 
-    val selector = BSONDocument("meta.showId" -> showId)
+    val selector = BSONDocument(
+      "meta.showId" -> showId,
+      "Status" -> BSONDocument("$ne" -> HmsCallbackStatus.FAULTY)
+    )
 
     transcodeCallCollection
       .find(selector)
