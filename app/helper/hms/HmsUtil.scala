@@ -46,15 +46,15 @@ object HmsUtil {
 
   }
 
-  def extractCurrentShow(shows: Seq[HmsShow], stationId: String): Option[HmsShow] = {
+  def extractCurrentShow(showSeq: Seq[HmsShow], stationId: String): Option[HmsShow] = {
 
-    shows.find {
+    showSeq.find {
 
-      aShow =>
+      show =>
 
         HmsUtil.isTranscoderEnabled(stationId) match {
-          case true => aShow.UTCEnd.isBeforeNow
-          case false => aShow.DownloadURL.isDefined
+          case true => show.UTCEnd.isBeforeNow
+          case false => show.DownloadURL.isDefined
         }
 
     }
