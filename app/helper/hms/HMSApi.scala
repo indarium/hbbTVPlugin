@@ -127,6 +127,9 @@ object HMSApi {
                           Logger.error(s"HMSApi.getShows() - parsing $stationId sources failed with JsonMappingException", e)
                           None
                       }
+                    case s if s == 401 =>
+                      Logger.error(s"HMSApi Login failed: ${response.status}")
+                      None
                     case _ =>
                       Logger.error(s"HMSApi result code: ${response.status}")
                       None
