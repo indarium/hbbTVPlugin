@@ -101,7 +101,7 @@ class ShowCrawler extends Actor {
 
           for {
             existingShow <- Show.findShowById(show.ID)
-            transcodeCallback <- TranscodeCallback.findByShowId(show.ID)
+            transcodeCallback <- TranscodeCallback.findByShowIdWithStatusNotFaulty(show.ID)
           } yield {
 
             existingShow.isDefined || transcodeCallback.isDefined match {
