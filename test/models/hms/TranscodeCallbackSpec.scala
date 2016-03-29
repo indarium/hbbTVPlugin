@@ -29,10 +29,10 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.ID mustEqual processing.ID
         transcodeCallback.VerboseMessage mustEqual processing.VerboseMessage
         transcodeCallback.Status mustEqual processing.Status
-        transcodeCallback.StatusValue.isEmpty mustEqual true
-        transcodeCallback.StatusUnit.isEmpty mustEqual true
-        transcodeCallback.DownloadSource.isEmpty mustEqual true
-        transcodeCallback.meta.isEmpty mustEqual true
+        transcodeCallback.StatusValue.isEmpty must beTrue
+        transcodeCallback.StatusUnit.isEmpty must beTrue
+        transcodeCallback.DownloadSource.isEmpty must beTrue
+        transcodeCallback.meta.isEmpty must beTrue
 
       }
     }
@@ -50,9 +50,9 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         (json \ "ID").as[Long] mustEqual processing.ID
         (json \ "VerboseMessage").asOpt[String] mustEqual processing.VerboseMessage
         (json \ "Status").as[String] mustEqual processing.Status
-        (json \ "StatusValue").asOpt[Int] mustEqual None
-        (json \ "StatusUnit").asOpt[String] mustEqual None
-        (json \ "DownloadSource").asOpt[String] mustEqual None
+        (json \ "StatusValue").asOpt[Int] must beNone
+        (json \ "StatusUnit").asOpt[String] must beNone
+        (json \ "DownloadSource").asOpt[String] must beNone
         (json \ "meta").asOpt[ShowMetaData].get mustEqual processing.meta.get
 
       }
@@ -74,8 +74,8 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.Status mustEqual processing.Status
         transcodeCallback.StatusValue mustEqual processing.StatusValue
         transcodeCallback.StatusUnit mustEqual processing.StatusUnit
-        transcodeCallback.DownloadSource.isEmpty mustEqual true
-        transcodeCallback.meta.isEmpty mustEqual true
+        transcodeCallback.DownloadSource.isEmpty must beTrue
+        transcodeCallback.meta.isEmpty must beTrue
 
       }
     }
@@ -95,7 +95,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         (json \ "Status").as[String] mustEqual processing.Status
         (json \ "StatusValue").asOpt[Int] mustEqual processing.StatusValue
         (json \ "StatusUnit").asOpt[String] mustEqual processing.StatusUnit
-        (json \ "DownloadSource").asOpt[String] mustEqual None
+        (json \ "DownloadSource").asOpt[String] must beNone
         (json \ "meta").asOpt[ShowMetaData].get mustEqual processing.meta.get
 
       }
@@ -115,10 +115,10 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.ID mustEqual processing.ID
         transcodeCallback.VerboseMessage mustEqual processing.VerboseMessage
         transcodeCallback.Status mustEqual processing.Status
-        transcodeCallback.StatusValue mustEqual None
-        transcodeCallback.StatusUnit mustEqual None
+        transcodeCallback.StatusValue must beNone
+        transcodeCallback.StatusUnit must beNone
         transcodeCallback.DownloadSource mustEqual processing.DownloadSource
-        transcodeCallback.meta.isEmpty mustEqual true
+        transcodeCallback.meta.isEmpty must beTrue
 
       }
     }
@@ -136,8 +136,8 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         (json \ "ID").as[Long] mustEqual processing.ID
         (json \ "VerboseMessage").asOpt[String] mustEqual processing.VerboseMessage
         (json \ "Status").as[String] mustEqual processing.Status
-        (json \ "StatusValue").asOpt[Int] mustEqual None
-        (json \ "StatusUnit").asOpt[String] mustEqual None
+        (json \ "StatusValue").asOpt[Int] must beNone
+        (json \ "StatusUnit").asOpt[String] must beNone
         (json \ "DownloadSource").asOpt[String] mustEqual processing.DownloadSource
         (json \ "meta").asOpt[ShowMetaData].get mustEqual processing.meta.get
 
@@ -158,10 +158,10 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.ID mustEqual id
         transcodeCallback.VerboseMessage mustEqual (json \ "VerboseMessage").asOpt[String]
         transcodeCallback.Status mustEqual (json \ "Status").as[String]
-        transcodeCallback.StatusValue mustEqual None
-        transcodeCallback.StatusUnit mustEqual None
-        transcodeCallback.DownloadSource mustEqual None
-        transcodeCallback.meta mustEqual None
+        transcodeCallback.StatusValue must beNone
+        transcodeCallback.StatusUnit must beNone
+        transcodeCallback.DownloadSource must beNone
+        transcodeCallback.meta must beNone
 
       }
     }
@@ -179,9 +179,9 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.ID mustEqual (json \ "ID").as[Long]
         transcodeCallback.VerboseMessage mustEqual (json \ "VerboseMessage").asOpt[String]
         transcodeCallback.Status mustEqual (json \ "Status").as[String]
-        transcodeCallback.StatusValue mustEqual None
-        transcodeCallback.StatusUnit mustEqual None
-        transcodeCallback.DownloadSource mustEqual None
+        transcodeCallback.StatusValue must beNone
+        transcodeCallback.StatusUnit must beNone
+        transcodeCallback.DownloadSource must beNone
         transcodeCallback.meta.get mustEqual (json \ "meta").asOpt[ShowMetaData].get
 
       }
@@ -202,8 +202,8 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.Status mustEqual (json \ "Status").as[String]
         transcodeCallback.StatusValue mustEqual (json \ "StatusValue").asOpt[Int]
         transcodeCallback.StatusUnit mustEqual (json \ "StatusUnit").asOpt[String]
-        transcodeCallback.DownloadSource mustEqual None
-        transcodeCallback.meta mustEqual None
+        transcodeCallback.DownloadSource must beNone
+        transcodeCallback.meta must beNone
 
       }
     }
@@ -223,7 +223,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.Status mustEqual (json \ "Status").as[String]
         transcodeCallback.StatusValue mustEqual (json \ "StatusValue").asOpt[Int]
         transcodeCallback.StatusUnit mustEqual (json \ "StatusUnit").asOpt[String]
-        transcodeCallback.DownloadSource mustEqual None
+        transcodeCallback.DownloadSource must beNone
         transcodeCallback.meta.get mustEqual (json \ "meta").asOpt[ShowMetaData].get
 
       }
@@ -242,10 +242,10 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.ID mustEqual (json \ "ID").as[Long]
         transcodeCallback.VerboseMessage mustEqual (json \ "VerboseMessage").asOpt[String]
         transcodeCallback.Status mustEqual (json \ "Status").as[String]
-        transcodeCallback.StatusValue mustEqual None
-        transcodeCallback.StatusUnit mustEqual None
+        transcodeCallback.StatusValue must beNone
+        transcodeCallback.StatusUnit must beNone
         transcodeCallback.DownloadSource mustEqual (json \ "DownloadSource").asOpt[String]
-        transcodeCallback.meta mustEqual None
+        transcodeCallback.meta must beNone
 
       }
     }
@@ -264,8 +264,8 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.ID mustEqual (json \ "ID").as[Long]
         transcodeCallback.VerboseMessage mustEqual (json \ "VerboseMessage").asOpt[String]
         transcodeCallback.Status mustEqual (json \ "Status").as[String]
-        transcodeCallback.StatusValue mustEqual None
-        transcodeCallback.StatusUnit mustEqual None
+        transcodeCallback.StatusValue must beNone
+        transcodeCallback.StatusUnit must beNone
         transcodeCallback.DownloadSource mustEqual (json \ "DownloadSource").asOpt[String]
         transcodeCallback.meta.get mustEqual (json \ "meta").asOpt[ShowMetaData].get
 
