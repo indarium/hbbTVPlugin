@@ -68,6 +68,12 @@ object HMSApi {
           Future(None)
       }
       f.map { response =>
+
+        Logger.debug("auth-response-header: " + response.allHeaders)
+        Logger.debug("auth-response-status: " + response.status)
+        Logger.debug("auth-response-status-text: " + response.statusText)
+        Logger.debug("auth-response-body: " + response.body)
+
         response.status match {
           case s if (s < 400) && (response.body.length > 0) =>
             response.json.asOpt[AccessToken]
@@ -75,6 +81,7 @@ object HMSApi {
             Logger.error("no valid access token! Status: " + s)
             None
         }
+
       }
     } catch {
       case e: Exception =>
