@@ -1,9 +1,10 @@
 package models.hms
 
+import constants.JsonConstants
 import models.dto.ShowMetaData
 import models.hms.util.TranscodeCallbackHelper
 import org.specs2.mutable.Specification
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.{FakeApplication, PlayRunners}
 import reactivemongo.bson.BSON
 
@@ -19,20 +20,14 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val processing = TranscodeCallbackHelper.queuedObjectWithoutMeta(-1L)
+        val queued = TranscodeCallbackHelper.queuedObjectWithoutMeta(-1L)
 
         // test
-        val json = Json.toJson(processing)
+        val json = Json.toJson(queued)
 
         // verify
         val transcodeCallback = json.as[TranscodeCallback]
-        transcodeCallback.ID mustEqual processing.ID
-        transcodeCallback.VerboseMessage mustEqual processing.VerboseMessage
-        transcodeCallback.Status mustEqual processing.Status
-        transcodeCallback.StatusValue.isEmpty must beTrue
-        transcodeCallback.StatusUnit.isEmpty must beTrue
-        transcodeCallback.DownloadSource.isEmpty must beTrue
-        transcodeCallback.meta.isEmpty must beTrue
+        transcodeCallback mustEqual queued
 
       }
     }
@@ -41,19 +36,14 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val processing = TranscodeCallbackHelper.queuedObjectWithMeta(-1L)
+        val queued = TranscodeCallbackHelper.queuedObjectWithMeta(-1L)
 
         // test
-        val json = Json.toJson(processing)
+        val json = Json.toJson(queued)
 
         // verify
-        (json \ "ID").as[Long] mustEqual processing.ID
-        (json \ "VerboseMessage").asOpt[String] mustEqual processing.VerboseMessage
-        (json \ "Status").as[String] mustEqual processing.Status
-        (json \ "StatusValue").asOpt[Int] must beNone
-        (json \ "StatusUnit").asOpt[String] must beNone
-        (json \ "DownloadSource").asOpt[String] must beNone
-        (json \ "meta").asOpt[ShowMetaData].get mustEqual processing.meta.get
+        val transcodeCallback = json.as[TranscodeCallback]
+        transcodeCallback mustEqual queued
 
       }
     }
@@ -69,13 +59,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
 
         // verify
         val transcodeCallback = json.as[TranscodeCallback]
-        transcodeCallback.ID mustEqual processing.ID
-        transcodeCallback.VerboseMessage mustEqual processing.VerboseMessage
-        transcodeCallback.Status mustEqual processing.Status
-        transcodeCallback.StatusValue mustEqual processing.StatusValue
-        transcodeCallback.StatusUnit mustEqual processing.StatusUnit
-        transcodeCallback.DownloadSource.isEmpty must beTrue
-        transcodeCallback.meta.isEmpty must beTrue
+        transcodeCallback mustEqual processing
 
       }
     }
@@ -90,13 +74,8 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         val json = Json.toJson(processing)
 
         // verify
-        (json \ "ID").as[Long] mustEqual processing.ID
-        (json \ "VerboseMessage").asOpt[String] mustEqual processing.VerboseMessage
-        (json \ "Status").as[String] mustEqual processing.Status
-        (json \ "StatusValue").asOpt[Int] mustEqual processing.StatusValue
-        (json \ "StatusUnit").asOpt[String] mustEqual processing.StatusUnit
-        (json \ "DownloadSource").asOpt[String] must beNone
-        (json \ "meta").asOpt[ShowMetaData].get mustEqual processing.meta.get
+        val transcodeCallback = json.as[TranscodeCallback]
+        transcodeCallback mustEqual processing
 
       }
     }
@@ -105,20 +84,14 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val processing = TranscodeCallbackHelper.finishedObjectWithoutMeta(-1L)
+        val finished = TranscodeCallbackHelper.finishedObjectWithoutMeta(-1L)
 
         // test
-        val json = Json.toJson(processing)
+        val json = Json.toJson(finished)
 
         // verify
         val transcodeCallback = json.as[TranscodeCallback]
-        transcodeCallback.ID mustEqual processing.ID
-        transcodeCallback.VerboseMessage mustEqual processing.VerboseMessage
-        transcodeCallback.Status mustEqual processing.Status
-        transcodeCallback.StatusValue must beNone
-        transcodeCallback.StatusUnit must beNone
-        transcodeCallback.DownloadSource mustEqual processing.DownloadSource
-        transcodeCallback.meta.isEmpty must beTrue
+        transcodeCallback mustEqual finished
 
       }
     }
@@ -127,19 +100,14 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
       running(FakeApplication()) {
 
         // prepare
-        val processing = TranscodeCallbackHelper.finishedObjectWithMeta(-1L)
+        val finished = TranscodeCallbackHelper.finishedObjectWithMeta(-1L)
 
         // test
-        val json = Json.toJson(processing)
+        val json = Json.toJson(finished)
 
         // verify
-        (json \ "ID").as[Long] mustEqual processing.ID
-        (json \ "VerboseMessage").asOpt[String] mustEqual processing.VerboseMessage
-        (json \ "Status").as[String] mustEqual processing.Status
-        (json \ "StatusValue").asOpt[Int] must beNone
-        (json \ "StatusUnit").asOpt[String] must beNone
-        (json \ "DownloadSource").asOpt[String] mustEqual processing.DownloadSource
-        (json \ "meta").asOpt[ShowMetaData].get mustEqual processing.meta.get
+        val transcodeCallback = json.as[TranscodeCallback]
+        transcodeCallback mustEqual finished
 
       }
     }
@@ -162,6 +130,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.StatusUnit must beNone
         transcodeCallback.DownloadSource must beNone
         transcodeCallback.meta must beNone
+        verifyCreatedAndModified(transcodeCallback, json)
 
       }
     }
@@ -183,6 +152,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.StatusUnit must beNone
         transcodeCallback.DownloadSource must beNone
         transcodeCallback.meta.get mustEqual (json \ "meta").asOpt[ShowMetaData].get
+        verifyCreatedAndModified(transcodeCallback, json)
 
       }
     }
@@ -204,6 +174,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.StatusUnit mustEqual (json \ "StatusUnit").asOpt[String]
         transcodeCallback.DownloadSource must beNone
         transcodeCallback.meta must beNone
+        verifyCreatedAndModified(transcodeCallback, json)
 
       }
     }
@@ -225,6 +196,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.StatusUnit mustEqual (json \ "StatusUnit").asOpt[String]
         transcodeCallback.DownloadSource must beNone
         transcodeCallback.meta.get mustEqual (json \ "meta").asOpt[ShowMetaData].get
+        verifyCreatedAndModified(transcodeCallback, json)
 
       }
     }
@@ -246,6 +218,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.StatusUnit must beNone
         transcodeCallback.DownloadSource mustEqual (json \ "DownloadSource").asOpt[String]
         transcodeCallback.meta must beNone
+        verifyCreatedAndModified(transcodeCallback, json)
 
       }
     }
@@ -268,6 +241,7 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
         transcodeCallback.StatusUnit must beNone
         transcodeCallback.DownloadSource mustEqual (json \ "DownloadSource").asOpt[String]
         transcodeCallback.meta.get mustEqual (json \ "meta").asOpt[ShowMetaData].get
+        verifyCreatedAndModified(transcodeCallback, json)
 
       }
     }
@@ -289,6 +263,15 @@ class TranscodeCallbackSpec extends Specification with PlayRunners {
       }
     }
 
+  }
+
+  /*
+   * TEST HELPERS
+   ********************************************************************************************************************/
+
+  private def verifyCreatedAndModified(transcodeCallback: TranscodeCallback, json: JsValue) = {
+    transcodeCallback.created.get.toString(JsonConstants.dateFormat) mustEqual (json \ "created").as[String]
+    transcodeCallback.modified.get.toString(JsonConstants.dateFormat) mustEqual (json \ "modified").as[String]
   }
 
 }

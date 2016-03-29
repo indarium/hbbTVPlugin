@@ -1,13 +1,14 @@
 package models.hms
 
-import constants.HmsCallbackStatus
+import constants.{HmsCallbackStatus, JsonConstants}
 import models.dto.ShowMetaData
+import org.joda.time.DateTime
 import play.Logger
 import play.api.Play.current
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, Reads, Writes}
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import reactivemongo.api.collections.default.BSONCollection
-import reactivemongo.bson.{BSON, BSONDocument, Macros}
+import reactivemongo.bson._
 import reactivemongo.core.commands.LastError
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,12 +25,23 @@ case class TranscodeCallback(ID: Long,
                              StatusValue: Option[Int],
                              StatusUnit: Option[String],
                              DownloadSource: Option[String],
-                             meta: Option[ShowMetaData]
+                             meta: Option[ShowMetaData],
+                             created: Option[DateTime] = Some(DateTime.now),
+                             modified: Option[DateTime] = Some(DateTime.now)
                             )
 
 object TranscodeCallback {
 
   private val transcodeCallCollection = ReactiveMongoPlugin.db.collection[BSONCollection]("hmsTranscode")
+
+  implicit val dateReads = Reads.jodaDateReads(JsonConstants.dateFormat)
+  implicit val dateWrites = Writes.jodaDateWrites(JsonConstants.dateFormat)
+
+  // bson DateTime based on: https://gist.github.com/ctcarrier/9918087
+  implicit object BSONDateTimeHandler extends BSONHandler[BSONDateTime, DateTime] {
+    def read(time: BSONDateTime) = new DateTime(time.value)
+    def write(jdtime: DateTime) = BSONDateTime(jdtime.getMillis)
+  }
 
   implicit val reads = Json.reads[TranscodeCallback]
   implicit val writes = Json.writes[TranscodeCallback]
@@ -87,7 +99,8 @@ object TranscodeCallback {
   /**
     * Update an existing record or do nothing otherwise.
     *
-    * @param callback record with new values (as received from HMS)
+    * @param callback record with new values (as received from HMS...meaning that it contains no internal fields like
+    *                 <i>meta</i>, <i>created</i> or <i>modified</i>)
     * @return
     */
   def updateRecord(callback: TranscodeCallback): Unit = {
@@ -98,7 +111,7 @@ object TranscodeCallback {
 
         case Some(dbRecord) =>
 
-          val updatedRecord = callback.copy(meta = dbRecord.meta)
+          val updatedRecord = callback.copy(meta = dbRecord.meta, created = dbRecord.created, modified = dbRecord.modified)
 
           update(updatedRecord).onComplete {
             case Failure(e) => Logger.error(s"updateRecord() - failed to update hmsTranscode record: callback=$callback, e=", e)
@@ -119,8 +132,9 @@ object TranscodeCallback {
 
   def update(transcodeCallback: TranscodeCallback): Future[LastError] = {
 
-    val selector = BSONDocument("ID" -> transcodeCallback.ID)
-    transcodeCallCollection.update(selector, transcodeCallback)
+    val newModified = transcodeCallback.copy(modified = Some(DateTime.now))
+    val selector = BSONDocument("ID" -> newModified.ID)
+    transcodeCallCollection.update(selector, newModified)
 
   }
 

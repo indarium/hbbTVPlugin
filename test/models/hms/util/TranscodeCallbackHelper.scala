@@ -29,7 +29,9 @@ object TranscodeCallbackHelper {
        |{
        |  "ID":  $id,
        |  "VerboseMessage": "created transcode job",
-       |  "Status": "${HmsCallbackStatus.QUEUED}"
+       |  "Status": "${HmsCallbackStatus.QUEUED}",
+       |  "created": "2016-02-17T09:54:22.440Z",
+       |  "modified": "2016-02-17T10:54:22.440Z"
        |}
      """.stripMargin
 
@@ -39,7 +41,9 @@ object TranscodeCallbackHelper {
        |  "ID":  $id,
        |  "VerboseMessage": "created transcode job",
        |  "Status": "${HmsCallbackStatus.QUEUED}",
-       |  "meta": ${ShowMetaDataHelper.defaultJson}
+       |  "meta": ${ShowMetaDataHelper.defaultJson},
+       |  "created": "2016-02-17T09:54:22.440Z",
+       |  "modified": "2016-02-17T10:54:22.440Z"
        |}
      """.stripMargin
 
@@ -50,7 +54,9 @@ object TranscodeCallbackHelper {
        |  "VerboseMessage": "${verboseMessage(id)}",
        |  "Status": "${HmsCallbackStatus.PROCESSING}",
        |  "StatusValue": 80,
-       |  "StatusUnit": "percentage"
+       |  "StatusUnit": "percentage",
+       |  "created": "2016-02-17T09:54:22.440Z",
+       |  "modified": "2016-02-17T10:54:22.440Z"
        |}
      """.stripMargin
 
@@ -62,7 +68,9 @@ object TranscodeCallbackHelper {
        |  "Status": "${HmsCallbackStatus.PROCESSING}",
        |  "StatusValue": 80,
        |  "StatusUnit": "percentage",
-       |  "meta": ${ShowMetaDataHelper.defaultJson}
+       |  "meta": ${ShowMetaDataHelper.defaultJson},
+       |  "created": "2016-02-17T09:54:22.440Z",
+       |  "modified": "2016-02-17T10:54:22.440Z"
        |}
      """.stripMargin
 
@@ -72,7 +80,9 @@ object TranscodeCallbackHelper {
        |  "ID":  $id,
        |  "VerboseMessage": "{verboseMessage(id)}",
        |  "Status": "${HmsCallbackStatus.FINISHED}",
-       |  "DownloadSource": "${downloadSource(id)}"
+       |  "DownloadSource": "${downloadSource(id)}",
+       |  "created": "2016-02-17T09:54:22.440Z",
+       |  "modified": "2016-02-17T10:54:22.440Z"
        |}
      """.stripMargin
 
@@ -83,7 +93,9 @@ object TranscodeCallbackHelper {
        |  "VerboseMessage": "{verboseMessage(id)}",
        |  "Status": "${HmsCallbackStatus.FINISHED}",
        |  "DownloadSource": "${downloadSource(id)}",
-       |  "meta": ${ShowMetaDataHelper.defaultJson}
+       |  "meta": ${ShowMetaDataHelper.defaultJson},
+       |  "created": "2016-02-17T09:54:22.440Z",
+       |  "modified": "2016-02-17T10:54:22.440Z"
        |}
      """.stripMargin
 
