@@ -97,6 +97,34 @@ object TranscodeCallback {
   }
 
   /**
+    * @return empty set if we don't find any matching records
+    */
+  def findByStatusNotFaultyNotFinished: Future[Set[TranscodeCallback]] = {
+
+    val selector = BSONDocument(
+      "Status" ->
+        BSONDocument(
+          "$not" -> BSONDocument(
+            "$in" -> BSONArray(HmsCallbackStatus.FINISHED, HmsCallbackStatus.FAULTY)
+          )
+        )
+    )
+
+    transcodeCallCollection
+      .find(selector)
+      .cursor[BSONDocument]
+      .collect[Set]()
+      .map {
+        set => {
+          set.map {
+            bson => BSON.readDocument[TranscodeCallback](bson)
+          }
+        }
+      }
+
+  }
+
+  /**
     * Update an existing record or do nothing otherwise.
     *
     * @param callback record with new values (as received from HMS...meaning that it contains no internal fields like

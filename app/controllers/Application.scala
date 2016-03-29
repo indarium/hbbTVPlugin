@@ -4,6 +4,7 @@ import actors.{ShowCrawler, StartProcess}
 import akka.actor.Props
 import akka.util.Timeout
 import helper.hms.HMSApi
+import models.hms.TranscodeCallback
 import play.Logger
 import play.api.Play.current
 import play.api.libs.json.Json
@@ -55,6 +56,23 @@ object Application extends Controller {
       case Some(token) => Ok(token.Access_Token)
       case None => Ok("Error")
     }
+  }
+
+  // TODO remove method before merging to dev
+  def testCallbacksNotFaultyNotFinished = Action.async {
+
+    for {
+      set <- TranscodeCallback.findByStatusNotFaultyNotFinished
+    } yield {
+
+      val callbacks = set.map {
+        case o: TranscodeCallback => Json.toJson(o)
+      }
+
+      Ok(Json.obj("callbacks" -> callbacks))
+
+    }
+
   }
 
   def testShows(channelId: String, stationId: String) = Action.async {
