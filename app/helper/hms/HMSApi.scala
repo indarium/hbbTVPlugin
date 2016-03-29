@@ -115,18 +115,11 @@ object HMSApi {
                 f.map { response =>
                   response.status match {
                     case s if s < 400 =>
-                      try {
-                        response.json \ "sources" match {
-                          case errorResult: JsUndefined =>
-                            Logger.error(s"empty result for stationId $stationId / channelId $channelId")
-                            None
-                          case result: JsValue =>
-                            Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
-                        }
-                      } catch {
-                        case e: JsonMappingException =>
-                          Logger.error(s"HMSApi.getShows() - parsing $stationId sources failed with JsonMappingException", e)
+                      response.body.trim.isEmpty match {
+                        case true =>
+                          Logger.warn(s"HMSApi.getShows: empty response body ($stationId/$channelId)")
                           None
+                        case false => parseSources(response, stationId, channelId)
                       }
                     case s if s == 401 =>
                       Logger.error(s"HMSApi Login failed: ${response.status}")
@@ -147,6 +140,24 @@ object HMSApi {
           }
 
       }
+    }
+
+  }
+
+  private def parseSources(response: WSResponse, stationId: String, channelId: String): Option[JsObject] = {
+
+    try {
+      response.json \ "sources" match {
+        case errorResult: JsUndefined =>
+          Logger.error(s"invalid result for stationId $stationId / channelId $channelId")
+          None
+        case result: JsValue =>
+          Some(Json.obj("shows" -> (response.json \ "sources").as[JsArray]))
+      }
+    } catch {
+      case e: JsonMappingException =>
+        Logger.error(s"HMSApi.getShows() - parsing $stationId sources failed with JsonMappingException", e)
+        None
     }
 
   }
