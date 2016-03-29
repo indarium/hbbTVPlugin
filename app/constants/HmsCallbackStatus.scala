@@ -8,10 +8,10 @@ package constants
   */
 object HmsCallbackStatus {
 
-  val QUEUED = "Queued"
-  val PREPARE = "Prepared"
-  val PROCESSING = "Processing"
-  val FINISHED = "Finished"
-  val FAULTY = "Faulty"
+  val QUEUED = "queued"
+  val PREPARE = "prepared"
+  val PROCESSING = "processing"
+  val FINISHED = "finished"
+  val FAULTY = "faulty"
 
 }

@@ -57,11 +57,13 @@ object CurrentShowsController extends Controller {
       Logger.debug("HMS CallBack-Body:")
       Logger.debug(Json.prettyPrint(request.body))
       val callback = request.body.validate[TranscodeCallback].get
+      val statusLowerCase = callback.Status.toLowerCase
+      val callbackStatusLowerCase = callback.copy(Status = statusLowerCase)
 
-      handleCallback(callback).map {
+      handleCallback(callbackStatusLowerCase).map {
 
         case true =>
-          TranscodeCallback.updateRecord(callback)
+          TranscodeCallback.updateRecord(callbackStatusLowerCase)
           Ok(Json.obj("status" -> "OK"))
 
         case false => Unsuccessful404
