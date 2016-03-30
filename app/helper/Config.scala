@@ -52,6 +52,10 @@ object Config {
 
   def hmsTranscoderDeactivateChannels: Array[String] = stringArray("hms.transcoder.deactivate.channels")
 
+  def hmsImportAllShows: Array[String] = stringArray("hms.import.all.shows")
+
+  def hmsImportAllShows(stationId: String): Boolean = hmsImportAllShows.contains(stationId.toLowerCase)
+
   /* WEBJAZZ CONFIGS **************************************************************************************************/
 
   def webjazzToken: String = Play.configuration.getString("webjazz.auth-token").getOrElse("NO-ACCESS-TOKEN")
@@ -107,7 +111,7 @@ object Config {
 
     config match {
       case None => Array.empty
-      case Some(value:String) if value == "" => Array.empty
+      case Some(value: String) if value.trim == "" => Array.empty
       case Some(value: String) => value.split(",").map(_.trim.toLowerCase)
     }
 
