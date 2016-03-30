@@ -61,4 +61,9 @@ object HmsUtil {
 
   }
 
+  def hmsImportAllShows(stationId: String): Boolean = {
+    val lowerCaseStation: String = stationId.toLowerCase
+    Config.hmsImportAllShows.contains(lowerCaseStation)
+  }
+
 }

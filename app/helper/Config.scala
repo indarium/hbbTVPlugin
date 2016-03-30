@@ -54,8 +54,6 @@ object Config {
 
   def hmsImportAllShows: Array[String] = stringArray("hms.import.all.shows")
 
-  def hmsImportAllShows(stationId: String): Boolean = hmsImportAllShows.contains(stationId.toLowerCase)
-
   /* WEBJAZZ CONFIGS **************************************************************************************************/
 
   def webjazzToken: String = Play.configuration.getString("webjazz.auth-token").getOrElse("NO-ACCESS-TOKEN")
