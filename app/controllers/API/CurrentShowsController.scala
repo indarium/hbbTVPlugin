@@ -98,7 +98,7 @@ object CurrentShowsController extends Controller {
         }
 
       case _ =>
-        Logger.info(s"transcoder job is not finished: $callback")
+        Logger.info(s"received callback for unfinished transcoder job: $callback")
         Future(true)
 
     }
