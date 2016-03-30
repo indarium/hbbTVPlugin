@@ -69,10 +69,16 @@ class ShowCrawler extends Actor {
       HmsUtil.isTranscoderEnabled(meta.stationId) match {
 
         case true =>
+
           log.info(s"creating transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
           createTranscodeJob(meta) map {
+
             case false => self ! ScheduleProcess(processStationData)
-            case true => log.info(s"created transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
+
+            case true =>
+              log.info(s"created transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
+              self ! ScheduleProcess(processStationData)
+
           }
 
         case false =>
@@ -92,7 +98,7 @@ class ShowCrawler extends Actor {
       val f = HMSApi.getCurrentShow(processStation.processStationData.stationId, processStation.processStationData.channelId)
       f.onFailure {
         case e: Exception =>
-          log.error(e, "could not start process")
+          log.error(e, s"could not start process: stationId=${processingStation.stationId}")
           self ! ScheduleProcess(processingStation)
       }
       f.map {
