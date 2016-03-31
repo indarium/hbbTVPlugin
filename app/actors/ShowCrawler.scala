@@ -103,9 +103,7 @@ class ShowCrawler extends Actor {
       }
       f.map {
 
-        case None =>
-          log.error(s"could not start process: stationId=${processingStation.stationId}")
-          self ! ScheduleProcess(processingStation)
+        case None => self ! ScheduleProcess(processingStation)
 
         case Some(show) =>
 

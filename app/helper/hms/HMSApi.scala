@@ -175,7 +175,12 @@ object HMSApi {
             Some(hmsShow)
 
           case None =>
-            Logger.error("HMSApi.getCurrentShow not successful for %s / %s".format(stationId, channelId))
+
+            filteredShows.isEmpty match {
+              case true => Logger.info(s"nothing to do for: $stationId / $channelId")
+              case false => Logger.error("HMSApi.getCurrentShow not successful for %s / %s".format(stationId, channelId))
+
+            }
             None
 
         }
