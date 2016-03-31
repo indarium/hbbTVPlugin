@@ -216,7 +216,7 @@ object HMSApi {
     */
   def transcode(meta: ShowMetaData): Future[Option[JobResult]] = {
 
-    val apiUrl = transcodeUrlPath(meta.channelId)
+    val apiUrl = HmsUtil.transcodeUrlPath(meta.channelId)
     try {
       wsAuthRequest(apiUrl).flatMap {
 
@@ -235,13 +235,24 @@ object HMSApi {
 
   }
 
-  private def transcodeUrlPath(channelId: String): String = {
+  def transcodeJobStatus(channelId: String, jobId: Long): Future[Option[TranscodeCallback]] = {
 
-    val encodedChannelId: String = java.net.URLEncoder.encode(channelId, "UTF-8")
-    val apiUrl = Config.hmsTranscodeUrl + "/transcode/" + encodedChannelId
-    Logger.debug(s"HMSApi.transcode apiUrl: $apiUrl")
+    val apiUrl = HmsUtil.transcodeJobUrl(channelId, jobId)
+    try {
+      wsAuthRequest(apiUrl) flatMap {
 
-    apiUrl
+        case Some(reqHolder) => callJobStatusUpdate(reqHolder)
+
+        case None =>
+          Logger.error("HMS.Api.transcodeJobStatus: authorization failed")
+          Future(None)
+
+      }
+    } catch {
+      case e: Exception =>
+        Logger.error(s"Error while querying transcode job status: channel=$channelId, ID=$jobId", e)
+        Future(None)
+    }
 
   }
 
@@ -302,6 +313,53 @@ object HMSApi {
 
       case _ =>
         Logger.error(s"failed to parse transcode response: response=${response.body}")
+        None
+
+    }
+
+  }
+
+  private def callJobStatusUpdate(requestHolder: WSRequestHolder): Future[Option[TranscodeCallback]] = {
+
+    val f = requestHolder.get
+    f.onFailure {
+      case e =>
+        Logger.error("callJobStatusUpdate() failed", e)
+        None
+    }
+    f map {
+      response =>
+
+          response.status match {
+
+            case s if s < 400 =>
+              Logger.info(s"callJobStatusUpdate() - status=$s, response=${response.body}")
+              extractTranscodeCallback(response)
+
+            case _ =>
+              val url = requestHolder.url
+              val status = response.status
+              Logger.error(s"callJobStatusUpdate() - HMS responded with error: status=$status, url=$url")
+              None
+
+          }
+
+    }
+
+  }
+
+  def extractTranscodeCallback(response: WSResponse): Option[TranscodeCallback] = {
+
+    response.json.validate[Seq[TranscodeCallback]] match {
+
+      case jsError: JsError =>
+        Logger.error(s"failed to parse transcode job status response: ${response.body}")
+        None
+
+      case jsResult: JsResult[Seq[TranscodeCallback]] => Some(jsResult.get.head)
+
+      case _ =>
+        Logger.error(s"failed to parse transcode job status response (unknow error): ${response.body}")
         None
 
     }
