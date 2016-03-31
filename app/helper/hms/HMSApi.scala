@@ -311,7 +311,7 @@ object HMSApi {
     */
   private def filterShows(stationId: String, shows: Seq[HmsShow]): Seq[HmsShow] = {
 
-    Config.hmsImportAllShows(stationId) match {
+    HmsUtil.hmsImportAllShows(stationId) match {
 
       case false => shows
       case true => shows.filter(isShowUnknown)
