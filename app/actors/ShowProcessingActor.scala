@@ -3,6 +3,7 @@ package actors
 import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
+import helper.hms.HmsUtil
 import models.Show
 import models.dto._
 
@@ -55,8 +56,17 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
       self ! ScheduleNextStep(meta)
 
     case ScheduleNextStep(meta) =>
-      log.info("schedule next processing in %d Min.".format(crawlerPeriod))
-      context.parent ! ScheduleProcess(ProcessStationData(meta.hmsStationId.get, meta.stationId, meta.channelId))
+
+      HmsUtil.isTranscoderEnabled(meta.stationId) match {
+
+        case true => log.info(s"scheduling of next processing is not necessary for station=${meta.stationId}")
+
+        case false =>
+          log.info(s"schedule next processing in $crawlerPeriod Min (${meta.stationId}).")
+          context.parent ! ScheduleProcess(ProcessStationData(meta.hmsStationId.get, meta.stationId, meta.channelId))
+
+      }
+
   }
 
 }

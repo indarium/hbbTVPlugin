@@ -1,18 +1,21 @@
 package helper.hms
 
 
+import java.util.concurrent.TimeUnit
+
 import com.fasterxml.jackson.databind.JsonMappingException
 import helper.Config
-import models.Station
 import models.dto.ShowMetaData
 import models.hms._
+import models.{Show, Station}
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.ws.{WS, WSRequestHolder, WSResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 /**
   * Created by dermicha on 21/06/14.
@@ -68,11 +71,6 @@ object HMSApi {
           Future(None)
       }
       f.map { response =>
-
-        Logger.debug("auth-response-header: " + response.allHeaders)
-        Logger.debug("auth-response-status: " + response.status)
-        Logger.debug("auth-response-status-text: " + response.statusText)
-        Logger.debug("auth-response-body: " + response.body)
 
         response.status match {
           case s if (s < 400) && (response.body.length > 0) =>
@@ -165,27 +163,45 @@ object HMSApi {
   def getCurrentShow(stationId: String, channelId: String): Future[Option[HmsShow]] = {
 
     Logger.debug("HMSApi.getCurrentShow tried for %s / %s".format(stationId, channelId))
-    HMSApi.getShows(stationId, channelId).map {
+    getAllShows(stationId, channelId).map {
 
-      case Some(showsJson) =>
+      case Some(shows) =>
 
-        Logger.info("HMSApi.getCurrentShow: shows found for %s / %s".format(stationId, channelId))
-        val shows = (showsJson \ "shows").as[Seq[HmsShow]](Reads.seq(HmsShow.format))
-        HmsUtil.extractCurrentShow(shows, stationId) match {
+        val filteredShows = filterShows(stationId, shows)
+        HmsUtil.extractCurrentShow(filteredShows, stationId) match {
 
           case Some(hmsShow) =>
             Logger.debug("HMSApi.getCurrentShow: found current show: %d / %s, URL: %s".format(hmsShow.ID, hmsShow.Name, hmsShow.DownloadURL))
             Some(hmsShow)
 
           case None =>
-            Logger.error("HMSApi.getCurrentShow not successful for %s / %s".format(stationId, channelId))
+
+            filteredShows.isEmpty match {
+              case true => Logger.info(s"nothing to do for: $stationId / $channelId")
+              case false => Logger.error("HMSApi.getCurrentShow not successful for %s / %s".format(stationId, channelId))
+
+            }
             None
 
         }
 
-      case _ =>
+      case None =>
         Logger.error("HMSApi.getCurrentShow got None as result!")
         None
+
+    }
+
+  }
+
+  def getAllShows(stationId: String, channelId: String): Future[Option[Seq[HmsShow]]] = {
+
+    HMSApi.getShows(stationId, channelId).map {
+
+      case Some(showsJson) =>
+        Logger.info("HMSApi.getAllShows: shows found for %s / %s".format(stationId, channelId))
+        Some((showsJson \ "shows").as[Seq[HmsShow]](Reads.seq(HmsShow.format)))
+
+      case None => None
 
     }
 
@@ -289,6 +305,42 @@ object HMSApi {
         None
 
     }
+
+  }
+
+  /**
+    * Filter the given show sequence if necessary.<br/>
+    * Filtering can be activated with a configuration for the given stationId.<br/>
+    * If filtering is activated for the given station the resulting sequence only includes shows we haven't finished or
+    * began processing yet. Otherwise the original sequence is returned.
+    */
+  private def filterShows(stationId: String, shows: Seq[HmsShow]): Seq[HmsShow] = {
+
+    HmsUtil.hmsImportAllShows(stationId) match {
+
+      case false => shows
+      case true => shows.filter(isShowUnknown)
+
+    }
+
+  }
+
+  private def isShowUnknown(show: HmsShow): Boolean = {
+
+    val f = for {
+      existingShow <- Show.findShowById(show.ID)
+      transcodeCallback <- TranscodeCallback.findByShowIdWithStatusNotFaulty(show.ID)
+    } yield {
+      existingShow.isEmpty && transcodeCallback.isEmpty
+    }
+
+    f onFailure {
+      case e: Exception =>
+        Logger.error(s"failed to find out if a show is unknown: show=$show", e)
+        false
+    }
+
+    Await.result(f, Duration(30, TimeUnit.SECONDS))
 
   }
 

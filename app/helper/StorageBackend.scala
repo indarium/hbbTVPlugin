@@ -80,13 +80,18 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
     meta.localVideoFile match {
       case None => throw new VideoFileNotFindException("No video file defined.")
       case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
+
       case Some(file) =>
+
         val fileName = "%s/%s/%s.%s".format(meta.stationId, meta.channelId, UUID.randomUUID.toString.take(64), "mp4")
-        Logger.debug("Uploading to S3: " + fileName)
+        Logger.info(s"upload to S3: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / $fileName")
         s3.putObject(bucket, fileName, file)
+
         val s3Url = s3.getUrl(bucket, fileName)
+        Logger.info(s"Finished upload to S3: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${s3Url.getPath}")
         // create cdn url
         new URL(Config.cdnBaseUrl + s3Url.getPath)
+
     }
   } catch {
     case e: Exception => throw new StorageException("can't store %s".format(meta.showTitle), e)
@@ -135,7 +140,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
       case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
       case Some(file) =>
         try {
-          Logger.debug("Uploading video to vimeo. Meta: " + meta)
+          Logger.info(s"upload to S3: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${file.getAbsolutePath}")
 
           val res = for {
           // request upload ticket
@@ -188,7 +193,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             meta.vimeoId = videoIdLong
             meta.vimeoEncodingStatus = Some(IN_PROGRESS)
 
-            Logger.info(s"upload video to vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoId.get}")
+            Logger.info(s"Finished upload to Vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${videoIdLong}")
 
             // TODO ??use url from /videos/${VIDEO-ID} response instead??
             // TODO ??field showVideoSDUrl might as well be optional??
