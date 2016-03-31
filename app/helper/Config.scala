@@ -52,6 +52,8 @@ object Config {
 
   def hmsTranscoderDeactivateChannels: Array[String] = stringArray("hms.transcoder.deactivate.channels")
 
+  def hmsTranscodeStatusUpdateInterval: Long = Play.configuration.getLong("hms.transcoder.status.update.interval").getOrElse(300)
+
   def hmsImportAllShows: Array[String] = stringArray("hms.import.all.shows")
 
   /* WEBJAZZ CONFIGS **************************************************************************************************/
