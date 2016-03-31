@@ -80,10 +80,11 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
     meta.localVideoFile match {
       case None => throw new VideoFileNotFindException("No video file defined.")
       case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
+
       case Some(file) =>
 
         val fileName = "%s/%s/%s.%s".format(meta.stationId, meta.channelId, UUID.randomUUID.toString.take(64), "mp4")
-        Logger.info(s"upload video to Se: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / $fileName")
+        Logger.info(s"upload to S3: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / $fileName")
         s3.putObject(bucket, fileName, file)
 
         val s3Url = s3.getUrl(bucket, fileName)
@@ -139,7 +140,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
       case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
       case Some(file) =>
         try {
-          Logger.debug("Uploading to Vimeo. Meta: " + meta)
+          Logger.info(s"upload to S3: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${file.getAbsolutePath}")
 
           val res = for {
           // request upload ticket

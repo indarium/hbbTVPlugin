@@ -16,8 +16,6 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
   def receive = {
     case meta: ShowMetaData => try {
 
-      log.info("uploading file: " + meta.showTitle)
-
       val url = backend.store(meta)
 
       // delete local video file
