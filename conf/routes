@@ -8,6 +8,7 @@ GET         /                                       controllers.Application.inde
 
 GET         /testJson                               controllers.Application.testJson
 GET         /testAuth                               controllers.Application.testAuth
+GET         /testCallbacksNotFaultyNotFinished      controllers.Application.testCallbacksNotFaultyNotFinished
 GET         /testShows/:channelId/:stationId        controllers.Application.testShows(channelId: String, stationId: String)
 
 GET         /startPorcess                           controllers.Application.startPorcess

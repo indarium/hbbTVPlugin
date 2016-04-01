@@ -3,6 +3,7 @@ package helper.hms
 import helper.Config
 import models.Station
 import models.hms.HmsShow
+import play.api.Logger
 
 /**
   * author: cvandrei
@@ -33,6 +34,26 @@ object HmsUtil {
         Some(url)
 
     }
+
+  }
+
+  def transcodeUrlPath(channelId: String): String = {
+
+    val encodedChannelId: String = java.net.URLEncoder.encode(channelId, "UTF-8")
+    val apiUrl = Config.hmsTranscodeUrl + "/transcode/" + encodedChannelId
+    Logger.debug(s"HMSApi.transcode apiUrl: $apiUrl")
+
+    apiUrl
+
+  }
+
+  def transcodeJobUrl(channelId: String, jobId: Long): String = {
+
+    val encodedChannelId: String = java.net.URLEncoder.encode(channelId, "UTF-8")
+    val apiUrl = s"${Config.hmsTranscodeUrl}/job/$encodedChannelId?ID=$jobId"
+    Logger.debug(s"HMSApi.transcode.job apiUrl: $apiUrl")
+
+    apiUrl
 
   }
 

@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, Props}
 import akka.event.Logging
+import constants.HmsCallbackStatus
 import helper._
 import helper.hms.{HMSApi, HmsUtil}
 import helper.vimeo.VimeoUtil
@@ -33,6 +34,8 @@ case class ProcessShow(processShowData: ProcessShowData)
 case class ProcessStation(processStationData: ProcessStationData)
 
 case class ScheduleProcess(processStationData: ProcessStationData)
+
+case class ScheduleHmsStatusUpdate()
 
 class ShowCrawler extends Actor {
   val log = Logging(context.system, this)
@@ -128,10 +131,15 @@ class ShowCrawler extends Actor {
 
       }
 
+    case scheduleTranscodeJobStatusUpdate: ScheduleHmsStatusUpdate =>
+      updateOpenHmsTranscodeJobs
+      scheduleHmsStatusUpdate
+
     case startProcess: StartProcess =>
       log.info("starting show crawler")
       processAllStations
       startVimeoEncodingStatusScheduler
+      scheduleHmsStatusUpdate
 
     case scheduleProcess: ScheduleProcess =>
       log.info(s"scheduling show crawler (${scheduleProcess.processStationData.stationId})")
@@ -139,6 +147,7 @@ class ShowCrawler extends Actor {
         Duration.create(crawlerPeriod, TimeUnit.MINUTES),
         self,
         ProcessStation(scheduleProcess.processStationData))
+
   }
 
   /**
@@ -162,6 +171,65 @@ class ShowCrawler extends Actor {
         }
 
       case _ => Future(false)
+
+    }
+
+  }
+
+  private def updateOpenHmsTranscodeJobs = {
+
+    log.info("update status of open HMS transcode jobs")
+
+    TranscodeCallback.findByStatusNotFaultyNotFinished map {
+
+      openTranscodeJobs =>
+
+        openTranscodeJobs.isEmpty match {
+
+          case true => log.info("found no transcode jobs to update")
+
+          case false =>
+            for (transcodeCallback <- openTranscodeJobs) {
+
+              log.info(s"attempt status update of open transcode job: station=${transcodeCallback.meta.get.stationId}, ID=${transcodeCallback.ID}")
+              queryHmsStatus(transcodeCallback) map {
+                jobStatus => updateJobStatusUnlessFinished(jobStatus)
+              }
+
+            }
+
+        }
+
+    }
+
+  }
+
+  private def queryHmsStatus(transcodeCallback: TranscodeCallback): Future[Option[TranscodeCallback]] = {
+
+    transcodeCallback.meta match {
+
+      case None =>
+        log.error(s"unable to query transcode job status query for missing meta: ID=${transcodeCallback.ID}")
+        Future(None)
+
+      case Some(meta) =>
+        val channelId = meta.channelId
+        val jobId = transcodeCallback.ID
+        HMSApi.transcodeJobStatus(channelId, jobId)
+
+    }
+
+  }
+
+  private def updateJobStatusUnlessFinished(jobStatus: Option[TranscodeCallback]) = {
+
+    jobStatus match {
+
+      case Some(update) if update.Status != HmsCallbackStatus.FINISHED =>
+        TranscodeCallback.updateRecord(update)
+
+      case Some(update) if update.Status == HmsCallbackStatus.FINISHED =>
+        log.info(s"transcode job has finished, waiting for callback: ID=${update.ID}")
 
     }
 
@@ -197,6 +265,13 @@ class ShowCrawler extends Actor {
     log.debug(s"scheduling VimeoVideoStatusActor: delay=$delay, interval=$interval")
     context.system.scheduler.schedule(delay, interval, vimeoVideoStatusActor, QueryVimeoVideoStatus)
 
+  }
+
+  private def scheduleHmsStatusUpdate = {
+    val length = Config.hmsTranscodeStatusUpdateInterval
+    log.info(s"schedule next update of open HMS Transcode Jobs to happen in $length seconds.")
+    val delay = Duration.create(length, TimeUnit.SECONDS)
+    context.system.scheduler.scheduleOnce(delay, self, ScheduleHmsStatusUpdate())
   }
 
 }

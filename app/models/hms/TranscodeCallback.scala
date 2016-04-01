@@ -40,6 +40,7 @@ object TranscodeCallback {
   // bson DateTime based on: https://gist.github.com/ctcarrier/9918087
   implicit object BSONDateTimeHandler extends BSONHandler[BSONDateTime, DateTime] {
     def read(time: BSONDateTime) = new DateTime(time.value)
+
     def write(jdtime: DateTime) = BSONDateTime(jdtime.getMillis)
   }
 
@@ -97,6 +98,34 @@ object TranscodeCallback {
   }
 
   /**
+    * @return empty set if we don't find any matching records
+    */
+  def findByStatusNotFaultyNotFinished: Future[Set[TranscodeCallback]] = {
+
+    val selector = BSONDocument(
+      "Status" ->
+        BSONDocument(
+          "$not" -> BSONDocument(
+            "$in" -> BSONArray(HmsCallbackStatus.FINISHED, HmsCallbackStatus.FAULTY)
+          )
+        )
+    )
+
+    transcodeCallCollection
+      .find(selector)
+      .cursor[BSONDocument]
+      .collect[Set]()
+      .map {
+        set => {
+          set.map {
+            bson => BSON.readDocument[TranscodeCallback](bson)
+          }
+        }
+      }
+
+  }
+
+  /**
     * Update an existing record or do nothing otherwise.
     *
     * @param callback record with new values (as received from HMS...meaning that it contains no internal fields like
@@ -107,11 +136,16 @@ object TranscodeCallback {
 
     try {
 
-      findByHmsId(callback.ID).map {
+      findByHmsId(callback.ID) map {
 
         case Some(dbRecord) =>
 
-          val updatedRecord = callback.copy(meta = dbRecord.meta, created = dbRecord.created, modified = dbRecord.modified)
+          val updatedRecord = callback.copy(
+            Status = callback.Status.toLowerCase,
+            meta = dbRecord.meta,
+            created = dbRecord.created,
+            modified = dbRecord.modified
+          )
 
           update(updatedRecord).onComplete {
             case Failure(e) => Logger.error(s"updateRecord() - failed to update hmsTranscode record: callback=$callback, e=", e)
@@ -130,7 +164,7 @@ object TranscodeCallback {
 
   def save(transcodeCallback: TranscodeCallback): Future[LastError] = transcodeCallCollection.save(transcodeCallback)
 
-  def update(transcodeCallback: TranscodeCallback): Future[LastError] = {
+  private def update(transcodeCallback: TranscodeCallback): Future[LastError] = {
 
     val newModified = transcodeCallback.copy(modified = Some(DateTime.now))
     val selector = BSONDocument("ID" -> newModified.ID)
