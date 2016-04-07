@@ -39,7 +39,7 @@ object AuthDownloader {
                 outputStream.close()
                 // Get the result or rethrow the error
                 result.get
-                Logger.info(s"Download successfull: $source")
+                Logger.info(s"Download successful: $source to ${outputFile.getAbsolutePath}")
             }.map(_ => Some(outputFile))
           case _ =>
             Future(None)
