@@ -181,6 +181,9 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             addChannelResponse <- addToChannel(videoId.get, meta)
             if addChannelResponse.status == 204
 
+            assignEmbedPresetResponse <- assignEmbedPreset(videoId.get)
+            if assignEmbedPresetResponse.status == 204
+
           } yield {
 
             val EmbeddedNumberFmt = """(\d+)""".r
@@ -275,6 +278,16 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     } yield {
       addChannelResponse
     }
+  }
+
+  def assignEmbedPreset(videoId: String): Future[WSResponse] = {
+
+    val embedPreset = Config.vimeoEmbedPreset
+    val path = s"/videos/$videoId/presets/$embedPreset"
+
+    Logger.debug(s"Vimeo.query: $path")
+    vimeoRequest("PUT", path, None)
+
   }
 
   def videoStatus(vimeoId: Long): Future[WSResponse] = {

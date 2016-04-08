@@ -100,6 +100,8 @@ object Config {
 
   def vimeoDeactivateChannels: Array[String] = stringArray("vimeo.deactivate.channels")
 
+  def vimeoEmbedPreset: String = Play.configuration.getString("vimeo.embed.preset").getOrElse("120222469")
+
   /**
     *
     * @param key configuration key
