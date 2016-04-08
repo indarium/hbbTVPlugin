@@ -172,9 +172,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             if videoId.isDefined
 
             // update metadata
-            metadataResponse <- {
-              editMetaData(videoId.get, meta)
-            }
+            metadataResponse <- editMetaData(videoId.get, meta)
             if metadataResponse.status == 200
 
             // add video to channel
