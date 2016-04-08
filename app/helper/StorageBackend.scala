@@ -140,7 +140,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
       case Some(file) if !file.isFile => throw new VideoFileNotFindException("File does not exist: " + meta.localVideoFile.get)
       case Some(file) =>
         try {
-          Logger.info(s"upload to S3: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${file.getAbsolutePath}")
+          Logger.info(s"upload to Vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${file.getAbsolutePath}")
 
           val res = for {
           // request upload ticket
