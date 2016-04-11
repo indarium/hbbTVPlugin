@@ -191,7 +191,7 @@ class ShowCrawler extends Actor {
           case false =>
             for (transcodeCallback <- openTranscodeJobs) {
 
-              log.info(s"attempt status update of open transcode job: station=${transcodeCallback.meta.get.stationId}, ID=${transcodeCallback.ID}")
+              log.info(s"attempt status update of open transcode job: station=${transcodeCallback.meta.get.stationId}, ID=${transcodeCallback.ID}, currentStatus=${transcodeCallback.Status}")
               queryHmsStatus(transcodeCallback) map {
                 jobStatus => updateJobStatusUnlessFinished(jobStatus)
               }
