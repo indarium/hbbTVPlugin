@@ -143,6 +143,8 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
           Logger.info(s"upload to Vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${file.getAbsolutePath}")
 
           val res = for {
+
+            // TODO refactor: extract upload code (returns videoId)
           // request upload ticket
             ticketResponse <- vimeoRequest("POST", "/me/videos", Some(Json.obj("type" -> "streaming")))
             if ticketResponse.status == 201
@@ -171,6 +173,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             videoId = finishResponse.header("Location").flatMap(_.split("/").lastOption)
             if videoId.isDefined
 
+            // TODO refactor: extract video modifiers (metadata, channel, etc)
             // update metadata
             metadataResponse <- {
               editMetaData(videoId.get, meta)
