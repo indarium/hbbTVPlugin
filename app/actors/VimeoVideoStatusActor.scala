@@ -1,7 +1,7 @@
 package actors
 
 import akka.actor.{Actor, Props}
-import external.vimeo.VideoStatusUtil
+import external.vimeo.{VimeoRest, VideoStatusUtil}
 import helper.VimeoUtil
 import helper.model.ShowUtil
 import models.Show
@@ -36,7 +36,7 @@ class VimeoVideoStatusActor() extends Actor {
 
               for {
 
-                videoStatusResponse <- vimeoBackend.videoStatus(vimeoId)
+                videoStatusResponse <- VimeoRest.videoStatus(vimeoId)
                 videoStatus = videoStatusResponse.json
 
                 files = VideoStatusUtil.extractFiles(videoStatus)
