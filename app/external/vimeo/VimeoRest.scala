@@ -45,10 +45,11 @@ object VimeoRest {
 
     } yield {
 
-      Logger.debug(s"upload(${file.getAbsolutePath}) status")
+      Logger.debug(s"upload file=${file.getAbsolutePath}")
       Logger.debug(s"ticket=$ticket")
       Logger.debug(s"uploadStatus=$uploadStatus")
-      Logger.debug(s"$uploadVerified")
+      Logger.debug(s"uploadVerified=$uploadVerified")
+      Logger.debug(s"vimeoId=$vimeoId")
 
       vimeoId
 
@@ -61,15 +62,15 @@ object VimeoRest {
     for {
 
       metadataEdit <- editMetadata(vimeoId, meta)
-      channelAdded <- addToChannel(vimeoId, meta)
+//      channelAdded <- addToChannel(vimeoId, meta)
 
     } yield {
 
       Logger.debug(s"modifyVideo(${meta.showId}/$vimeoId) status:")
       Logger.debug(s"metadata edit: $metadataEdit")
-      Logger.debug(s"addToChannel: $channelAdded")
+//      Logger.debug(s"addToChannel: $channelAdded")
 
-      metadataEdit && channelAdded
+      metadataEdit/* && channelAdded*/
 
     }
 
@@ -257,6 +258,7 @@ object VimeoRest {
       if getChannelsResult.status == 200
 
       // get channel uri or create channel
+      // TODO extract determineChannelUrl into separate method
       channelUri <- {
 
         val channels = (getChannelsResult.json \ "data").as[Seq[JsObject]]

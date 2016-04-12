@@ -35,6 +35,7 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
       case e: Exception =>
         log.error("upload of '%s' failed: %s".format(meta.localVideoFile.getOrElse("???"), e.getMessage))
         sender() ! VideoUploadFailure(meta, e)
+        // TODO if transcoder active --> reschedule download?
     }
   }
 }
