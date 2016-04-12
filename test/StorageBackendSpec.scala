@@ -36,7 +36,6 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
 
   private val STATION = "SPACE"
   private val CHANNEL = "CHANNEL-5"
-  private val MEDIA = "Ulala"
 
   val meta = new ShowMetaData(STATION, CHANNEL)
   meta.localVideoFile = Some(FILE)
@@ -215,10 +214,6 @@ class StorageBackendSpec extends SpecWithStartedApp with ThrownMessages {
 
     Config.vimeoAccessToken mustNotEqual "NO-ACCESS-TOKEN"
     val backend = VimeoUtil.backend
-
-    "Authenticate to vimeo API" in {
-      backend.ping must beTrue
-    }
 
     "Upload test video with metadata" in {
       videoUrl = backend.store(meta)
