@@ -66,7 +66,7 @@ object VimeoRest {
 
     } yield {
 
-      Logger.debug(s"modifyVideo(${meta.showId}/$vimeoId) status:")
+      Logger.debug(s"uploadPostProcessing(${meta.showId}/$vimeoId) status:")
       Logger.debug(s"metadata edit: $metadataEdit")
 //      Logger.debug(s"addToChannel: $channelAdded")
 
