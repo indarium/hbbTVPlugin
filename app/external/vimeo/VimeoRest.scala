@@ -43,17 +43,7 @@ object VimeoRest {
 
       vimeoId <- completeUpload(ticket)
 
-    } yield {
-
-      Logger.debug(s"upload file=${file.getAbsolutePath}")
-      Logger.debug(s"ticket=$ticket")
-      Logger.debug(s"uploadStatus=$uploadStatus")
-      Logger.debug(s"uploadVerified=$uploadVerified")
-      Logger.debug(s"vimeoId=$vimeoId")
-
-      vimeoId
-
-    }
+    } yield vimeoId
 
   }
 
@@ -65,13 +55,7 @@ object VimeoRest {
 //      channelAdded <- addToChannel(vimeoId, meta)
 
     } yield {
-
-      Logger.debug(s"uploadPostProcessing(${meta.showId}/$vimeoId) status:")
-      Logger.debug(s"metadata edit: $metadataEdit")
-//      Logger.debug(s"addToChannel: $channelAdded")
-
       metadataEdit/* && channelAdded*/
-
     }
 
   }
