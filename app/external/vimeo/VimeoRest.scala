@@ -52,10 +52,11 @@ object VimeoRest {
     for {
 
       metadataEdit <- editMetadata(vimeoId, meta)
+      assignedEmbedPreset <- assignEmbedPreset(vimeoId)
 //      channelAdded <- addToChannel(vimeoId, meta)
 
     } yield {
-      metadataEdit/* && channelAdded*/
+      metadataEdit && assignedEmbedPreset/* && channelAdded*/
     }
 
   }
@@ -273,6 +274,27 @@ object VimeoRest {
           false
       }
 
+    }
+
+  }
+
+  def assignEmbedPreset(vimeoId: Long): Future[Boolean] = {
+
+    val embedPreset = Config.vimeoEmbedPreset
+    val path = s"/videos/$vimeoId/presets/$embedPreset"
+    Logger.debug(s"Vimeo.assignEmbedPreset: $path")
+
+    vimeoRequest("PUT", path, None) map {
+      response =>
+        response.status match {
+
+          case 204 => true
+
+          case _ =>
+            Logger.error(s"failed to assign embedPreset: vimeoId=$vimeoId, embedPreset=$embedPreset")
+            false
+
+        }
     }
 
   }
