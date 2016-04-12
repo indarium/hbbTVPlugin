@@ -142,30 +142,28 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           val res = for {
 
-            vimeoIdOpt <- VimeoRest.upload(file)
-            if vimeoIdOpt.isDefined
-
-            modifyVideo <- VimeoRest.modifyVideo(vimeoIdOpt.get, meta)
+            Some(vimeoId) <- VimeoRest.upload(file)
+            modifyVideo <- VimeoRest.uploadPostProcessing(vimeoId, meta)
             if modifyVideo
             // TODO else: delete video if this failed?
             // TODO reschedule upload if transcoder is enabled
 
           } yield {
 
-            meta.vimeoId = vimeoIdOpt
+            meta.vimeoId = Some(vimeoId)
             meta.vimeoEncodingStatus = Some(IN_PROGRESS)
             Logger.info(s"Finished upload to Vimeo: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / ${meta.vimeoId}")
 
             // TODO ??use url from /videos/${VIDEO-ID} response instead??
             // TODO ??field showVideoSDUrl might as well be optional??
-            new URL(vimeoUrl + "/" + vimeoIdOpt.get)
+            new URL(vimeoUrl + "/" + vimeoId)
 
           }
 
           Await.result(res, 10 minute)
 
         } catch {
-          case e: Exception => throw new StorageException("Could not upload to Vimeo", e)
+          case e: Exception => throw new StorageException(s"Could not upload to Vimeo: file=${file.getAbsolutePath}", e)
         }
     }
   }

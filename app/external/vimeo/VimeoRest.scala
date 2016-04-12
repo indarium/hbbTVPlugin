@@ -33,9 +33,7 @@ object VimeoRest {
 
     for {
 
-      ticketOpt <- uploadTicket
-      if ticketOpt.isDefined
-      ticket = ticketOpt.get
+      Some(ticket) <- uploadTicket
 
       uploadStatus <- uploadFile(ticket, file)
       if uploadStatus
@@ -58,7 +56,7 @@ object VimeoRest {
 
   }
 
-  def modifyVideo(vimeoId: Long, meta: ShowMetaData): Future[Boolean] = {
+  def uploadPostProcessing(vimeoId: Long, meta: ShowMetaData): Future[Boolean] = {
 
     for {
 
@@ -71,7 +69,7 @@ object VimeoRest {
       Logger.debug(s"metadata edit: $metadataEdit")
       Logger.debug(s"addToChannel: $channelAdded")
 
-      metadataEdit
+      metadataEdit && channelAdded
 
     }
 
