@@ -53,10 +53,10 @@ object VimeoRest {
 
       metadataEdit <- editMetadata(vimeoId, meta)
       assignedEmbedPreset <- assignEmbedPreset(vimeoId)
-//      channelAdded <- addToChannel(vimeoId, meta)
+    //      channelAdded <- addToChannel(vimeoId, meta)
 
     } yield {
-      metadataEdit && assignedEmbedPreset/* && channelAdded*/
+      metadataEdit && assignedEmbedPreset /* && channelAdded*/
     }
 
   }
@@ -199,9 +199,11 @@ object VimeoRest {
       Json.obj(
         "name" -> name,
         "description" -> description,
-        "privacy.view" -> "unlisted",
-        "privacy.embed" -> "public",
-        "privacy.download" -> false,
+        "privacy" -> Json.obj(
+          "view" -> "unlisted",
+          "embed" -> "public",
+          "download" -> false
+        ),
         "review_link" -> false
       )
     )
