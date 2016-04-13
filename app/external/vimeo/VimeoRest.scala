@@ -75,20 +75,20 @@ object VimeoRest {
 
     val url = vimeoApiUrl + endpoint
 
-    val wsRequestHolder = WS.url(url)
+    val requestWithAuth = WS.url(url)
       .withHeaders(("Authorization", "bearer " + accessToken))
 
-    val toExecute = body match {
+    val requestHolder = body match {
 
       case Some(aBody) =>
-        wsRequestHolder
+        requestWithAuth
           .withHeaders(("Content-Type", "application/json"))
           .withBody(aBody)
 
-      case None => wsRequestHolder
+      case None => requestWithAuth
 
     }
-    toExecute.execute(method)
+    requestHolder.execute(method)
 
   }
 
