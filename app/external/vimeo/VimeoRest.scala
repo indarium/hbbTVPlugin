@@ -78,21 +78,17 @@ object VimeoRest {
     val wsRequestHolder = WS.url(url)
       .withHeaders(("Authorization", "bearer " + accessToken))
 
-    body match {
+    val toExecute = body match {
 
       case Some(aBody) =>
-
         wsRequestHolder
           .withHeaders(("Content-Type", "application/json"))
           .withBody(aBody)
-          .execute(method)
 
-      case None =>
-
-        wsRequestHolder
-          .execute(method)
+      case None => wsRequestHolder
 
     }
+    toExecute.execute(method)
 
   }
 
@@ -206,7 +202,7 @@ object VimeoRest {
         "privacy.view" -> "unlisted",
         "privacy.embed" -> "public",
         "privacy.download" -> false,
-        "review_link" -> "false"
+        "review_link" -> false
       )
     )
 
