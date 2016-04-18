@@ -56,6 +56,10 @@ object TranscodeCallback {
 
   }
 
+  /**
+    * @param hmsId field ID of transcode job record: TranscodeCallback.ID
+    * @return None if nothing is found
+    */
   def findByHmsId(hmsId: Long): Future[Option[TranscodeCallback]] = {
 
     val selector = BSONDocument("ID" -> hmsId)
@@ -66,7 +70,6 @@ object TranscodeCallback {
       .collect[Set](1)
       .map {
         set => {
-          // TODO do we return None if set is empty?
           set.headOption.map {
             bson => BSON.readDocument[TranscodeCallback](bson)
           }

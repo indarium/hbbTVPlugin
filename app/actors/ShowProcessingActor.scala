@@ -4,8 +4,8 @@ import akka.actor.{Actor, Props}
 import akka.event.Logging
 import helper._
 import helper.hms.HmsUtil
-import models.Show
 import models.dto._
+import models.{DownloadQueue, Show}
 
 /**
   * Process a show, fill in information, download video, upload it and update
@@ -35,24 +35,25 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
     case VideoDownloadSuccess(meta) =>
       log.info("downloaded %s".format(meta.localVideoFile.getOrElse("???")))
-      log.info("check for vimeo exception stuff after download!!")
-      if (meta.vimeo.isDefined && meta.vimeo.get && meta.vimeoDone.isEmpty)
-        videoVimeoUploadActor ! meta
-      else
-        videoUploadActor ! meta
+      isVimeoUpload(meta) match {
+        case true => videoVimeoUploadActor ! meta
+        case false => videoUploadActor ! meta
+      }
 
     case VideoUploadSuccess(meta) =>
       log.info("uploaded %s".format(meta.publicVideoUrl.getOrElse("???")))
       Show.createShowByMeta(meta)
-      log.info("schedule next processing for %s / %s".format(meta.stationId, meta.channelId))
+      DownloadQueue.deleteIfExists(meta)
       self ! ScheduleNextStep(meta)
 
     case VideoDownloadFailure(meta, e) =>
       log.error(e, "video download failed: %s".format(meta.sourceVideoUrl.getOrElse("???")))
+      updateDownloadQueue(meta)
       self ! ScheduleNextStep(meta)
 
     case VideoUploadFailure(meta, e) =>
       log.error(e, "video upload failed: %s".format(meta.localVideoFile.getOrElse("???")))
+      updateDownloadQueue(meta)
       self ! ScheduleNextStep(meta)
 
     case ScheduleNextStep(meta) =>
@@ -62,10 +63,37 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
         case true => log.info(s"scheduling of next processing is not necessary for station=${meta.stationId}")
 
         case false =>
-          log.info(s"schedule next processing in $crawlerPeriod Min (${meta.stationId}).")
+          log.info("schedule next processing for %s / %s in %s Min".format(meta.stationId, meta.channelId, crawlerPeriod))
           context.parent ! ScheduleProcess(ProcessStationData(meta.hmsStationId.get, meta.stationId, meta.channelId))
 
       }
+
+  }
+
+  /**
+    * Tells us if we may upload to Vimeo.
+    *
+    * @param meta decision is based on this object
+    * @return true if upload to Vimeo; false otherwise
+    */
+  private def isVimeoUpload(meta: ShowMetaData): Boolean = meta.vimeo.isDefined && meta.vimeo.get && meta.vimeoDone.isEmpty
+
+  /**
+    * Update the status of a download/upload if the HMS Transcoder is enabled.
+    *
+    * @param meta the base for the downloadQueue records
+    * @return
+    */
+  private def updateDownloadQueue(meta: ShowMetaData) = {
+
+    val station = meta.stationId
+
+    if (HmsUtil.isTranscoderEnabled(station)) {
+
+      log.info(s"queue download for retry: station=$station, show=${meta.showId}")
+      DownloadQueue.queueDownload(meta)
+
+    }
 
   }
 

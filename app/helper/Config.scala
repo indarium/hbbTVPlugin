@@ -44,8 +44,6 @@ object Config {
 
   def hmsEncodingNotificationStatus: Boolean = Play.configuration.getBoolean("hms.encoding.notification.status").get
 
-  def hmsEncodingDownloadDelay: Long = Play.configuration.getLong("hms.encoding.downloadDelay").getOrElse(60L)
-
   def hmsTranscoderActivateGlobal: Boolean = Play.configuration.getBoolean("hms.transcoder.activate.global").getOrElse(false)
 
   def hmsTranscoderActivateChannels: Array[String] = stringArray("hms.transcoder.activate.channels")
@@ -101,6 +99,20 @@ object Config {
   def vimeoDeactivateChannels: Array[String] = stringArray("vimeo.deactivate.channels")
 
   def vimeoEmbedPreset: String = Play.configuration.getString("vimeo.embed.preset").getOrElse("120222469")
+
+  /* DOWNLOAD QUEUE AND RETRY CONFIGS *******************************************************************************************/
+
+  def downloadQueueStartDelay: Long = Play.configuration.getLong("download.queue.delay.start").getOrElse(120L)
+
+  def downloadQueueRetryInterval: Long = Play.configuration.getLong("download.queue.retry.interval").getOrElse(10L)
+
+  def downloadRetryFirst: Int = Play.configuration.getInt("download.retry.first").getOrElse(60)
+
+  def downloadRetryAfterFirst: Int = Play.configuration.getInt("download.retry.afterFirst").getOrElse(300)
+
+  def downloadRetryMax: Int = Play.configuration.getInt("download.retry.max").getOrElse(5)
+
+  def downloadParallelMax: Int = Play.configuration.getInt("download.parallel.max").getOrElse(1)
 
   /**
     *

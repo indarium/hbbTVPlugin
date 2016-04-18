@@ -4,6 +4,7 @@ import java.io.File
 import java.net.URL
 
 import constants.VimeoEncodingStatusSystem.VimeoEncodingStatus
+import models.DownloadQueue
 import play.api.libs.json._
 import reactivemongo.bson._
 
@@ -287,4 +288,4 @@ case class VideoDownloadSuccess(meta: ShowMetaData)
 case class VideoDownloadFailure(meta: ShowMetaData, e: Throwable)
 case class VideoUploadFailure(meta: ShowMetaData, e: Throwable)
 
-case class ProcessHmsCallback(meta:ShowMetaData)
+case class RetryDownload(download: DownloadQueue)

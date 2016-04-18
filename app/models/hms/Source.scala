@@ -12,7 +12,7 @@ case class Source(ID: Long,
                   EndOffset: Option[String],
                   DestinationName: String,
                   Overlays: Option[List[Overlay]],
-                  Profile: String // TODO use enum?
+                  Profile: String
                  )
 
 object Source {

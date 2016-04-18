@@ -145,8 +145,6 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
             Some(vimeoId) <- VimeoRest.upload(file)
             modifyVideo <- VimeoRest.uploadPostProcessing(vimeoId, meta)
             if modifyVideo
-            // TODO else: delete video if this failed?
-            // TODO reschedule upload if transcoder is enabled
 
           } yield {
 

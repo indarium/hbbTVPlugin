@@ -51,10 +51,12 @@ class VideoDownloadActor extends Actor {
         f.onFailure {
           case t =>
             log.error(s"download failed for: ${source.toString}")
+            // TODO delete local copy
             currentSender ! VideoDownloadFailure(meta, t)
         }
       } catch {
         case t: Throwable =>
+          // TODO delete local copy
           log.error("downloading '%s' failed: %s".format(meta.sourceVideoUrl, t.getMessage))
           currentSender ! VideoDownloadFailure(meta, t)
       }

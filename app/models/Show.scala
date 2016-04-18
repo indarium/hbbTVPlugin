@@ -140,7 +140,7 @@ object Show {
     }
   }
 
-  def findShowById(showId: Int) = {
+  def findShowById(showId: Long) = {
     showsCollection.
       // find all people with name `name`
       find(

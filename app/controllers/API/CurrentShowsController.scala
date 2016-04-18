@@ -1,16 +1,12 @@
 package controllers.API
 
 import java.net.URL
-import java.util.concurrent.TimeUnit
 
-import actors.{ProcessStationData, ScheduleProcess, ShowCrawler}
+import actors.ShowCrawler
 import akka.actor.Props
 import constants.HmsCallbackStatus
-import helper.Config
-import models.dto.{ShowMetaData, ProcessHmsCallback}
 import models.hms.TranscodeCallback
-import models.{ApiKey, Show}
-import org.joda.time.DateTime
+import models.{ApiKey, DownloadQueue, Show}
 import play.api._
 import play.api.libs.json._
 import play.api.mvc._
@@ -18,7 +14,6 @@ import play.libs.Akka
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.duration.Duration
 
 /**
   * Created by dermicha on 17/06/14.
@@ -78,25 +73,6 @@ object CurrentShowsController extends Controller {
 
       case HmsCallbackStatus.FINISHED => handleEncoderFinished(callback)
 
-      case HmsCallbackStatus.FAULTY =>
-
-        TranscodeCallback.findByHmsId(callback.ID) map {
-
-          case Some(transcodeCallback) if transcodeCallback.meta.isDefined =>
-
-            val meta = transcodeCallback.meta.get
-            val processStationData = ProcessStationData(meta.hmsStationId.get, meta.stationId, meta.channelId)
-            Akka.system.scheduler.scheduleOnce(Duration.create(1, TimeUnit.SECONDS), showCrawler, new ScheduleProcess(processStationData))
-            true
-
-          case None => false
-
-          case _ =>
-            Logger.error(s"unable to schedule next getShows call for station related to callback: callback.ID=${callback.ID}")
-            true
-
-        }
-
       case _ =>
         Logger.info(s"received callback for unfinished transcoder job: $callback")
         Future(true)
@@ -127,8 +103,8 @@ object CurrentShowsController extends Controller {
           case Some(meta) =>
             val downloadSource = callback.DownloadSource.get
             meta.sourceVideoUrl = Some(new URL(downloadSource))
-            Logger.info(s"transcoder job has finished (transcodeCallbackId=${callback.ID}). notify ShowCrawler (showId=${meta.showId}).")
-            scheduleDelayedDownload(meta)
+            Logger.info(s"transcoder job has finished (transcodeCallbackId=${callback.ID}). Queue download (showId=${meta.showId}).")
+            DownloadQueue.queueDownload(meta)
             true
 
           case None =>
@@ -144,20 +120,6 @@ object CurrentShowsController extends Controller {
         false
 
     }
-
-  }
-
-  private def scheduleDelayedDownload(meta: ShowMetaData) = {
-
-    val delay = Config.hmsEncodingDownloadDelay
-
-    val now = new DateTime().toString("yyyy-MM-dd HH-mm:ss.SSS")
-    val showId = meta.showId
-    val stationId = meta.stationId
-    val channelId = meta.channelId
-    Logger.info(s"[$now] schedule delayed download to run in $delay seconds: showId=$showId ($stationId/$channelId)")
-
-    Akka.system.scheduler.scheduleOnce(Duration.create(delay, TimeUnit.SECONDS), showCrawler, new ProcessHmsCallback(meta))
 
   }
 

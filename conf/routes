@@ -8,10 +8,9 @@ GET         /                                       controllers.Application.inde
 
 GET         /testJson                               controllers.Application.testJson
 GET         /testAuth                               controllers.Application.testAuth
-GET         /testCallbacksNotFaultyNotFinished      controllers.Application.testCallbacksNotFaultyNotFinished
 GET         /testShows/:channelId/:stationId        controllers.Application.testShows(channelId: String, stationId: String)
 
-GET         /startPorcess                           controllers.Application.startPorcess
+GET         /startPorcess                           controllers.Application.startProcess
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                           controllers.Assets.at(path="/public", file)

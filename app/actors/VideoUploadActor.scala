@@ -3,13 +3,13 @@ package actors
 import akka.actor.Actor
 import akka.event.Logging
 import helper._
-import models.dto.{VideoUploadFailure, VideoDownloadSuccess, VideoUploadSuccess, ShowMetaData}
+import models.dto.{ShowMetaData, VideoDownloadSuccess, VideoUploadFailure, VideoUploadSuccess}
 
 /**
- * Upload video to storage backend
- *
- * @author Matthias L. Jugel
- */
+  * Upload video to storage backend
+  *
+  * @author Matthias L. Jugel
+  */
 class VideoUploadActor(backend: StorageBackend) extends Actor {
   val log = Logging(context.system, this)
 
@@ -18,10 +18,7 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
 
       val url = backend.store(meta)
 
-      // delete local video file
-      meta.localVideoFile.map(_.delete)
-      meta.localVideoFile = None
-
+      deleteLocalFile(meta)
       meta.publicVideoUrl = Some(url)
 
       if (meta.vimeo.isDefined && meta.vimeo.get && meta.vimeoDone.isEmpty) {
@@ -32,10 +29,19 @@ class VideoUploadActor(backend: StorageBackend) extends Actor {
       sender() ! VideoUploadSuccess(meta)
 
     } catch {
+
       case e: Exception =>
+
         log.error("upload of '%s' failed: %s".format(meta.localVideoFile.getOrElse("???"), e.getMessage))
+        deleteLocalFile(meta)
         sender() ! VideoUploadFailure(meta, e)
-        // TODO if transcoder active --> reschedule download?
+
     }
   }
+
+  private def deleteLocalFile(meta: ShowMetaData) = {
+    meta.localVideoFile.map(_.delete)
+    meta.localVideoFile = None
+  }
+
 }

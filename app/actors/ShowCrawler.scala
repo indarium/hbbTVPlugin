@@ -5,13 +5,13 @@ import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, Props}
 import akka.event.Logging
-import constants.HmsCallbackStatus
+import constants.{DownloadQueueStatus, HmsCallbackStatus}
 import helper._
 import helper.hms.{HMSApi, HmsUtil}
 import helper.vimeo.VimeoUtil
-import models.dto.{ProcessHmsCallback, ShowMetaData}
+import models.dto.{RetryDownload, ShowMetaData}
 import models.hms.{HmsShow, TranscodeCallback}
-import models.{Show, Station}
+import models.{DownloadQueue, Show, Station}
 import reactivemongo.core.commands.LastError
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,6 +36,8 @@ case class ProcessStation(processStationData: ProcessStationData)
 case class ScheduleProcess(processStationData: ProcessStationData)
 
 case class ScheduleHmsStatusUpdate()
+
+case class ScheduleDownloadQueue()
 
 class ShowCrawler extends Actor {
   val log = Logging(context.system, this)
@@ -90,8 +92,9 @@ class ShowCrawler extends Actor {
 
       }
 
-    case ProcessHmsCallback(meta) =>
-      log.info("process after HMS callback %s/%s: %s".format(meta.channelId, meta.stationId, meta.sourceVideoUrl))
+    case RetryDownload(download) =>
+      val meta = download.meta
+      log.info(s"retry download ${meta.channelId}/${meta.stationId}: ${meta.sourceVideoUrl}")
       showProcessingActor ! meta
 
     case processStation: ProcessStation =>
@@ -135,11 +138,17 @@ class ShowCrawler extends Actor {
       updateOpenHmsTranscodeJobs
       scheduleHmsStatusUpdate
 
+    case processDownloads: ScheduleDownloadQueue =>
+      processDownloadQueue
+      scheduleDownloadQueue()
+
     case startProcess: StartProcess =>
       log.info("starting show crawler")
       processAllStations
       startVimeoEncodingStatusScheduler
       scheduleHmsStatusUpdate
+      resetDownloadQueue()
+      scheduleDownloadQueue(Config.downloadQueueStartDelay)
 
     case scheduleProcess: ScheduleProcess =>
       log.info(s"scheduling show crawler (${scheduleProcess.processStationData.stationId})")
@@ -235,6 +244,48 @@ class ShowCrawler extends Actor {
 
   }
 
+  private def processDownloadQueue = {
+
+    DownloadQueue.findScheduledNext map { openDownloads =>
+
+      openDownloads foreach { download =>
+
+        val meta = download.meta
+        meta.showId match {
+
+          case None =>
+            log.error(s"downloadQueue - unable to retry download for show with missing showId: meta=${download.meta}")
+            val failed = download.copy(status = DownloadQueueStatus.failed)
+            DownloadQueue.update(failed)
+
+          case Some(showId) =>
+
+            Show.findShowById(showId) map {
+
+              case Some(show) =>
+
+                log.info(s"downloadQueue - delete record for existing show: showId=$showId, station=${meta.stationId}")
+                DownloadQueue.delete(download)
+
+              case None =>
+
+                val inProgress: DownloadQueue = download.copy(status = DownloadQueueStatus.in_progress, retryCount = download.retryCount + 1)
+                DownloadQueue.update(inProgress)
+
+                val meta = inProgress.meta
+                log.info(s"downloadQueue - retry: show=${meta.showId}, station=${meta.stationId}, retryCount=${download.retryCount}")
+                self ! RetryDownload(inProgress)
+
+            }
+
+        }
+
+      }
+
+    }
+
+  }
+
   private def processAllStations = {
 
     Station.allStations.map { stations =>
@@ -272,6 +323,17 @@ class ShowCrawler extends Actor {
     log.info(s"schedule next update of open HMS Transcode Jobs to happen in $length seconds.")
     val delay = Duration.create(length, TimeUnit.SECONDS)
     context.system.scheduler.scheduleOnce(delay, self, ScheduleHmsStatusUpdate())
+  }
+
+  private def resetDownloadQueue(): Unit = {
+    log.info(s"downloadQueue - reset records from '${DownloadQueueStatus.in_progress}' to '${DownloadQueueStatus.open}'")
+    DownloadQueue.resetInProgressToOpen()
+  }
+
+  private def scheduleDownloadQueue(delay: Long = Config.downloadQueueRetryInterval) = {
+    log.debug(s"schedule next download queue update to run in $delay seconds")
+    val duration = Duration.create(delay, TimeUnit.SECONDS)
+    context.system.scheduler.scheduleOnce(duration, self, ScheduleDownloadQueue())
   }
 
 }
