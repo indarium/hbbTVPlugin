@@ -7,7 +7,7 @@ import helper.Config
 import models.dto.ShowMetaData
 import play.api.Logger
 import play.api.Play.current
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsValue, JsObject, Json}
 import play.api.libs.ws.{WS, WSResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,7 +52,10 @@ object VimeoRest {
     for {
 
       metadataEdit <- editMetadata(vimeoId, meta)
-      assignedEmbedPreset <- assignEmbedPreset(vimeoId)
+
+      presetName = Config.vimeoEmbedPreset
+      assignedEmbedPreset <- setEmbedPreset(vimeoId, presetName)
+
     //      channelAdded <- addToChannel(vimeoId, meta)
 
     } yield {
@@ -276,23 +279,96 @@ object VimeoRest {
 
   }
 
-  def assignEmbedPreset(vimeoId: Long): Future[Boolean] = {
+  def setEmbedPreset(vimeoId: Long, presetName: String): Future[Boolean] = {
 
-    val embedPreset = Config.vimeoEmbedPreset
-    val path = s"/videos/$vimeoId/presets/$embedPreset"
-    Logger.debug(s"Vimeo.assignEmbedPreset: $path")
+    getPresetId(presetName) flatMap {
 
-    vimeoRequest("PUT", path, None) map {
+      case Some(presetId) => setEmbedPreset(vimeoId, presetId)
+
+      case None =>
+        Logger.error(s"failed to determine presetId: name=$presetName")
+        Future(false)
+
+    }
+
+  }
+
+  def setEmbedPreset(vimeoId: Long, presetId: Long): Future[Boolean] = {
+
+    val path = s"/videos/$vimeoId/presets/$presetId"
+    vimeoRequest("PUT", path, None) map { response =>
+
+      response.status match {
+
+        case 204 => true
+
+        case _ =>
+          Logger.error(s"failed to assign embedPreset: vimeoId=$vimeoId, presetId=$presetId")
+          false
+
+      }
+
+    }
+
+  }
+
+  /**
+    * @return response of "/me/presets"; None if request fails
+    */
+  def mePresets: Future[Option[JsValue]] = {
+
+    vimeoRequest("GET", "/me/presets", None) map {
+
       response =>
+
         response.status match {
 
-          case 204 => true
+          case 200 => Some(response.json)
 
           case _ =>
-            Logger.error(s"failed to assign embedPreset: vimeoId=$vimeoId, embedPreset=$embedPreset")
-            false
+            Logger.error("failed to request presets")
+            None
 
         }
+
+    }
+
+  }
+
+  /**
+    * @param presetName name of preset to which we'd like to know the id
+    * @return id of given presetName; None if something goes wrong
+    */
+  def getPresetId(presetName: String): Future[Option[Long]] = {
+
+    for (Some(presetResponse) <- mePresets) yield {
+
+      val presets = (presetResponse \ "data").as[Seq[JsObject]]
+      presets.find(p => (p \ "name").as[String] == presetName) match {
+
+        case Some(preset) =>
+
+          val uri = (preset \ "uri").as[String]
+          val regex = "/users/\\d+/presets/(\\d+)".r
+
+          try {
+
+            uri match {
+              case regex(id) => Some(id.toLong)
+            }
+
+          } catch {
+            case e: MatchError =>
+              Logger.error(s"failed to extract preset id from uri: uri=$uri")
+              None
+          }
+
+        case None =>
+          Logger.error(s"found no preset with name=$presetName")
+          None
+
+      }
+
     }
 
   }
