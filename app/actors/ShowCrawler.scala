@@ -75,7 +75,7 @@ class ShowCrawler extends Actor {
 
         case true =>
 
-          log.info(s"creating transcoder job for: ${hmsShow.ID} / ${hmsShow.Name}")
+          log.info(s"creating transcoder job for: ${hmsShow.ID} / ${hmsShow.Name} / ${meta.stationId}")
           createTranscodeJob(meta) map {
 
             case false => self ! ScheduleProcess(processStationData)
