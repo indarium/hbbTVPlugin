@@ -5,6 +5,7 @@ import java.net.URL
 import actors.ShowCrawler
 import akka.actor.Props
 import constants.HmsCallbackStatus
+import controllers.util.ControllerUtil
 import models.hms.TranscodeCallback
 import models.{ApiKey, DownloadQueue, Show}
 import play.api._
@@ -39,9 +40,9 @@ object CurrentShowsController extends Controller {
           case Some(currentShowMeta) =>
             val showResult = Json.toJson(currentShowMeta).as[JsObject] ++ Json.obj("status" -> true)
             Ok(Json.prettyPrint(showResult)).withHeaders(CONTENT_TYPE -> "application/json; charset=utf-8")
-          case None => KO
+          case None => ControllerUtil.KO
         }
-      case None => Future(KO)
+      case None => Future(ControllerUtil.KO)
     }
   }
 
@@ -59,9 +60,9 @@ object CurrentShowsController extends Controller {
 
         case true =>
           TranscodeCallback.updateRecord(callbackStatusLowerCase)
-          Ok(Json.obj("status" -> "OK"))
+          ControllerUtil.statusOK
 
-        case false => Unsuccessful404
+        case false => ControllerUtil.Unsuccessful404
 
       }
 
@@ -122,12 +123,6 @@ object CurrentShowsController extends Controller {
     }
 
   }
-
-  private def KO = {
-    BadRequest(Json.obj("status" -> false)).withHeaders(CONTENT_TYPE -> "application/json")
-  }
-
-  private def Unsuccessful404 = NotFound(Json.obj("status" -> "unsuccessful")).withHeaders(CONTENT_TYPE -> "application/json")
 
   case class WithCors(httpVerbs: String*)(action: EssentialAction) extends EssentialAction with Results {
     def apply(request: RequestHeader) = {

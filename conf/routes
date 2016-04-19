@@ -19,4 +19,6 @@ GET         /assets/*file                           controllers.Assets.at(path="
 GET         /api/v1/checkApp                        controllers.Application.checkApp
 POST        /api/v1/show/current                    controllers.API.CurrentShowsController.current
 
-POST        /api/v1/hmsCallBack        controllers.API.CurrentShowsController.callBack
+POST        /api/v1/hmsCallBack                     controllers.API.CurrentShowsController.callBack
+
+DELETE      /api/v1/video/:hmsId                    controllers.webjazz.WebjazzController.deleteVideo(hmsId: Long)

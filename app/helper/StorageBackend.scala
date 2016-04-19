@@ -166,9 +166,12 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
     }
   }
 
+  /**
+    * @param name vimeoId of the video
+    */
   override def delete(name: String): Unit = {
     try {
-      VimeoRest.delete(name)
+      VimeoRest.videosDelete(name.toLong)
     } catch {
       case e: Exception => throw new DeleteException("can't delete %s".format(name), e)
     }

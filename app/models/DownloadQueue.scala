@@ -96,13 +96,8 @@ object DownloadQueue {
         downloadQueueCollection.remove(query)
           .onComplete {
 
-            case Failure(e) =>
-              Logger.error(s"downloadQueue - failed to delete record: showId=$showId, e=$e")
-              false
-
-            case Success(lastError) =>
-              Logger.debug(s"downloadQueue - deleted record: showId=$showId")
-              true
+            case Failure(e) => Logger.error(s"downloadQueue - failed to delete record: showId=$showId, e=$e")
+            case Success(lastError) => Logger.debug(s"downloadQueue - deleted record: showId=$showId")
 
           }
 

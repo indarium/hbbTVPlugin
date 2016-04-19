@@ -12,6 +12,7 @@ import reactivemongo.core.commands.LastError
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 /**
   * Created by dermicha on 06/09/14.
@@ -211,5 +212,21 @@ object Show {
   }
 
   def update(show: Show): Future[LastError] = showsCollection.save(show) // TODO refactor to return new show object; None if error
+
+  def delete(showId: Long): Unit = {
+
+    val query = Json.obj("showId" -> showId)
+
+    showsCollection
+      .remove(query)
+      .onComplete {
+
+        case Failure(e) => Logger.error(s"failed to delete shows record: showId=$showId, e=$e")
+
+        case Success(lastError) => Logger.info(s"deleted shows record: showId=$showId")
+
+      }
+
+  }
 
 }

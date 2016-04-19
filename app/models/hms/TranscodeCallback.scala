@@ -3,7 +3,7 @@ package models.hms
 import constants.{HmsCallbackStatus, JsonConstants}
 import models.dto.ShowMetaData
 import org.joda.time.DateTime
-import play.Logger
+import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json.{Json, Reads, Writes}
 import play.modules.reactivemongo.ReactiveMongoPlugin
@@ -78,6 +78,32 @@ object TranscodeCallback {
 
   }
 
+  /**
+    * @param showId showId that we look for in meta.showId
+    * @return None if nothing is found Option[] otherwise
+    */
+  def findByShowId(showId: Long): Future[Option[TranscodeCallback]] = {
+
+    val selector = BSONDocument("meta.showId" -> showId)
+
+    transcodeCallCollection
+      .find(selector)
+      .cursor[BSONDocument]
+      .collect[Set](1)
+      .map {
+        set => {
+          set.headOption.map {
+            bson => BSON.readDocument[TranscodeCallback](bson)
+          }
+        }
+      }
+
+  }
+
+  /**
+    * @param showId showId that we look for in meta.showId
+    * @return None if nothing is found Option[] otherwise
+    */
   def findByShowIdWithStatusNotFaulty(showId: Long): Future[Option[TranscodeCallback]] = {
 
     val selector = BSONDocument(
@@ -91,7 +117,6 @@ object TranscodeCallback {
       .collect[Set](1)
       .map {
         set => {
-          // TODO do we return None if set is empty?
           set.headOption.map {
             bson => BSON.readDocument[TranscodeCallback](bson)
           }
@@ -172,6 +197,28 @@ object TranscodeCallback {
     val newModified = transcodeCallback.copy(modified = Some(DateTime.now))
     val selector = BSONDocument("ID" -> newModified.ID)
     transcodeCallCollection.update(selector, newModified)
+
+  }
+
+  def delete(showId: Long): Unit = {
+
+    findByShowId(showId) map {
+
+      case None => Logger.debug(s"unable to delete hmsTranscode record if it does not exist: showId=$showId")
+
+      case Some(record) =>
+
+        val query = BSONDocument("meta.showId" -> showId)
+        transcodeCallCollection.remove(query)
+          .onComplete {
+
+            case Failure(e) => Logger.error(s"hmsTranscode - failed to delete record: showId=$showId, e=$e")
+            case Success(lastError) => Logger.debug(s"hmsTranscode - deleted record: showId=$showId")
+
+          }
+
+
+    }
 
   }
 

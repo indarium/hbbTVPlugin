@@ -69,9 +69,30 @@ object VimeoRest {
     vimeoRequest("GET", s"/videos/$vimeoId", None)
   }
 
-  def delete(name: String): Unit = {
-    val url = vimeoApiUrl + "/videos/" + name
-    VimeoRest.vimeoRequest("DELETE", url, None)
+  /**
+    * @param id video to delete
+    * @return true if video's been deleted or did not exist in the first place; false otherwise
+    */
+  def videosDelete(id: Long): Future[Boolean] = {
+
+    val url = s"/videos/$id"
+
+    vimeoRequest("DELETE", url, None) map {
+
+      response => response.status match {
+
+        case 204 | 404 =>
+          Logger.info(s"deleted show from Vimeo: vimeoId=$id")
+          true
+
+        case _ =>
+          Logger.error(s"failed to delete video: httpStatus=${response.status}, body=${response.body}")
+          false
+
+      }
+
+    }
+
   }
 
   def vimeoRequest(method: String, endpoint: String, body: Option[JsObject]): Future[WSResponse] = {
