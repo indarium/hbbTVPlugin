@@ -108,6 +108,7 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
   }
 
   override def delete(name: String) = try {
+    Logger.info(s"delete from S3: $name")
     s3.deleteObject(bucket, name)
   } catch {
     case e: Exception => throw new DeleteException("can't delete %s".format(name), e)
@@ -158,7 +159,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           }
 
-          Await.result(res, 10 minute)
+          Await.result(res, 30 minute)
 
         } catch {
           case e: Exception => throw new StorageException(s"Could not upload to Vimeo: file=${file.getAbsolutePath}", e)
