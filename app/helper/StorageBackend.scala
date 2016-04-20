@@ -108,6 +108,7 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
   }
 
   override def delete(name: String) = try {
+    Logger.info(s"delete from S3: $name")
     s3.deleteObject(bucket, name)
   } catch {
     case e: Exception => throw new DeleteException("can't delete %s".format(name), e)
@@ -167,13 +168,13 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
   }
 
   /**
-    * @param name vimeoId of the video
+    * @param vimeoId vimeoId of the video
     */
-  override def delete(name: String): Unit = {
+  override def delete(vimeoId: String): Unit = {
     try {
-      VimeoRest.videosDelete(name.toLong)
+      VimeoRest.videosDelete(vimeoId.toLong)
     } catch {
-      case e: Exception => throw new DeleteException("can't delete %s".format(name), e)
+      case e: Exception => throw new DeleteException("can't delete %s".format(vimeoId), e)
     }
   }
 
