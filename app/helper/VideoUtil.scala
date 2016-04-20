@@ -18,6 +18,12 @@ object VideoUtil {
 
   private val s3 = S3Util.backend
 
+  /**
+    * Delete a show from every video provider and all related database records.
+    *
+    * @param showId id of the show we'd like to delete
+    * @return None if show does not exist; true if deletion was successful; false if if deletion failed
+    */
   def deleteAllVideoRecords(showId: Long): Future[Option[Boolean]] = {
 
     Show.findShowById(showId) flatMap {
@@ -26,13 +32,22 @@ object VideoUtil {
         Logger.error(s"unable to delete video: showId=$showId")
         Future(None)
 
-      case Some(show) => deleteAllVideoRecords(show)
+      case Some(show) =>
+        deleteAllVideoRecords(show) map {
+          result => Some(result)
+        }
 
     }
 
   }
 
-  def deleteAllVideoRecords(show: Show): Future[Option[Boolean]] = {
+  /**
+    * Delete a show from every video provider and all related database records.
+    *
+    * @param show the show we'd like to delete
+    * @return true if deletion was successful; false if if deletion failed
+    */
+  def deleteAllVideoRecords(show: Show): Future[Boolean] = {
 
     val showId = show.showId
 
@@ -48,11 +63,11 @@ object VideoUtil {
         case true =>
           Show.delete(showId)
           TranscodeCallback.delete(showId)
-          Some(true)
+          true
 
         case false =>
           Logger.error(s"failed to delete all video records: showId=$showId, s3Deleted=$s3Deleted, vimeoDeleted=$vimeoDeleted")
-          Some(false)
+          false
 
       }
 
