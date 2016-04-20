@@ -159,7 +159,7 @@ class VimeoBackend(accessToken: String) extends StorageBackend {
 
           }
 
-          Await.result(res, 30 minute)
+          Await.result(res, 10 minute)
 
         } catch {
           case e: Exception => throw new StorageException(s"Could not upload to Vimeo: file=${file.getAbsolutePath}", e)
