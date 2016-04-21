@@ -107,11 +107,16 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
     case e: Exception => throw new RetrieveException("can't retrieve %s".format(name), e)
   }
 
-  override def delete(name: String) = try {
-    Logger.info(s"delete from S3: $name")
-    s3.deleteObject(bucket, name)
-  } catch {
-    case e: Exception => throw new DeleteException("can't delete %s".format(name), e)
+  override def delete(name: String) = {
+
+    try {
+
+      s3.deleteObject(bucket, name)
+
+    } catch {
+      case e: Exception => throw new DeleteException("can't delete %s".format(name), e)
+    }
+
   }
 
   override def list() = try {

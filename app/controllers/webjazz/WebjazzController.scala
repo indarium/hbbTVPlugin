@@ -17,7 +17,7 @@ object WebjazzController extends Controller {
 
     Logger.info(s"DELETE /api/v1/video/$showId")
 
-    VideoUtil.deleteAllVideoRecords(showId) map {
+    VideoUtil.deleteAllRecords(showId) map {
       case None => ControllerUtil.Unsuccessful404
       case Some(true) => ControllerUtil.statusOK
       case Some(false) => ControllerUtil.Unsuccessful400

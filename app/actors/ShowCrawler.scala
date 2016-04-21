@@ -39,6 +39,8 @@ case class ScheduleHmsStatusUpdate()
 
 case class ScheduleDownloadQueue()
 
+case class ScheduleCleanUp()
+
 class ShowCrawler extends Actor {
   val log = Logging(context.system, this)
 
@@ -142,6 +144,10 @@ class ShowCrawler extends Actor {
       processDownloadQueue
       scheduleDownloadQueue()
 
+    case cleanUp: ScheduleCleanUp =>
+      processCleanUp
+      scheduleCleanUpJob()
+
     case startProcess: StartProcess =>
       log.info("starting show crawler")
       processAllStations
@@ -149,6 +155,7 @@ class ShowCrawler extends Actor {
       scheduleHmsStatusUpdate
       resetDownloadQueue()
       scheduleDownloadQueue(Config.downloadQueueStartDelay)
+      scheduleCleanUpJob(Config.cleanUpJobStartUpDelay)
 
     case scheduleProcess: ScheduleProcess =>
       log.info(s"scheduling show crawler (${scheduleProcess.processStationData.stationId})")
@@ -286,6 +293,28 @@ class ShowCrawler extends Actor {
 
   }
 
+  private def processCleanUp = {
+
+    Station.findForDeleteOldShows map {
+      _.foreach(stationCleanUp)
+    }
+
+  }
+
+  private def stationCleanUp(station: Station): Unit = {
+
+    if (station.keepLastShows.isDefined) {
+
+      val keepLastShows = station.keepLastShows.get
+
+      Show.findForDelete(station.stationId, keepLastShows) map {
+        _.foreach(VideoUtil.deleteAllRecords)
+      }
+
+    }
+
+  }
+
   private def processAllStations = {
 
     Station.allStations.map { stations =>
@@ -334,6 +363,12 @@ class ShowCrawler extends Actor {
     log.debug(s"schedule next download queue update to run in $delay seconds")
     val duration = Duration.create(delay, TimeUnit.SECONDS)
     context.system.scheduler.scheduleOnce(duration, self, ScheduleDownloadQueue())
+  }
+
+  private def scheduleCleanUpJob(delay: Int = Config.cleanUpJobInterval): Unit = {
+    log.debug(s"schedule next cleanUp job to run in $delay seconds")
+    val duration = Duration.create(delay, TimeUnit.SECONDS)
+    context.system.scheduler.scheduleOnce(duration, self, ScheduleCleanUp())
   }
 
 }

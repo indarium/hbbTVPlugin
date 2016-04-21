@@ -24,7 +24,7 @@ object VideoUtil {
     * @param showId id of the show we'd like to delete
     * @return None if show does not exist; true if deletion was successful; false if if deletion failed
     */
-  def deleteAllVideoRecords(showId: Long): Future[Option[Boolean]] = {
+  def deleteAllRecords(showId: Long): Future[Option[Boolean]] = {
 
     Show.findShowById(showId) flatMap {
 
@@ -33,7 +33,7 @@ object VideoUtil {
         Future(None)
 
       case Some(show) =>
-        deleteAllVideoRecords(show) map {
+        deleteAllRecords(show) map {
           result => Some(result)
         }
 
@@ -47,16 +47,12 @@ object VideoUtil {
     * @param show the show we'd like to delete
     * @return true if deletion was successful; false if if deletion failed
     */
-  def deleteAllVideoRecords(show: Show): Future[Boolean] = {
+  def deleteAllRecords(show: Show): Future[Boolean] = {
 
     val showId = show.showId
 
     val s3Deleted = s3Delete(show)
-    for {
-
-      vimeoDeleted <- vimeoDelete(show)
-
-    } yield {
+    for (vimeoDeleted <- vimeoDelete(show)) yield {
 
       s3Deleted && vimeoDeleted match {
 
@@ -103,8 +99,8 @@ object VideoUtil {
         try {
 
           val name = S3Util.extractS3FileName(show)
-          Logger.info("delete")
           s3.delete(name)
+          Logger.info(s"deleted show from s3: name=$name")
           true
 
         } catch {

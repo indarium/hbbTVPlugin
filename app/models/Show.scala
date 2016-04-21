@@ -182,9 +182,6 @@ object Show {
     */
   def findByStation(stationId: String): Future[Seq[Show]] = {
 
-
-    Logger.info(s"query shows for deletion: stationId=$stationId")
-
     val query = Json.obj("stationId" -> stationId)
 
     showsCollection
@@ -209,8 +206,7 @@ object Show {
     */
   def findForDelete(stationId: String, skip: Int): Future[Seq[Show]] = {
 
-
-    Logger.info(s"query shows for deletion: stationId=$stationId")
+    Logger.info(s"looking for shows to clean up: stationId=$stationId")
 
     for (shows <- findByStation(stationId)) yield {
 
@@ -269,9 +265,8 @@ object Show {
       .remove(query)
       .onComplete {
 
-        case Failure(e) => Logger.error(s"failed to delete shows record: showId=$showId, e=$e")
-
-        case Success(lastError) => Logger.info(s"deleted shows record: showId=$showId")
+        case Failure(e) => Logger.error(s"shows - failed to delete record: showId=$showId, e=$e")
+        case Success(lastError) => Logger.debug(s"shows - deleted record: showId=$showId")
 
       }
 

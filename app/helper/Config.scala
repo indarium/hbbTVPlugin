@@ -114,6 +114,10 @@ object Config {
 
   def downloadParallelMax: Int = Play.configuration.getInt("download.parallel.max").getOrElse(1)
 
+  def cleanUpJobStartUpDelay: Int = Play.configuration.getInt("cleanUp.shows.startUpDelay").getOrElse(75)
+
+  def cleanUpJobInterval: Int = Play.configuration.getInt("cleanUp.shows.jobInterval").getOrElse(1800)
+
   /**
     *
     * @param key configuration key
