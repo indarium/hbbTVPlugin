@@ -8,6 +8,8 @@ import helper.Config
 import models.dto.ShowMetaData
 import models.hms._
 import models.{Show, Station}
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
@@ -288,9 +290,9 @@ object HMSApi {
 
   private def createTranscode(meta: ShowMetaData): Transcode = {
 
-    val showId = meta.showId.get
     val profile = Config.hmsEncodingProfile
-    val destinationName: String = s"${meta.stationId}-$showId-$profile"
+    val destinationName = generateDestinationName(meta, profile)
+    val showId = meta.showId.get
     val sources = List(Source(showId, None, None, None, destinationName, None, profile))
 
     val sourceType = "Show"
@@ -300,6 +302,12 @@ object HMSApi {
     val callbackUrl = Config.hmsEncodingCallbackUrl
     Transcode(sourceType, sources, None, None, "HTTP", notificationFinished, notificationError, notificationStatus, callbackUrl)
 
+  }
+
+  def generateDestinationName(meta: ShowMetaData, profile: String): String = {
+    val fmt = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val today = fmt.print(new DateTime)
+    s"$today-${meta.stationId}-${meta.showId.get}-$profile"
   }
 
   private def extractJobResult(response: WSResponse): Option[JobResult] = {
