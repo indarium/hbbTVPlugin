@@ -51,11 +51,10 @@ object Station {
     }
   }
 
-
   def allStations = stationCollection.find(Json.obj("active" -> true), Json.obj()).
     cursor[Station].collect[List]()
 
-  def stationsWithDeleteOldShows: Future[Seq[Station]] = {
+  def findForDeleteOldShows: Future[Seq[Station]] = {
 
     val query = Json.obj(
       "keepLastShows" -> Json.obj("$exists" -> true),
