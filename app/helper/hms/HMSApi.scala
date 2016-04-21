@@ -288,9 +288,10 @@ object HMSApi {
 
   private def createTranscode(meta: ShowMetaData): Transcode = {
 
+    val showId = meta.showId.get
     val profile = Config.hmsEncodingProfile
-    val destinationName: String = s"${meta.showId.get}-${meta.showSourceTitle.get}"
-    val sources = List(Source(meta.showId.get, None, None, None, destinationName, None, profile))
+    val destinationName: String = s"${meta.stationId}-$showId-$profile"
+    val sources = List(Source(showId, None, None, None, destinationName, None, profile))
 
     val sourceType = "Show"
     val notificationFinished = Config.hmsEncodingNotificationFinished
