@@ -43,6 +43,8 @@ case class ShowMetaData(val stationId: String, val channelId: String) {
   var vimeoId: Option[Long] = None
   var vimeoEncodingStatus: Option[VimeoEncodingStatus] = None
 
+  var s3Name: Option[String] = None
+
   override def toString = "showTitle: " + showTitle.getOrElse("none") + " channelName: " + channelName.getOrElse("none")
 
 }
@@ -90,6 +92,8 @@ object ShowMetaData {
       meta.vimeoId = (json \ "vimeoId").asOpt[Long]
       meta.vimeoEncodingStatus = vimeoJson.asOpt[VimeoEncodingStatus]
 
+      meta.s3Name = (json \ "s3Name").asOpt[String]
+
       JsSuccess(meta)
 
     }
@@ -122,6 +126,8 @@ object ShowMetaData {
       val vimeoId = if (meta.vimeoId.isDefined) JsNumber(meta.vimeoId.get) else JsNull
       val vimeoEncodingStatus = if (meta.vimeoEncodingStatus.isDefined) JsString(meta.vimeoEncodingStatus.get.name) else JsNull
 
+      val s3Name = if (meta.s3Name.isDefined) JsString(meta.s3Name.get) else JsNull
+
       val seq = Seq(
         "stationId" -> JsString(meta.stationId),
         "channelId" -> JsString(meta.channelId),
@@ -152,7 +158,9 @@ object ShowMetaData {
         "vimeo" -> vimeo,
         "vimeoDone" -> vimeoDone,
         "vimeoId" -> vimeoId,
-        "vimeoEncodingStatus" -> vimeoEncodingStatus
+        "vimeoEncodingStatus" -> vimeoEncodingStatus,
+
+        "s3Name" -> s3Name
       )
 
       JsObject(seq)
@@ -216,6 +224,8 @@ object ShowMetaData {
       meta.vimeoId = doc.getAs[Long]("vimeoId")
       meta.vimeoEncodingStatus = vimeoJson.asOpt[VimeoEncodingStatus]
 
+      meta.s3Name = doc.getAs[String]("s3Name")
+
       meta
 
     }
@@ -260,7 +270,9 @@ object ShowMetaData {
         "vimeo" -> meta.vimeo,
         "vimeoDone" -> meta.vimeoDone,
         "vimeoId" -> meta.vimeoId,
-        "vimeoEncodingStatus" -> vimeoEncodingStatus
+        "vimeoEncodingStatus" -> vimeoEncodingStatus,
+
+        "s3Name" -> meta.s3Name
       )
     }
 

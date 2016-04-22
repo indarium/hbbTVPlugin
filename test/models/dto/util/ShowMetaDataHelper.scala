@@ -38,6 +38,7 @@ object ShowMetaDataHelper {
   val vimeoDone = false
   val vimeoId = -1000L
   val vimeoEncodingStatus = IN_PROGRESS
+  val s3Name = "SAT/MV1/random-uuid.mp4"
 
   def defaultObject(channelId: String, stationId: String, showId: Long): ShowMetaData = {
 
@@ -71,6 +72,8 @@ object ShowMetaDataHelper {
     meta.vimeoDone = Some(vimeoDone)
     meta.vimeoId = Some(vimeoId)
     meta.vimeoEncodingStatus = Some(vimeoEncodingStatus)
+
+    meta.s3Name = Some(s3Name)
 
     meta
 
@@ -116,7 +119,8 @@ object ShowMetaDataHelper {
         |  "vimeo": $vimeo,
         |  "vimeoDone": $vimeoDone,
         |  "vimeoId": $vimeoId,
-        |  "vimeoEncodingStatus": "${vimeoEncodingStatus.name}"
+        |  "vimeoEncodingStatus": "${vimeoEncodingStatus.name}",
+        |  "s3Name": "$s3Name"
         |}""".stripMargin
 
   }

@@ -1,5 +1,5 @@
 import constants.VimeoEncodingStatusSystem._
-import models.{MongoId, Show}
+import models.{Show, ShowHelper}
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 import play.api.test.{FakeApplication, PlayRunners}
@@ -13,35 +13,19 @@ class VimeoEncodingStatusSpec extends Specification with PlayRunners {
 
     "parse Show Scala into a Show JSON" in {
       running(FakeApplication()) {
-        val show = Show(
-          Some(MongoId("56be0905e667f841bc321cc4")),
-          "stationId",
-          "stationName",
-          "stationLogoUrl",
-          stationLogoDisplay = false,
-          "stationMainColor",
-          "channelId",
-          "channelName",
-          showId = -1L,
-          "showTitle",
-          "showSourceTitle",
-          "showSubtitle",
-          "showLogoUrl",
-          Some("showVideoHDUrl"),
-          "showVideoSDUrl",
-          "channelBroadcastInfo",
-          "rootPortalUrl",
-          vimeoId = Some(-1L),
-          vimeoEncodingStatus = Some(DONE)
-        )
 
+        // prepare
+        val show = ShowHelper.defaultObject("channelId", "stationId", -1L)
         val json = Json.toJson(show)
+        println(json)
         val jsonString = json.toString()
 
-        println(json)
-
+        // test
         val vimeo = (json \ "vimeoEncodingStatus").as[String]
-        vimeo mustEqual "DONE"
+
+        // verify
+        vimeo mustEqual show.vimeoEncodingStatus.get.name
+
       }
     }
 
@@ -66,7 +50,8 @@ class VimeoEncodingStatusSpec extends Specification with PlayRunners {
           "channelBroadcastInfo" -> JsString("channelBroadcastInfo"),
           "rootPortalURL" -> JsString("rootPortalURL"),
           "vimeoId" -> JsNumber(-1L),
-          "vimeoEncodingStatus" -> JsString(DONE.name)
+          "vimeoEncodingStatus" -> JsString(DONE.name),
+          "s3Name" -> JsString("s3Name")
         ))
 
         val show = json.validate[Show]

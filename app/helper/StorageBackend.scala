@@ -82,6 +82,7 @@ class S3Backend(credentials: AWSCredentials, bucket: String) extends StorageBack
       case Some(file) =>
 
         val fileName = "%s/%s/%s.%s".format(meta.stationId, meta.channelId, UUID.randomUUID.toString.take(64), "mp4")
+        meta.s3Name = Some(fileName)
         Logger.info(s"upload to S3: ${meta.stationId} / ${meta.showTitle} / ${meta.showId.get} / $fileName")
         s3.putObject(bucket, fileName, file)
 
