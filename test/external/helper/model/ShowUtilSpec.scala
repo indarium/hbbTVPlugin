@@ -1,9 +1,9 @@
 package external.helper.model
 
-import constants.VimeoEncodingStatusSystem.{DONE, IN_PROGRESS, VimeoEncodingStatus}
+import constants.VimeoEncodingStatusSystem.{DONE, IN_PROGRESS}
 import helper.model.ShowUtil
-import models.{MongoId, Show}
 import models.vimeo.video.{Download, File}
+import models.{Show, ShowHelper}
 import org.joda.time.DateTime
 import org.specs2.mutable.Specification
 import play.api.test.PlayRunners
@@ -436,7 +436,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "sd=true && hd=true" in {
 
       // prepare
-      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val show = ShowHelper.withVideoUrlsAndVimeoEncodingStatus("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
       val sdFile = defaultFile("sd", Some(ShowUtil.SD_WIDTH_UPPER_BOUND), Some(ShowUtil.SD_HEIGHT_UPPER_BOUND), "http://sdUrl", "https://sdUrl")
       val hdFile = defaultFile("hd", Some(1920), Some(1080), "http://hdUrl", "https://hdUrl")
       val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
@@ -457,7 +457,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "sd=true && hd=false" in {
 
       // prepare
-      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val show = ShowHelper.withVideoUrlsAndVimeoEncodingStatus("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
       val sdFile = defaultFile("sd", Some(ShowUtil.SD_WIDTH_UPPER_BOUND), Some(ShowUtil.SD_HEIGHT_UPPER_BOUND), "http://sdUrl", "https://sdUrl")
       val hdFile = defaultFile("hd", Some(1280), Some(720), "http://hdUrl", "https://hdUrl")
       val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
@@ -478,7 +478,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "sd=false && hd=true" in {
 
       // prepare
-      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val show = ShowHelper.withVideoUrlsAndVimeoEncodingStatus("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
       val sdFile = defaultFile("sd", Some(ShowUtil.SD_WIDTH_LOWER_BOUND), Some(ShowUtil.SD_HEIGHT_LOWER_BOUND - 1), "http://sdUrl", "https://sdUrl")
       val hdFile = defaultFile("hd", Some(1920), Some(1080), "http://hdUrl", "https://hdUrl")
       val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
@@ -499,7 +499,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "sd=true && hd=false" in {
 
       // prepare
-      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val show = ShowHelper.withVideoUrlsAndVimeoEncodingStatus("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
       val sdFile = defaultFile("sd", Some(ShowUtil.SD_WIDTH_LOWER_BOUND), Some(360), "http://sdUrl", "https://sdUrl")
       val hdFile = defaultFile("hd", Some(1280), Some(720), "http://hdUrl", "https://hdUrl")
       val source = defaultDownload("source", 1920, 1080, "https://sourceUrl")
@@ -520,7 +520,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "debug test with TV data: source=720x576, sd=960x528" in {
 
       // prepare
-      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val show = ShowHelper.withVideoUrlsAndVimeoEncodingStatus("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
       val sdFile = defaultFile("sd", Some(960), Some(528), "http://sdUrl", "https://sdUrl")
       val hdFile = None
       val source = defaultDownload("source", 720, 576, "https://sourceUrl")
@@ -541,7 +541,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "debug test with TV data: source=720x576, sd=640x352" in {
 
       // prepare
-      val show = defaultShow("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
+      val show = ShowHelper.withVideoUrlsAndVimeoEncodingStatus("https://sdUrl", Some("https://hdUrl"), Some(IN_PROGRESS))
       val sdFile = defaultFile("sd", Some(640), Some(352), "http://sdUrl", "https://sdUrl")
       val hdFile = None
       val source = defaultDownload("source", 720, 576, "https://sourceUrl")
@@ -565,28 +565,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
    * TEST HELPERS
    ********************************************************************************************************************/
 
-  def defaultShow(sdUrl: String, hdUrl: Option[String]): Show = defaultShow(sdUrl, hdUrl, None)
-
-  def defaultShow(sdUrl: String, hdUrl: Option[String], vimeoEncodingStatus: Option[VimeoEncodingStatus]) = Show(
-    Some(MongoId("56be0905e667f841bc321cc4")),
-    "stationId",
-    "stationName",
-    "logoUrl",
-    true,
-    "mainColo",
-    "channelId",
-    "channelName",
-    -1L,
-    "title",
-    "sourceTitle",
-    "showSubtitle",
-    "showLogoUrl",
-    hdUrl,
-    sdUrl,
-    "broadcastInfo",
-    "rootPortalUrl",
-    None,
-    vimeoEncodingStatus)
+  def defaultShow(sdUrl: String, hdUrl: Option[String]): Show = ShowHelper.withVideoUrlsAndVimeoEncodingStatus(sdUrl, hdUrl, None)
 
   def defaultFile(link: String, linkSecure: String): Some[File] = defaultFile("sd", Some(1280), Some(720), link, linkSecure)
 

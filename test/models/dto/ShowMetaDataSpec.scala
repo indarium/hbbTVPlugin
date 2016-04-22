@@ -56,6 +56,8 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         (json \ "vimeoId").asOpt[Long] mustEqual meta.vimeoId
         (json \ "vimeoEncodingStatus").asOpt[String] mustEqual Some(meta.vimeoEncodingStatus.get.name)
 
+        (json \ "s3Name").asOpt[String] mustEqual meta.s3Name
+
       }
     }
 
@@ -99,6 +101,8 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         (json \ "vimeoDone").asOpt[Boolean] mustEqual None
         (json \ "vimeoId").asOpt[Long] mustEqual None
         (json \ "vimeoEncodingStatus").asOpt[VimeoEncodingStatus] mustEqual None
+
+        (json \ "s3Name").asOpt[String] mustEqual None
 
       }
     }
@@ -144,6 +148,8 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         meta.vimeoId mustEqual (json \ "vimeoId").asOpt[Long]
         meta.vimeoEncodingStatus.get.name mustEqual (json \ "vimeoEncodingStatus").as[String]
 
+        meta.s3Name mustEqual (json \ "s3Name").asOpt[String]
+
       }
     }
 
@@ -187,6 +193,8 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         meta.vimeoDone mustEqual None
         meta.vimeoId mustEqual None
         meta.vimeoEncodingStatus mustEqual None
+
+        meta.s3Name mustEqual None
 
       }
     }
@@ -232,6 +240,8 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         bson.getAs[Long]("vimeoId") mustEqual meta.vimeoId
         bson.getAs[String]("vimeoEncodingStatus").get mustEqual meta.vimeoEncodingStatus.get.name
 
+        bson.getAs[String]("s3Name") mustEqual meta.s3Name
+
       }
     }
 
@@ -250,34 +260,36 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         // verify
         bson.getAs[String]("stationId").get mustEqual meta.stationId
         bson.getAs[String]("channelId").get mustEqual meta.channelId
-        bson.getAs[String]("hmsStationId").isEmpty mustEqual true
-        bson.getAs[String]("stationName").isEmpty mustEqual true
-        bson.getAs[String]("stationLogoUrl").isEmpty mustEqual true
+        bson.getAs[String]("hmsStationId").isEmpty must beTrue
+        bson.getAs[String]("stationName").isEmpty must beTrue
+        bson.getAs[String]("stationLogoUrl").isEmpty must beTrue
         bson.getAs[Boolean]("stationLogoShow").get mustEqual meta.stationLogoShow
-        bson.getAs[String]("stationMainColor").isEmpty mustEqual true
+        bson.getAs[String]("stationMainColor").isEmpty must beTrue
 
-        bson.getAs[String]("channelName").isEmpty mustEqual true
-        bson.getAs[String]("showTitle").isEmpty mustEqual true
-        bson.getAs[Long]("showId").isEmpty mustEqual true
-        bson.getAs[String]("showSubtitle").isEmpty mustEqual true
-        bson.getAs[String]("showSourceTitle").isEmpty mustEqual true
-        bson.getAs[String]("showLogoUrl").isEmpty mustEqual true
+        bson.getAs[String]("channelName").isEmpty must beTrue
+        bson.getAs[String]("showTitle").isEmpty must beTrue
+        bson.getAs[Long]("showId").isEmpty must beTrue
+        bson.getAs[String]("showSubtitle").isEmpty must beTrue
+        bson.getAs[String]("showSourceTitle").isEmpty must beTrue
+        bson.getAs[String]("showLogoUrl").isEmpty must beTrue
         bson.getAs[Long]("showLength").get mustEqual meta.showLength
-        bson.getAs[String]("showEndInfo").isEmpty mustEqual true
-        bson.getAs[String]("rootPortalUrl").isEmpty mustEqual true
+        bson.getAs[String]("showEndInfo").isEmpty must beTrue
+        bson.getAs[String]("rootPortalUrl").isEmpty must beTrue
 
         bson.getAs[Boolean]("isHD").get mustEqual meta.isHD
-        bson.getAs[String]("sourceFilename").isEmpty mustEqual true
-        bson.getAs[String]("sourceVideoUrl").isEmpty mustEqual true
-        bson.getAs[String]("localVideoFile").isEmpty mustEqual true
-        bson.getAs[String]("publicVideoUrl").isEmpty mustEqual true
+        bson.getAs[String]("sourceFilename").isEmpty must beTrue
+        bson.getAs[String]("sourceVideoUrl").isEmpty must beTrue
+        bson.getAs[String]("localVideoFile").isEmpty must beTrue
+        bson.getAs[String]("publicVideoUrl").isEmpty must beTrue
 
-        bson.getAs[String]("currentAccessToken").isEmpty mustEqual true
+        bson.getAs[String]("currentAccessToken").isEmpty must beTrue
 
-        bson.getAs[Boolean]("vimeo").isEmpty mustEqual true
-        bson.getAs[Boolean]("vimeoDone").isEmpty mustEqual true
-        bson.getAs[Long]("vimeoId").isEmpty mustEqual true
-        bson.getAs[String]("vimeoEncodingStatus").isEmpty mustEqual true
+        bson.getAs[Boolean]("vimeo").isEmpty must beTrue
+        bson.getAs[Boolean]("vimeoDone").isEmpty must beTrue
+        bson.getAs[Long]("vimeoId").isEmpty must beTrue
+        bson.getAs[String]("vimeoEncodingStatus").isEmpty must beTrue
+
+        bson.getAs[String]("s3Name").isEmpty must beTrue
 
       }
     }
@@ -324,6 +336,8 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         o.vimeoId mustEqual meta.vimeoId
         o.vimeoEncodingStatus mustEqual meta.vimeoEncodingStatus
 
+        o.s3Name mustEqual meta.s3Name
+
       }
     }
 
@@ -340,34 +354,36 @@ class ShowMetaDataSpec extends Specification with PlayRunners {
         // verify
         o.stationId mustEqual meta.stationId
         o.channelId mustEqual meta.channelId
-        o.hmsStationId.isEmpty mustEqual true
-        o.stationName.isEmpty mustEqual true
-        o.stationLogoUrl.isEmpty mustEqual true
+        o.hmsStationId.isEmpty must beTrue
+        o.stationName.isEmpty must beTrue
+        o.stationLogoUrl.isEmpty must beTrue
         o.stationLogoShow mustEqual meta.stationLogoShow
-        o.stationMainColor.isEmpty mustEqual true
+        o.stationMainColor.isEmpty must beTrue
 
-        o.channelName.isEmpty mustEqual true
-        o.showTitle.isEmpty mustEqual true
-        o.showId.isEmpty mustEqual true
-        o.showSubtitle.isEmpty mustEqual true
-        o.showSourceTitle.isEmpty mustEqual true
-        o.showLogoUrl.isEmpty mustEqual true
+        o.channelName.isEmpty must beTrue
+        o.showTitle.isEmpty must beTrue
+        o.showId.isEmpty must beTrue
+        o.showSubtitle.isEmpty must beTrue
+        o.showSourceTitle.isEmpty must beTrue
+        o.showLogoUrl.isEmpty must beTrue
         o.showLength mustEqual meta.showLength
-        o.showEndInfo.isEmpty mustEqual true
-        o.rootPortalUrl.isEmpty mustEqual true
+        o.showEndInfo.isEmpty must beTrue
+        o.rootPortalUrl.isEmpty must beTrue
 
         o.isHD mustEqual meta.isHD
-        o.sourceFilename.isEmpty mustEqual true
-        o.sourceVideoUrl.isEmpty mustEqual true
-        o.localVideoFile.isEmpty mustEqual true
-        o.publicVideoUrl.isEmpty mustEqual true
+        o.sourceFilename.isEmpty must beTrue
+        o.sourceVideoUrl.isEmpty must beTrue
+        o.localVideoFile.isEmpty must beTrue
+        o.publicVideoUrl.isEmpty must beTrue
 
-        o.currentAccessToken.isEmpty mustEqual true
+        o.currentAccessToken.isEmpty must beTrue
 
-        o.vimeo.isEmpty mustEqual true
-        o.vimeoDone.isEmpty mustEqual true
-        o.vimeoId.isEmpty mustEqual true
-        o.vimeoEncodingStatus.isEmpty mustEqual true
+        o.vimeo.isEmpty must beTrue
+        o.vimeoDone.isEmpty must beTrue
+        o.vimeoId.isEmpty must beTrue
+        o.vimeoEncodingStatus.isEmpty must beTrue
+
+        o.s3Name.isEmpty must beTrue
 
       }
     }

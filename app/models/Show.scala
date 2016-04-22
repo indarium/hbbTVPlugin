@@ -36,7 +36,8 @@ case class Show(_id: Option[MongoId],
                 channelBroadcastInfo: String,
                 rootPortalURL: String,
                 vimeoId: Option[Long],
-                vimeoEncodingStatus: Option[VimeoEncodingStatus]
+                vimeoEncodingStatus: Option[VimeoEncodingStatus],
+                s3Name: Option[String]
                )
 
 object Show {
@@ -69,7 +70,9 @@ object Show {
         (json \ "channelBroadcastInfo").as[String],
         (json \ "rootPortalURL").as[String],
         (json \ "vimeoId").asOpt[Long],
-        vimeoJson.asOpt[VimeoEncodingStatus])
+        vimeoJson.asOpt[VimeoEncodingStatus],
+        (json \ "s3Name").asOpt[String]
+      )
 
       JsSuccess(show)
     }
@@ -110,6 +113,10 @@ object Show {
 
       if (s.vimeoEncodingStatus.isDefined) {
         seq ++= Seq("vimeoEncodingStatus" -> JsString(s.vimeoEncodingStatus.get.name))
+      }
+
+      if (s.s3Name.isDefined) {
+        seq ++= Seq("s3Name" -> JsString(s.s3Name.get))
       }
 
       JsObject(seq)
@@ -245,7 +252,8 @@ object Show {
           station.defaultChannelBroadcastInfo,
           station.defaultRootPortalURL,
           meta.vimeoId,
-          meta.vimeoEncodingStatus
+          meta.vimeoEncodingStatus,
+          meta.s3Name
         )
         Logger.debug("new show doc: " + Json.prettyPrint(Json.toJson(show)))
         showsCollection.insert(Json.toJson(show))
