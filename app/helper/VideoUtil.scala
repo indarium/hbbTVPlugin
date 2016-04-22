@@ -4,6 +4,7 @@ import java.net.MalformedURLException
 
 import external.vimeo.VimeoRest
 import models.Show
+import models.dto.ShowMetaData
 import models.hms.TranscodeCallback
 import play.api.Logger
 
@@ -69,6 +70,11 @@ object VideoUtil {
 
     }
 
+  }
+
+  def deleteLocalFile(meta: ShowMetaData) = {
+    meta.localVideoFile.map(_.delete)
+    meta.localVideoFile = None
   }
 
   /**

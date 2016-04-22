@@ -42,18 +42,17 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
     case VideoUploadSuccess(meta) =>
       log.info("uploaded %s".format(meta.publicVideoUrl.getOrElse("???")))
-      Show.createShowByMeta(meta)
-      DownloadQueue.deleteIfExists(meta)
+      handleUploadSuccess(meta)
       self ! ScheduleNextStep(meta)
 
     case VideoDownloadFailure(meta, e) =>
       log.error(e, "video download failed: %s".format(meta.sourceVideoUrl.getOrElse("???")))
-      updateDownloadQueue(meta)
+      handleUploadDownloadFailure(meta)
       self ! ScheduleNextStep(meta)
 
     case VideoUploadFailure(meta, e) =>
       log.error(e, "video upload failed: %s".format(meta.localVideoFile.getOrElse("???")))
-      updateDownloadQueue(meta)
+      handleUploadDownloadFailure(meta)
       self ! ScheduleNextStep(meta)
 
     case ScheduleNextStep(meta) =>
@@ -77,6 +76,16 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
     * @return true if upload to Vimeo; false otherwise
     */
   private def isVimeoUpload(meta: ShowMetaData): Boolean = meta.vimeo.isDefined && meta.vimeo.get && meta.vimeoDone.isEmpty
+
+  private def handleUploadDownloadFailure(meta: ShowMetaData): Unit = {
+    VideoUtil.deleteLocalFile(meta)
+    updateDownloadQueue(meta)
+  }
+
+  private def handleUploadSuccess(meta: ShowMetaData): Unit = {
+    Show.createShowByMeta(meta)
+    DownloadQueue.deleteIfExists(meta)
+  }
 
   /**
     * Update the status of a download/upload if the HMS Transcoder is enabled.
