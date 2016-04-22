@@ -1,5 +1,6 @@
 package models
 
+import models.dto.ShowMetaData
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
@@ -25,7 +26,8 @@ case class Station(stationId: String,
                    defaultChannelBroadcastInfo: String,
                    defaultRootPortalURL: String,
                    getShowUrlPattern: Option[String],
-                   keepLastShows: Option[Int]
+                   keepLastShows: Option[Int],
+                   hmsEncodingProfile: Option[String]
                    )
 
 object Station {
@@ -34,7 +36,9 @@ object Station {
 
   implicit val format = Json.format[Station]
 
-  def findStation(stationId: String, channelId: String) = {
+  def findStation(meta: ShowMetaData): Future[Option[Station]] = findStation(meta.stationId, meta.channelId)
+
+  def findStation(stationId: String, channelId: String): Future[Option[Station]] = {
     stationCollection.
       // find all people with name `name`
       find(

@@ -260,27 +260,32 @@ object HMSApi {
 
   private def callTranscode(requestHolder: WSRequestHolder, meta: ShowMetaData): Future[Option[JobResult]] = {
 
-    val transcode = createTranscode(meta)
-    val json = Json.toJson(transcode)
+    getProfile(meta) flatMap { profile =>
 
-    val f = requestHolder.post(json)
-    f.onFailure {
-      case e =>
-        Logger.error("callTranscode() - could not call hms transcoder!", e)
-        None
-    }
-    f.map { response =>
+      Logger.debug(s"hmsTranscode: ${meta.stationId}/${meta.showId}/$profile")
+      val transcode = createTranscode(meta, profile)
+      val json = Json.toJson(transcode)
 
-      response.status match {
-
-        case s if s < 400 =>
-          Logger.info(s"callTranscode() - transcoder job creation call successful: ${meta.channelId}/${meta.stationId}, show=${meta.showId}")
-          Logger.debug(s", status=$s, body=${response.body}")
-          extractJobResult(response)
-
-        case _ =>
-          Logger.error(s"callTranscode() - HMSApi.transcode returned error: ${meta.channelId}/${meta.stationId}, show=${meta.showId}, response=[status=${response.status}, body=${response.body}]")
+      val f = requestHolder.post(json)
+      f.onFailure {
+        case e =>
+          Logger.error("callTranscode() - could not call hms transcoder!", e)
           None
+      }
+      f.map { response =>
+
+        response.status match {
+
+          case s if s < 400 =>
+            Logger.info(s"callTranscode() - transcoder job creation call successful: ${meta.channelId}/${meta.stationId}, show=${meta.showId}")
+            Logger.debug(s", status=$s, body=${response.body}")
+            extractJobResult(response)
+
+          case _ =>
+            Logger.error(s"callTranscode() - HMSApi.transcode returned error: ${meta.channelId}/${meta.stationId}, show=${meta.showId}, response=[status=${response.status}, body=${response.body}]")
+            None
+
+        }
 
       }
 
@@ -288,9 +293,27 @@ object HMSApi {
 
   }
 
-  private def createTranscode(meta: ShowMetaData): Transcode = {
+  private def getProfile(meta: ShowMetaData): Future[String] = {
 
-    val profile = Config.hmsEncodingProfile
+    Station.findStation(meta) map {
+
+      case None => // this should not happen
+        Logger.error(s"unable to determine profile or nonexistent station: ${meta.stationId}/${meta.channelId}")
+        Config.hmsEncodingProfile
+
+      case Some(station) =>
+
+        station.hmsEncodingProfile match {
+          case None => Config.hmsEncodingProfile
+          case Some(profile) => profile
+        }
+
+    }
+
+  }
+
+  private def createTranscode(meta: ShowMetaData, profile: String): Transcode = {
+
     val destinationName = generateDestinationName(meta, profile)
     val showId = meta.showId.get
     val sources = List(Source(showId, None, None, None, destinationName, None, profile))
@@ -339,19 +362,19 @@ object HMSApi {
     f map {
       response =>
 
-          response.status match {
+        response.status match {
 
-            case s if s < 400 =>
-              Logger.info(s"callJobStatusUpdate() - status=$s, response=${response.body}")
-              extractTranscodeCallback(response)
+          case s if s < 400 =>
+            Logger.info(s"callJobStatusUpdate() - status=$s, response=${response.body}")
+            extractTranscodeCallback(response)
 
-            case _ =>
-              val url = requestHolder.url
-              val status = response.status
-              Logger.error(s"callJobStatusUpdate() - HMS responded with error: status=$status, url=$url")
-              None
+          case _ =>
+            val url = requestHolder.url
+            val status = response.status
+            Logger.error(s"callJobStatusUpdate() - HMS responded with error: status=$status, url=$url")
+            None
 
-          }
+        }
 
     }
 
