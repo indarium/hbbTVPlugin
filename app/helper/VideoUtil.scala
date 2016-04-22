@@ -51,6 +51,7 @@ object VideoUtil {
   def deleteAllRecords(show: Show): Future[Boolean] = {
 
     val showId = show.showId
+    Logger.debug(s"deleteVideo - attempt to delete showId=$showId")
 
     val s3Deleted = s3Delete(show)
     for (vimeoDeleted <- vimeoDelete(show)) yield {
@@ -63,7 +64,7 @@ object VideoUtil {
           true
 
         case false =>
-          Logger.error(s"failed to delete all video records: showId=$showId, s3Deleted=$s3Deleted, vimeoDeleted=$vimeoDeleted")
+          Logger.error(s"deleteVideo - failed to delete all records: showId=$showId, s3Deleted=$s3Deleted, vimeoDeleted=$vimeoDeleted")
           false
 
       }
@@ -100,17 +101,17 @@ object VideoUtil {
 
       val name = S3Util.extractS3FileName(show)
       s3.delete(name)
-      Logger.info(s"deleted show from s3: name=$name")
+      Logger.info(s"deleteVideo - from S3: name=$name")
       true
 
     } catch {
 
       case me: MalformedURLException =>
-        Logger.error("failed to extract S3 name for show", me)
+        Logger.error("deleteVideo - failed to extract S3 name for show", me)
         false
 
       case de: DeleteException =>
-        Logger.error("failed to delete video from S3", de)
+        Logger.error(s"deleteVideo - failed for S3", de)
         false
 
     }

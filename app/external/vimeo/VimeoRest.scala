@@ -82,11 +82,11 @@ object VimeoRest {
       response => response.status match {
 
         case 204 | 404 =>
-          Logger.info(s"deleted show from Vimeo: vimeoId=$id")
+          Logger.info(s"deleteVideo - from Vimeo: vimeoId=$id")
           true
 
         case _ =>
-          Logger.error(s"failed to delete video: httpStatus=${response.status}, body=${response.body}")
+          Logger.error(s"deleteVideo - failed for Vimeo: httpStatus=${response.status}, body=${response.body}")
           false
 
       }
