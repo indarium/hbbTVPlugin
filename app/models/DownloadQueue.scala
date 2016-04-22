@@ -2,6 +2,7 @@ package models
 
 import constants.{DownloadQueueStatus, JsonConstants}
 import helper.Config
+import helper.hms.HmsUtil
 import models.dto.ShowMetaData
 import org.joda.time.DateTime
 import play.api.Logger
@@ -48,6 +49,25 @@ object DownloadQueue {
   implicit val bsonHandler = Macros.handler[DownloadQueue]
 
   def insert(downloadQueue: DownloadQueue): Future[LastError] = downloadQueueCollection.insert(downloadQueue)
+
+  /**
+    * Update the status of a download/upload if the HMS Transcoder is enabled.
+    *
+    * @param meta the base for the downloadQueue records
+    * @return
+    */
+  def updateDownloadQueue(meta: ShowMetaData) = {
+
+    val station = meta.stationId
+
+    if (HmsUtil.isTranscoderEnabled(station)) {
+
+      Logger.info(s"queue download for retry: station=$station, show=${meta.showId}")
+      queueDownload(meta)
+
+    }
+
+  }
 
   /**
     * Create or update downloadQueue record. This includes automatically setting the status and nextRun fields to

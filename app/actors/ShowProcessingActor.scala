@@ -79,31 +79,12 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
   private def handleUploadDownloadFailure(meta: ShowMetaData): Unit = {
     VideoUtil.deleteLocalFile(meta)
-    updateDownloadQueue(meta)
+    DownloadQueue.updateDownloadQueue(meta)
   }
 
   private def handleUploadSuccess(meta: ShowMetaData): Unit = {
     Show.createShowByMeta(meta)
     DownloadQueue.deleteIfExists(meta)
-  }
-
-  /**
-    * Update the status of a download/upload if the HMS Transcoder is enabled.
-    *
-    * @param meta the base for the downloadQueue records
-    * @return
-    */
-  private def updateDownloadQueue(meta: ShowMetaData) = {
-
-    val station = meta.stationId
-
-    if (HmsUtil.isTranscoderEnabled(station)) {
-
-      log.info(s"queue download for retry: station=$station, show=${meta.showId}")
-      DownloadQueue.queueDownload(meta)
-
-    }
-
   }
 
 }
