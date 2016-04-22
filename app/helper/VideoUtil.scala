@@ -90,30 +90,22 @@ object VideoUtil {
 
   private def s3Delete(show: Show): Boolean = {
 
-    show.vimeoId match {
+    try {
 
-      case Some(vimeoId) => true
+      val name = S3Util.extractS3FileName(show)
+      s3.delete(name)
+      Logger.info(s"deleted show from s3: name=$name")
+      true
 
-      case None =>
+    } catch {
 
-        try {
+      case me: MalformedURLException =>
+        Logger.error("failed to extract S3 name for show", me)
+        false
 
-          val name = S3Util.extractS3FileName(show)
-          s3.delete(name)
-          Logger.info(s"deleted show from s3: name=$name")
-          true
-
-        } catch {
-
-          case me: MalformedURLException =>
-            Logger.error("failed to extract S3 name for show", me)
-            false
-
-          case de: DeleteException =>
-            Logger.error("failed to delete video from S3", de)
-            false
-
-        }
+      case de: DeleteException =>
+        Logger.error("failed to delete video from S3", de)
+        false
 
     }
 
