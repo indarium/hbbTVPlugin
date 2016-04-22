@@ -1,10 +1,11 @@
 package models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.collection.JSONCollection
 import play.api.Play.current
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * Created by dermicha on 06/09/14.
@@ -23,7 +24,8 @@ case class Station(stationId: String,
                    defaultShowLogoUrl: String,
                    defaultChannelBroadcastInfo: String,
                    defaultRootPortalURL: String,
-                   getShowUrlPattern: Option[String]
+                   getShowUrlPattern: Option[String],
+                   keepLastShows: Option[Int]
                    )
 
 object Station {
@@ -51,4 +53,25 @@ object Station {
 
   def allStations = stationCollection.find(Json.obj("active" -> true), Json.obj()).
     cursor[Station].collect[List]()
+
+  def findForDeleteOldShows: Future[Seq[Station]] = {
+
+    val query = Json.obj(
+      "keepLastShows" -> Json.obj("$exists" -> true),
+      "keepLastShows" -> Json.obj("$gt" -> 0)
+    )
+
+    stationCollection
+      .find(query)
+      .cursor[JsObject]
+      .collect[Seq]()
+      .map {
+        stations =>
+          stations.map { station =>
+            station.as[Station]
+          }
+      }
+
+  }
+
 }

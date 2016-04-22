@@ -176,6 +176,50 @@ object Show {
       }
   }
 
+  /**
+    * @param stationId stationId to select shows by
+    * @return empty if nothing found; not empty otherwise
+    */
+  def findByStation(stationId: String): Future[Seq[Show]] = {
+
+    val query = Json.obj("stationId" -> stationId)
+
+    showsCollection
+      .find(query)
+      .cursor[JsObject]
+      .collect[Seq]()
+      .map {
+        shows =>
+          shows.map { currentShow =>
+            currentShow.as[Show]
+          }
+      }
+
+  }
+
+  /**
+    * Selects all shows for deletion. We keep the n latest ones (with n being the number defined by parameter "skip").
+    *
+    * @param stationId stationId to select shows by
+    * @param skip      skip first n shows
+    * @return empty if nothing found; not empty otherwise
+    */
+  def findForDelete(stationId: String, skip: Int): Future[Seq[Show]] = {
+
+    Logger.info(s"looking for shows to clean up: stationId=$stationId")
+
+    for (shows <- findByStation(stationId)) yield {
+
+      val (_, remaining) = shows
+        .sortWith(sortByShowIdDesc)
+        .splitAt(skip)
+
+      remaining
+
+    }
+
+  }
+
   def createShowByMeta(meta: ShowMetaData) = {
     Logger.info("store show: %s / %s".format(meta.showId, meta.showTitle))
 
@@ -221,12 +265,15 @@ object Show {
       .remove(query)
       .onComplete {
 
-        case Failure(e) => Logger.error(s"failed to delete shows record: showId=$showId, e=$e")
-
-        case Success(lastError) => Logger.info(s"deleted shows record: showId=$showId")
+        case Failure(e) => Logger.error(s"shows - failed to delete record: showId=$showId, e=$e")
+        case Success(lastError) => Logger.debug(s"shows - deleted record: showId=$showId")
 
       }
 
+  }
+
+  private def sortByShowIdDesc(show1: Show, show2: Show) = {
+    show1.showId > show2.showId
   }
 
 }
