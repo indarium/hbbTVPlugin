@@ -366,7 +366,7 @@ class ShowCrawler extends Actor {
   }
 
   private def scheduleCleanUpJob(delay: Int = Config.cleanUpJobInterval): Unit = {
-    log.debug(s"schedule next cleanUp job to run in $delay seconds")
+    log.debug(s"deleteVideo - schedule next cleanUp job to run in $delay seconds")
     val duration = Duration.create(delay, TimeUnit.SECONDS)
     context.system.scheduler.scheduleOnce(duration, self, ScheduleCleanUp())
   }
