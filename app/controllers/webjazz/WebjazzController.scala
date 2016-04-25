@@ -15,7 +15,7 @@ object WebjazzController extends Controller {
 
   def deleteVideo(showId: Long) = Action.async {
 
-    Logger.info(s"DELETE /api/v1/video/$showId")
+    Logger.info(s"deleteVideo - /api/v1/video/$showId")
 
     VideoUtil.deleteAllRecords(showId) map {
       case None => ControllerUtil.Unsuccessful404
