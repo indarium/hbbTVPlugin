@@ -51,7 +51,7 @@ object VideoUtil {
   def deleteAllRecords(show: Show): Future[Boolean] = {
 
     val showId = show.showId
-    Logger.debug(s"deleteVideo - attempt to delete showId=$showId")
+    Logger.debug(s"deleteVideo - attempt to delete showId=$showId (${show.stationId})")
 
     val s3Deleted = s3Delete(show)
     for (vimeoDeleted <- vimeoDelete(show)) yield {
