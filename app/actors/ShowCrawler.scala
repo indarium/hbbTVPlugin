@@ -137,7 +137,7 @@ class ShowCrawler extends Actor {
       }
 
     case scheduleTranscodeJobStatusUpdate: ScheduleHmsStatusUpdate =>
-      updateOpenHmsTranscodeJobs
+      resetOpenHmsTranscodeJobs
       scheduleHmsStatusUpdate
 
     case processDownloads: ScheduleDownloadQueue =>
@@ -192,7 +192,7 @@ class ShowCrawler extends Actor {
 
   }
 
-  private def updateOpenHmsTranscodeJobs = {
+  private def resetOpenHmsTranscodeJobs = {
 
     log.info("update status of open HMS transcode jobs")
 
