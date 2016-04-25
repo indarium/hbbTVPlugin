@@ -3,7 +3,8 @@ package helper
 import java.net.MalformedURLException
 
 import external.vimeo.VimeoRest
-import models.Show
+import models.{DeleteShow, Show}
+import models.dto.ShowMetaData
 import models.hms.TranscodeCallback
 import play.api.Logger
 
@@ -50,6 +51,7 @@ object VideoUtil {
   def deleteAllRecords(show: Show): Future[Boolean] = {
 
     val showId = show.showId
+    Logger.debug(s"deleteVideo - attempt to delete showId=$showId (${show.stationId})")
 
     val s3Deleted = s3Delete(show)
     for (vimeoDeleted <- vimeoDelete(show)) yield {
@@ -62,13 +64,48 @@ object VideoUtil {
           true
 
         case false =>
-          Logger.error(s"failed to delete all video records: showId=$showId, s3Deleted=$s3Deleted, vimeoDeleted=$vimeoDeleted")
+          Logger.error(s"deleteVideo - failed to delete all records: showId=$showId, s3Deleted=$s3Deleted, vimeoDeleted=$vimeoDeleted")
           false
 
       }
 
     }
 
+  }
+
+  /**
+    * Delete a show from every video provider and all related database records.
+    *
+    * @param show the show we'd like to delete
+    * @return true if deletion was successful; false if if deletion failed
+    */
+  def deleteAllRecords(show: DeleteShow): Future[Boolean] = {
+
+    val showId = show.showId
+
+    val s3Deleted = s3Delete(show)
+    for (vimeoDeleted <- vimeoDelete(show)) yield {
+
+      s3Deleted && vimeoDeleted match {
+
+        case true =>
+          Show.delete(showId)
+          TranscodeCallback.delete(showId)
+          true
+
+        case false =>
+          Logger.error(s"deleteVideo - failed to delete all records: showId=$showId, s3Deleted=$s3Deleted, vimeoDeleted=$vimeoDeleted")
+          false
+
+      }
+
+    }
+
+  }
+
+  def deleteLocalFile(meta: ShowMetaData) = {
+    meta.localVideoFile.map(_.delete)
+    meta.localVideoFile = None
   }
 
   /**
@@ -88,23 +125,63 @@ object VideoUtil {
 
   }
 
+  /**
+    * Delete video from Vimeo if there is one.
+    *
+    * @param show show on which delete is based
+    * @return true if we don't have a vimeoId or the video has been deleted; false otherwise
+    */
+  private def vimeoDelete(show: DeleteShow): Future[Boolean] = {
+
+    show.vimeoId match {
+
+      case None => Future(true)
+      case Some(vimeoId) => VimeoRest.videosDelete(vimeoId)
+
+    }
+
+  }
+
   private def s3Delete(show: Show): Boolean = {
 
     try {
 
       val name = S3Util.extractS3FileName(show)
       s3.delete(name)
-      Logger.info(s"deleted show from s3: name=$name")
+      Logger.info(s"deleteVideo - from S3: name=$name")
       true
 
     } catch {
 
       case me: MalformedURLException =>
-        Logger.error("failed to extract S3 name for show", me)
+        Logger.error("deleteVideo - failed to extract S3 name for show", me)
         false
 
       case de: DeleteException =>
-        Logger.error("failed to delete video from S3", de)
+        Logger.error(s"deleteVideo - failed for S3", de)
+        false
+
+    }
+
+  }
+
+  private def s3Delete(show: DeleteShow): Boolean = {
+
+    try {
+
+      val name = S3Util.extractS3FileName(show)
+      s3.delete(name)
+      Logger.info(s"deleteVideo - from S3: name=$name")
+      true
+
+    } catch {
+
+      case me: MalformedURLException =>
+        Logger.error("deleteVideo - failed to extract S3 name for show", me)
+        false
+
+      case de: DeleteException =>
+        Logger.error(s"deleteVideo - failed for S3", de)
         false
 
     }

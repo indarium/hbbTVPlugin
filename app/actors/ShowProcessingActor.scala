@@ -42,18 +42,17 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
 
     case VideoUploadSuccess(meta) =>
       log.info("uploaded %s".format(meta.publicVideoUrl.getOrElse("???")))
-      Show.createShowByMeta(meta)
-      DownloadQueue.deleteIfExists(meta)
+      handleUploadSuccess(meta)
       self ! ScheduleNextStep(meta)
 
     case VideoDownloadFailure(meta, e) =>
       log.error(e, "video download failed: %s".format(meta.sourceVideoUrl.getOrElse("???")))
-      updateDownloadQueue(meta)
+      handleUploadDownloadFailure(meta)
       self ! ScheduleNextStep(meta)
 
     case VideoUploadFailure(meta, e) =>
       log.error(e, "video upload failed: %s".format(meta.localVideoFile.getOrElse("???")))
-      updateDownloadQueue(meta)
+      handleUploadDownloadFailure(meta)
       self ! ScheduleNextStep(meta)
 
     case ScheduleNextStep(meta) =>
@@ -78,23 +77,14 @@ class ShowProcessingActor(backend: StorageBackend) extends Actor {
     */
   private def isVimeoUpload(meta: ShowMetaData): Boolean = meta.vimeo.isDefined && meta.vimeo.get && meta.vimeoDone.isEmpty
 
-  /**
-    * Update the status of a download/upload if the HMS Transcoder is enabled.
-    *
-    * @param meta the base for the downloadQueue records
-    * @return
-    */
-  private def updateDownloadQueue(meta: ShowMetaData) = {
+  private def handleUploadDownloadFailure(meta: ShowMetaData): Unit = {
+    VideoUtil.deleteLocalFile(meta)
+    DownloadQueue.updateDownloadQueue(meta)
+  }
 
-    val station = meta.stationId
-
-    if (HmsUtil.isTranscoderEnabled(station)) {
-
-      log.info(s"queue download for retry: station=$station, show=${meta.showId}")
-      DownloadQueue.queueDownload(meta)
-
-    }
-
+  private def handleUploadSuccess(meta: ShowMetaData): Unit = {
+    Show.createShowByMeta(meta)
+    DownloadQueue.deleteIfExists(meta)
   }
 
 }

@@ -1,6 +1,7 @@
 package models.hms
 
 import constants.{HmsCallbackStatus, JsonConstants}
+import helper.Config
 import models.dto.ShowMetaData
 import org.joda.time.DateTime
 import play.api.Logger
@@ -130,13 +131,17 @@ object TranscodeCallback {
     */
   def findByStatusNotFaultyNotFinished: Future[Set[TranscodeCallback]] = {
 
+    val oldestCreated = DateTime.now()
+      .minusDays(Config.hmsTranscodeStatusUpdateOldestRecords)
+
     val selector = BSONDocument(
       "Status" ->
         BSONDocument(
           "$not" -> BSONDocument(
             "$in" -> BSONArray(HmsCallbackStatus.FINISHED, HmsCallbackStatus.FAULTY)
           )
-        )
+        ),
+      "created" -> BSONDocument("$gt" -> oldestCreated)
     )
 
     transcodeCallCollection

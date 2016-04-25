@@ -52,6 +52,8 @@ object Config {
 
   def hmsTranscodeStatusUpdateInterval: Long = Play.configuration.getLong("hms.transcoder.status.update.interval").getOrElse(300)
 
+  def hmsTranscodeStatusUpdateOldestRecords: Int = Play.configuration.getInt("hms.transcoder.status.update.oldestRecords").getOrElse(3)
+
   def hmsImportAllShows: Array[String] = stringArray("hms.import.all.shows")
 
   /* WEBJAZZ CONFIGS **************************************************************************************************/
