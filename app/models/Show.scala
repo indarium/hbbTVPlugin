@@ -213,7 +213,7 @@ object Show {
     */
   def findForDelete(stationId: String, skip: Int): Future[Seq[Show]] = {
 
-    Logger.info(s"deleteVideo - looking for shows to clean up: stationId=$stationId")
+    Logger.info(s"deleteVideo - looking for shows to clean up: stationId=$stationId (keep latest $skip)")
 
     for (shows <- findByStation(stationId)) yield {
 
