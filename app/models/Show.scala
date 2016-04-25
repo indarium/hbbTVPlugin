@@ -213,7 +213,7 @@ object Show {
     */
   def findForDelete(stationId: String, skip: Int): Future[Seq[Show]] = {
 
-    Logger.info(s"looking for shows to clean up: stationId=$stationId")
+    Logger.info(s"deleteVideo - looking for shows to clean up: stationId=$stationId")
 
     for (shows <- findByStation(stationId)) yield {
 
@@ -221,6 +221,7 @@ object Show {
         .sortWith(sortByShowIdDesc)
         .splitAt(skip)
 
+      Logger.info(s"deleteVideo - found ${remaining.size} $stationId shows to delete")
       remaining
 
     }
