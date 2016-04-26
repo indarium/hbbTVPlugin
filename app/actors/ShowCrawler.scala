@@ -11,7 +11,7 @@ import helper.hms.{HMSApi, HmsUtil}
 import helper.vimeo.VimeoUtil
 import models.dto.{RetryDownload, ShowMetaData}
 import models.hms.{HmsShow, TranscodeCallback}
-import models.{DeleteShow, DownloadQueue, Show, Station}
+import models.{DownloadQueue, Show, Station}
 import reactivemongo.core.commands.LastError
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -307,9 +307,7 @@ class ShowCrawler extends Actor {
 
       val keepLastShows = station.keepLastShows.get
 
-      // TODO switch deletion to Show.findForDelete() once all the old shows have been deleted
-//      Show.findForDelete(station.stationId, keepLastShows) map {
-      DeleteShow.findForDelete(station.stationId, keepLastShows) map {
+      Show.findForDelete(station.stationId, keepLastShows) map {
         _.foreach(VideoUtil.deleteAllRecords)
       }
 
