@@ -118,7 +118,7 @@ object Config {
 
   def cleanUpJobStartUpDelay: Int = Play.configuration.getInt("cleanUp.shows.startUpDelay").getOrElse(75)
 
-  def cleanUpJobInterval: Int = Play.configuration.getInt("cleanUp.shows.jobInterval").getOrElse(1800)
+  def cleanUpJobInterval: Int = Play.configuration.getInt("cleanUp.shows.jobInterval").getOrElse(7200)
 
   /**
     *
