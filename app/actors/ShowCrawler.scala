@@ -120,6 +120,7 @@ class ShowCrawler extends Actor {
             transcodeCallback <- TranscodeCallback.findByShowIdWithStatusNotFaulty(show.ID)
           } yield {
 
+            // TODO this check is done in a lower layer: remove
             existingShow.isDefined || transcodeCallback.isDefined match {
 
               case true =>

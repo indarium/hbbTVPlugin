@@ -167,43 +167,52 @@ object HMSApi {
     Logger.debug("HMSApi.getCurrentShow tried for %s / %s".format(stationId, channelId))
     getAllShows(stationId, channelId).map {
 
+      case None => None
+
       case Some(shows) =>
 
         val filteredShows = filterShows(stationId, shows)
-        HmsUtil.extractCurrentShow(filteredShows, stationId) match {
+        filteredShows.isEmpty match {
 
-          case Some(hmsShow) =>
-            Logger.debug("HMSApi.getCurrentShow: found current show: %d / %s, URL: %s".format(hmsShow.ID, hmsShow.Name, hmsShow.DownloadURL))
-            Some(hmsShow)
-
-          case None =>
-
-            filteredShows.isEmpty match {
-              case true => Logger.info(s"nothing to do for: $stationId / $channelId")
-              case false => Logger.error("HMSApi.getCurrentShow not successful for %s / %s".format(stationId, channelId))
-
-            }
+          case true =>
+            Logger.info(s"nothing to do for: $stationId / $channelId")
             None
 
-        }
+          case false =>
+            HmsUtil.extractCurrentShow(filteredShows, stationId) match {
 
-      case None =>
-        Logger.error("HMSApi.getCurrentShow got None as result!")
-        None
+              case Some(hmsShow) =>
+                Logger.debug("HMSApi.getCurrentShow: found current show: %d / %s, URL: %s".format(hmsShow.ID, hmsShow.Name, hmsShow.DownloadURL))
+                Some(hmsShow)
+
+              case None =>
+                Logger.error("HMSApi.getCurrentShow failed for %s / %s".format(stationId, channelId))
+                None
+
+            }
+
+        }
 
     }
 
   }
 
+  /**
+    * @param stationId needed to query HMS for available shows
+    * @param channelId needed to query HMS for available shows
+    * @return None if HMS returns no program at all; a sequence otherwise
+    */
   def getAllShows(stationId: String, channelId: String): Future[Option[Seq[HmsShow]]] = {
 
     HMSApi.getShows(stationId, channelId).map {
 
       case Some(showsJson) =>
-        Logger.info("HMSApi.getAllShows: shows found for %s / %s".format(stationId, channelId))
+        Logger.info(s"HMSApi.getAllShows(): shows found for $stationId / $channelId")
         Some((showsJson \ "shows").as[Seq[HmsShow]](Reads.seq(HmsShow.format)))
 
-      case None => None
+      case None =>
+        Logger.error(s"HMSApi.getAllShows() - HMS returned no shows for: $stationId / $channelId")
+        None
 
     }
 
@@ -401,21 +410,27 @@ object HMSApi {
   /**
     * Filter the given show sequence if necessary.<br/>
     * Filtering can be activated with a configuration for the given stationId.<br/>
-    * If filtering is activated for the given station the resulting sequence only includes shows we haven't finished or
-    * began processing yet. Otherwise the original sequence is returned.
+    *
+    * If filtering is activated for the given station the resulting sequence only includes shows:<br/>
+    * <ul>
+    * <li>we haven't finished began processing yet</li>
+    * <li>that have ended by now</li>
+    * <ul>
+    *
+    * Otherwise the original sequence is returned.
     */
   private def filterShows(stationId: String, shows: Seq[HmsShow]): Seq[HmsShow] = {
 
     HmsUtil.hmsImportAllShows(stationId) match {
 
       case false => shows
-      case true => shows.filter(isShowUnknown)
+      case true => shows.filter(showIsUnknown).filter(showHasNotEnded)
 
     }
 
   }
 
-  private def isShowUnknown(show: HmsShow): Boolean = {
+  private def showIsUnknown(show: HmsShow): Boolean = {
 
     val f = for {
       existingShow <- Show.findShowById(show.ID)
@@ -433,5 +448,7 @@ object HMSApi {
     Await.result(f, Duration(30, TimeUnit.SECONDS))
 
   }
+
+  private def showHasNotEnded(show: HmsShow): Boolean = show.UTCEnd.isBeforeNow
 
 }

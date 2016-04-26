@@ -71,12 +71,10 @@ object HmsUtil {
 
     showSeq.find {
 
-      show =>
-
-        HmsUtil.isTranscoderEnabled(stationId) match {
-          case true => show.UTCEnd.isBeforeNow
-          case false => show.DownloadURL.isDefined
-        }
+      HmsUtil.isTranscoderEnabled(stationId) match {
+        case true => _.UTCEnd.isBeforeNow
+        case false => _.DownloadURL.isDefined
+      }
 
     }
 
