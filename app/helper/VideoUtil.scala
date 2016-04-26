@@ -1,7 +1,5 @@
 package helper
 
-import java.net.MalformedURLException
-
 import external.vimeo.VimeoRest
 import models.Show
 import models.dto.ShowMetaData
@@ -97,22 +95,25 @@ object VideoUtil {
 
   private def s3Delete(show: Show): Boolean = {
 
-    try {
+    show.s3Name match {
 
-      val name = S3Util.extractS3FileName(show)
-      s3.delete(name)
-      Logger.info(s"deleteVideo - from S3: name=$name")
-      true
+      case None => true
 
-    } catch {
+      case Some(s3Name) =>
 
-      case me: MalformedURLException =>
-        Logger.error("deleteVideo - failed to extract S3 name for show", me)
-        false
+        try {
 
-      case de: DeleteException =>
-        Logger.error(s"deleteVideo - failed for S3", de)
-        false
+          s3.delete(s3Name)
+          Logger.info(s"deleteVideo - from S3: name=$s3Name")
+          true
+
+        } catch {
+
+          case de: DeleteException =>
+            Logger.error(s"deleteVideo - failed for S3", de)
+            false
+
+        }
 
     }
 
