@@ -42,7 +42,7 @@ object ShowUtil {
   def updateHdUrl(show: Show, hdFileIn: Option[File]): Show = {
 
     hdFileIn match {
-      case Some(hdFile) => show.copy(showVideoSDUrl = hdFile.link)
+      case Some(hdFile) => show.copy(showVideoHDUrl = Some(hdFile.link))
       case None => show
     }
 

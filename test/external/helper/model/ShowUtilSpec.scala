@@ -52,7 +52,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
     "with hdFile=None" in {
 
       // prepare
-      val show = defaultShow("hdUrl", None)
+      val show = defaultShow("sdUrl", None)
       val expected = show
 
       // test
@@ -68,7 +68,7 @@ class ShowUtilSpec extends Specification with PlayRunners {
       // prepare
       val show = defaultShow("linkBefore", None)
       val file = defaultFile("linkAfter", "linkSecureAfter")
-      val expected = show.copy(showVideoSDUrl = file.get.link)
+      val expected = show.copy(showVideoHDUrl = Some(file.get.link))
 
       // test
       val result = ShowUtil.updateHdUrl(show, file)
