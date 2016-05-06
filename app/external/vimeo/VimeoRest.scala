@@ -7,7 +7,10 @@ import helper.Config
 import models.dto.ShowMetaData
 import play.api.Logger
 import play.api.Play.current
-import play.api.libs.json.{JsValue, JsObject, Json}
+import play.api.http.HeaderNames._
+import play.api.http.MimeTypes._
+import play.api.http.Status._
+import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.{WS, WSResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -81,7 +84,7 @@ object VimeoRest {
 
       response => response.status match {
 
-        case 204 | 404 =>
+        case NO_CONTENT | NOT_FOUND =>
           Logger.info(s"deleteVideo - from Vimeo: vimeoId=$id")
           true
 
@@ -100,13 +103,13 @@ object VimeoRest {
     val url = vimeoApiUrl + endpoint
 
     val requestWithAuth = WS.url(url)
-      .withHeaders(("Authorization", "bearer " + accessToken))
+      .withHeaders((AUTHORIZATION, "bearer " + accessToken))
 
     val requestHolder = body match {
 
       case Some(aBody) =>
         requestWithAuth
-          .withHeaders(("Content-Type", "application/json"))
+          .withHeaders((CONTENT_TYPE, JSON))
           .withBody(aBody)
 
       case None => requestWithAuth
@@ -124,7 +127,7 @@ object VimeoRest {
 
         response.status match {
 
-          case 201 =>
+          case CREATED =>
             Logger.debug("successfully requested upload ticket")
             val uploadLink = (response.json \ "upload_link_secure").as[String]
             val completeUri = (response.json \ "complete_uri").as[String]
@@ -143,15 +146,17 @@ object VimeoRest {
   private def uploadFile(ticket: UploadTicket, file: File): Future[Boolean] = {
 
     val requestHolder = WS.url(ticket.uploadLink)
-      .withHeaders(("Content-Length", file.length.toString))
-      .withHeaders(("Content-Type", "video/mp4"))
+      .withHeaders(
+        CONTENT_LENGTH -> file.length.toString,
+        CONTENT_TYPE -> "video/mp4"
+      )
       .withRequestTimeout(600000)
 
     requestHolder.put(file) map {
 
       response => response.status match {
 
-        case 200 => true
+        case OK => true
 
         case _ =>
           Logger.error(s"vimeo upload failed: status=${response.status}, path=${file.getAbsolutePath}")
@@ -166,8 +171,8 @@ object VimeoRest {
   private def verifyUpload(ticket: UploadTicket, file: File): Future[Boolean] = {
 
     val requestHolder = WS.url(ticket.uploadLink)
-      .withHeaders(("Content-Length", "0"))
-      .withHeaders(("Content-Range", "bytes */*"))
+      .withHeaders((CONTENT_LENGTH, "0"))
+      .withHeaders((CONTENT_RANGE, "bytes */*"))
     requestHolder.execute("PUT") map {
 
       response => response.status match {
@@ -192,7 +197,7 @@ object VimeoRest {
 
       response => response.status match {
 
-        case 201 =>
+        case CREATED =>
 
           val videoIdString = response.header("Location").flatMap(_.split("/").lastOption)
           val EmbeddedNumberFmt = """(\d+)""".r
@@ -240,7 +245,7 @@ object VimeoRest {
 
         response.status match {
 
-          case 200 =>
+          case OK =>
             Logger.debug(s"editMetadata(): success - meta.showId=${meta.showId}, vimeoId=$vimeoId")
             true
 
@@ -262,7 +267,7 @@ object VimeoRest {
 
     // check if channel exists
       getChannelsResult <- vimeoRequest("GET", "/me/channels?per_page=50&filter=moderated", None)
-      if getChannelsResult.status == 200
+      if getChannelsResult.status == OK
 
       // get channel uri or create channel
       // TODO extract determineChannelUrl into separate method
@@ -289,7 +294,7 @@ object VimeoRest {
 
       response.status match {
 
-        case 204 => true
+        case NO_CONTENT => true
 
         case _ =>
           Logger.error(s"adding video to channel failed: status=${response.status}, vimeoId=$vimeoId")
@@ -321,7 +326,7 @@ object VimeoRest {
 
       response.status match {
 
-        case 204 => true
+        case NO_CONTENT => true
 
         case _ =>
           Logger.error(s"failed to assign embedPreset: vimeoId=$vimeoId, presetId=$presetId")
@@ -344,7 +349,7 @@ object VimeoRest {
 
         response.status match {
 
-          case 200 => Some(response.json)
+          case OK => Some(response.json)
 
           case _ =>
             Logger.error("failed to request presets")

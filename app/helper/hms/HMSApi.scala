@@ -12,6 +12,9 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.api.Logger
 import play.api.Play.current
+import play.api.http.HeaderNames._
+import play.api.http.MimeTypes._
+import play.api.http.Status._
 import play.api.libs.json._
 import play.api.libs.ws.{WS, WSRequestHolder, WSResponse}
 
@@ -45,7 +48,7 @@ object HMSApi {
       case Some(accessToken) =>
         Logger.debug("current Access-Token: " + accessToken.Access_Token)
         Option(wsRequest(apiUrl)
-          .withHeaders("Content-Type" -> "application/json")
+          .withHeaders(CONTENT_TYPE -> JSON)
           .withHeaders("Access-Token" -> accessToken.Access_Token))
       case None => Logger.error("Could not get AccessToken!")
         None
@@ -75,7 +78,7 @@ object HMSApi {
       f.map { response =>
 
         response.status match {
-          case s if (s < 400) && (response.body.length > 0) =>
+          case s if (s < BAD_REQUEST) && (response.body.length > 0) =>
             response.json.asOpt[AccessToken]
           case s =>
             Logger.error("no valid access token! Status: " + s)
@@ -114,14 +117,14 @@ object HMSApi {
                 }
                 f.map { response =>
                   response.status match {
-                    case s if s < 400 =>
+                    case s if s < BAD_REQUEST =>
                       response.body.trim.isEmpty match {
                         case true =>
                           Logger.warn(s"HMSApi.getShows: empty response body ($stationId/$channelId)")
                           None
                         case false => parseSources(response, stationId, channelId)
                       }
-                    case s if s == 401 =>
+                    case s if s == UNAUTHORIZED =>
                       Logger.error(s"HMSApi Login failed: ${response.status}")
                       None
                     case _ =>
@@ -284,7 +287,7 @@ object HMSApi {
 
         response.status match {
 
-          case s if s < 400 =>
+          case s if s < BAD_REQUEST =>
             Logger.info(s"callTranscode() - transcoder job creation call successful: ${meta.channelId}/${meta.stationId}, show=${meta.showId}")
             Logger.debug(s", status=$s, body=${response.body}")
             extractJobResult(response)
@@ -372,7 +375,7 @@ object HMSApi {
 
         response.status match {
 
-          case s if s < 400 =>
+          case s if s < BAD_REQUEST =>
             Logger.info(s"callJobStatusUpdate() - status=$s, response=${response.body}")
             extractTranscodeCallback(response)
 
@@ -449,5 +452,16 @@ object HMSApi {
   }
 
   private def showHasNotEnded(show: HmsShow): Boolean = show.UTCEnd.isBeforeNow
+
+  private def authIfNecessary(accessTokenOpt: Option[AccessToken]): Future[Option[AccessToken]] = {
+
+    accessTokenOpt match {
+
+      case None => authenticate
+      case Some(token) => Future(Some(token))
+
+    }
+
+  }
 
 }
