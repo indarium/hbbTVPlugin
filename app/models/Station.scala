@@ -55,6 +55,22 @@ object Station {
     }
   }
 
+  def findStation(stationId: String): Future[Option[Station]] = {
+    stationCollection.
+      // find all people with name `name`
+      find(
+        Json.obj(
+          "stationId" -> stationId
+        ),
+        Json.obj()
+      ).
+      cursor[Station].collect[List](1).map {
+      station =>
+        station.headOption.map { currentStation => currentStation
+        }
+    }
+  }
+
   def allStations = stationCollection.find(Json.obj("active" -> true), Json.obj()).
     cursor[Station].collect[List]()
 

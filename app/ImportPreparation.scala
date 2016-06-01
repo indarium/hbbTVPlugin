@@ -21,8 +21,20 @@ object ImportPreparation {
     val xmlFiles = listXmlFiles(dir)
 
     xmlFiles foreach { xmlFile =>
-      val meta = toShowMetaData(dir, xmlFile)
-      println(s"meta=$meta")
+
+      //      toShowMetaData(dir, xmlFile) map { meta => // TODO switch to process Future[Option[ShowMetaData]]
+      toShowMetaData(dir, xmlFile) match {
+
+        case Some(meta) =>
+          println(s"meta=$meta")
+          // TODO activate before running program in app server
+//          val downloadQueue = DownloadQueue(meta)
+//          DownloadQueue.insert(downloadQueue)
+
+        case None =>
+
+      }
+      //      }
     }
 
   }
@@ -59,7 +71,9 @@ object ImportPreparation {
           case true =>
 
             println(s"mediaInfo=$mediaInfo")
-            val stationOpt: Option[Station] = rokTV // TODO db lookup with ${mediaInfo.source}
+            // TODO switch to process Future[Option[Station]]
+            val stationOpt: Option[Station] = rokTV
+            //            Station.findStation(mediaInfo.source) map { stationOpt =>
             stationOpt match {
 
               case Some(station) => createMeta(station, mediaInfo)
@@ -69,6 +83,7 @@ object ImportPreparation {
                 None
 
             }
+          //            }
 
         }
 
@@ -134,7 +149,7 @@ object ImportPreparation {
     meta.showSourceTitle = meta.showTitle
     meta.sourceVideoUrl = Some(new URL(mediaInfo.downloadUrl)) // TODO change url host (currently: http://62.67.13.51/htfiles/Clips/ROKTV/Zoom6_33611.mp4)
 
-    //    if (VimeoUtil.uploadActivated(meta.stationId)) { // TODO uncomment before running program in app server
+    //    if (VimeoUtil.uploadActivated(meta.stationId)) { // TODO activate before running program in app server
     meta.vimeo = Some(true)
     //    }
 
