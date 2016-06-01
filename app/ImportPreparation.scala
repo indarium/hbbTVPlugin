@@ -48,7 +48,7 @@ object ImportPreparation {
 
       case None => None
 
-      case Some(mediaInfo) => {
+      case Some(mediaInfo) =>
 
         stationsToImport.contains(mediaInfo.source) match {
 
@@ -56,7 +56,7 @@ object ImportPreparation {
             println(s"IGNORE: source=${mediaInfo.source}")
             None
 
-          case true => {
+          case true =>
 
             println(s"mediaInfo=$mediaInfo")
             val stationOpt: Option[Station] = rokTV // TODO db lookup with ${mediaInfo.source}
@@ -70,11 +70,7 @@ object ImportPreparation {
 
             }
 
-          }
-
         }
-
-      }
 
     }
 
@@ -85,7 +81,8 @@ object ImportPreparation {
     loadXml(dir, filename) match {
 
       case None => None
-      case Some(xml) => {
+
+      case Some(xml) =>
 
         val ShowIdRegex = """(.+?)_(\d+)\.xml""".r
 
@@ -105,8 +102,6 @@ object ImportPreparation {
         }
 
         Some(MediaInfo(downloadUrl, source, name, showId.toLong))
-
-      }
 
     }
 
