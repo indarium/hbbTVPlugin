@@ -17,4 +17,5 @@ libraryDependencies ++= Seq(
   , "org.scalatestplus" %% "play" % "1.1.0" % "test"
   , "com.typesafe.akka" %% "akka-testkit" % "2.3.3" % "test"
   , "org.julienrf" %% "play-json-variants" % "2.0"
+  , "commons-collections" % "commons-collections" % "3.2.2"
 )
